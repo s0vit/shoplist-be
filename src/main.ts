@@ -5,19 +5,22 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bodyParser: true });
+  const PORT = process.env.PORT || 5555;
   app.setGlobalPrefix('api');
   app.useGlobalInterceptors(new loggerInterceptor());
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
       transform: true,
       transformOptions: {
         enableImplicitConversion: true,
       },
     }),
   );
-  await app.listen(3000, () => {
-    console.log(`Server is running on port:${process.env.PORT || 3000}`);
+  await app.listen(PORT, () => {
+    console.log(`Server is running on port:${PORT}`);
   });
 }
 bootstrap();
