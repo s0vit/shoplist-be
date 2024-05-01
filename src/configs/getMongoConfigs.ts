@@ -7,6 +7,6 @@ export const getMongoConfigs = async (configService: ConfigService) => {
   const dbName = configService.get('DB_NAME');
 
   return {
-    uri: `mongodb+srv://${dbAdminName}:${dbAdminPassword}@cluster0.fujwcru.mongodb.net//${dbName}`,
+    uri: `mongodb+srv://${dbAdminName}:${dbAdminPassword}@cluster0.fujwcru.mongodb.net/${dbName}`,
   };
 };
