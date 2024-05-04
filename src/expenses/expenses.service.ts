@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Expenses, ExpensesDocument } from './expenses.schema';
 import { ExpensesInputDto } from './dto/expenses-input.dto';
 import { Model } from 'mongoose';
 import { FindExpenseDto } from './dto/find-expense.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { ERROR_TEXTS } from './constants/error-texts.enum';
+import { Expenses, ExpensesDocument } from './models/expenses.model';
 
 @Injectable()
 export class ExpensesService {
