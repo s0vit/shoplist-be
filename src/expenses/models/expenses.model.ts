@@ -25,14 +25,6 @@ export class Expenses {
 
   @Prop({ default: Date.now })
   updatedAt: Date;
-
-  constructor(amount: number, expensesTypeId: string, paymentSourceId: string, comments: string, userId: string) {
-    this.amount = amount;
-    this.expensesTypeId = expensesTypeId;
-    this.paymentSourceId = paymentSourceId;
-    this.comments = comments;
-    this.userId = userId;
-  }
 }
 
 export const ExpansesSchema = SchemaFactory.createForClass(Expenses);
