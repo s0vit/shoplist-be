@@ -1,20 +1,25 @@
-import { Body, Controller, HttpCode, Post, Delete, Get, Req, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Delete, Get, BadRequestException } from '@nestjs/common';
 import { AuthDto } from './dto/auth.dto';
-import { Request } from 'express';
+import { AuthService } from './auth.service';
+import { ERROR_AUTH } from './constants/auth-constants.enum';
 
 @Controller('auth')
 export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
   @Get('me')
-  async me(@Req() request: Request) {
-    const token = request.cookies['token'];
-    if (!token) {
-      throw new UnauthorizedException('No token provided');
-    }
-    return token;
+  async me() {
+    return { message: 'auth me @GET' };
   }
 
   @Post('register')
-  async register(@Body() dto: AuthDto) {}
+  async register(@Body() dto: AuthDto) {
+    const oldUser = await this.authService.findUser(dto.email);
+    if (oldUser) {
+      throw new BadRequestException(ERROR_AUTH.USER_ALREADY_EXISTS);
+    }
+    return this.authService.createUser(dto);
+  }
 
   @HttpCode(200)
   @Post('login')
