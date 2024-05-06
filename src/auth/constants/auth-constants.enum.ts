@@ -1,0 +1,17 @@
+export enum ERROR_AUTH {
+  NOT_USER = 'Not user',
+  UNKNOWN_ERROR = 'Unknown error',
+  UPDATE_ERROR = 'Update error',
+  SUCCESSFUL_AUTHORIZATION = 'Successful authorization',
+  AUTH_ME_OK = 'Auth ok',
+  AUTH_ME_ERROR_INVALID = 'Invalid token',
+  TOKEN_ERROR = 'Token validation error',
+  AUTH_ME_ERROR_NO_TOKEN = 'No token',
+  UNAUTHORIZED = 'Invalid username or password',
+  LOGOUT_SUCCESS = 'Logout success',
+  USER_SUCCESSFULLY_CREATED = 'User successfully created',
+  USER_ALREADY_EXISTS = 'User already exists',
+  PASSWORD_ERROR = 'Password must contain at least one digit and one uppercase letter.',
+  LOGIN_ERROR = 'Login must not be numeric',
+  LOGIN_LENGTH_ERROR = 'Login length must be at least 3 characters',
+}

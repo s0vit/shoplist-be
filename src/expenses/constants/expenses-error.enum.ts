@@ -1,4 +1,4 @@
-export enum ERROR_TEXTS {
+export enum EXPENSES_ERROR {
   AMOUNT_SHOULD_BE_A_POSITIVE_NUMBER = 'Amount should be a positive number',
   EXPENSES_TYPE_ID_SHOULD_BE_A_VALID_MONGO_ID = 'ExpensesTypeId should be a valid mongoId',
   PAYMENT_SOURCE_ID_SHOULD_BE_A_VALID_MONGO_ID = 'PaymentSourceId should be a valid mongoId',

@@ -3,8 +3,8 @@ import { ExpensesInputDto } from './dto/expenses-input.dto';
 import { Model } from 'mongoose';
 import { FindExpenseDto } from './dto/find-expense.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { ERROR_TEXTS } from './constants/error-texts.enum';
 import { Expenses, ExpensesDocument } from './models/expenses.model';
+import { EXPENSES_ERROR } from './constants/expenses-error.enum';
 
 @Injectable()
 export class ExpensesService {
@@ -25,7 +25,7 @@ export class ExpensesService {
   async get(id: string): Promise<ExpensesDocument> {
     const foundExpanse = await this.expensesModel.findById(id);
     if (!foundExpanse) {
-      throw new NotFoundException(ERROR_TEXTS.EXPENSE_NOT_FOUND);
+      throw new NotFoundException(EXPENSES_ERROR.EXPENSE_NOT_FOUND);
     }
     return foundExpanse;
   }
@@ -33,7 +33,7 @@ export class ExpensesService {
   async delete(id: string): Promise<ExpensesDocument> {
     const expense = await this.expensesModel.findById(id);
     if (!expense) {
-      throw new NotFoundException(ERROR_TEXTS.EXPENSE_NOT_FOUND);
+      throw new NotFoundException(EXPENSES_ERROR.EXPENSE_NOT_FOUND);
     }
     return this.expensesModel.findByIdAndDelete(id);
   }
@@ -41,7 +41,7 @@ export class ExpensesService {
   async patch(id: string, expense: ExpensesInputDto): Promise<ExpensesDocument> {
     const foundExpanse = await this.expensesModel.findById(id);
     if (!foundExpanse) {
-      throw new NotFoundException(ERROR_TEXTS.EXPENSE_NOT_FOUND);
+      throw new NotFoundException(EXPENSES_ERROR.EXPENSE_NOT_FOUND);
     }
     return this.expensesModel.findByIdAndUpdate(id, expense, { new: true }).lean();
   }
@@ -49,7 +49,7 @@ export class ExpensesService {
   async find(dto: FindExpenseDto): Promise<ExpensesDocument[]> {
     //check if the dto.createdAt is an array of two Dates or is undefined and throw an error if it is not
     if (dto?.createdAt && dto.createdAt.length !== 2) {
-      throw new BadRequestException(ERROR_TEXTS.INVALID_DATE_RANGE);
+      throw new BadRequestException(EXPENSES_ERROR.INVALID_DATE_RANGE);
     }
     return this.expensesModel
       .find({
