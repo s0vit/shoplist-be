@@ -24,6 +24,10 @@ export class User {
   @IsOptional()
   @Prop()
   loginDate?: Date;
+
+  @IsOptional()
+  @Prop({ default: false })
+  isVerified?: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
