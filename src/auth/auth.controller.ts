@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post, Delete, Get, Query, Req, Headers } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Delete, Get, Query, Headers } from '@nestjs/common';
 import { AuthDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 
@@ -12,8 +12,8 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() dto: AuthDto, @Headers('host') host: string) {
-    return this.authService.register(dto, host);
+  async register(@Body() dto: AuthDto, @Headers('origin') origin: string) {
+    return this.authService.register(dto, origin);
   }
 
   @Get('confirm')

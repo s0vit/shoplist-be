@@ -7,6 +7,7 @@ import { genSalt, hash } from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ERROR_AUTH } from './constants/auth-constants.enum';
+import { UserResponseDto } from './dto/user.response.dto';
 
 @Injectable()
 export class AuthService {
@@ -25,17 +26,16 @@ export class AuthService {
     });
     await newUser.save();
   }
-  async register(dto: AuthDto, host: string): Promise<void> {
+  async register(dto: AuthDto, origin: string) {
+    // ToDo: Что тут возвращать?
+    //  Так как пусто на фронте может быть так "SyntaxError: Unexpected end of JSON input".
     const oldUser = await this.findUser(dto.email);
     if (oldUser) {
       throw new BadRequestException(ERROR_AUTH.USER_ALREADY_EXISTS);
     }
     try {
       const token = await this.jwtService.signAsync({ email: dto.email });
-      // ToDo: Бек должен отправлять ссылку а не токен, так ка по нему юзер должен перейти на свой фронт на верный роут,
-      //  который возьмёт из ссылки токен и отправить на бэк.
-      //  Так как у нас будут разные хосты(домены), придумал пока такой способ...
-      const confirmationUrl = `${host}/confirm?token=${token}`;
+      const confirmationUrl = `${origin}/confirm?token=${token}`;
       await this.mailerService.sendMail({
         to: dto.email,
         subject: 'Confirm your registration',
@@ -46,17 +46,20 @@ export class AuthService {
       throw new HttpException(ERROR_AUTH.SEND_EMAIL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  async confirmRegistration(token: string) {
-    // ToDo: добавить try catch и убрать не нужные данные из return
-    const result = this.jwtService.verify(token);
-    const updatedUser = this.userModel
-      .findOneAndUpdate(
-        { email: result.email },
-        { $set: { isVerified: true } },
-        { new: true }, // возвращать обновленный документ
-      )
-      .exec();
-    return updatedUser;
+  async confirmRegistration(token: string): Promise<UserResponseDto> {
+    try {
+      const result = this.jwtService.verify(token);
+      const updatedUser = await this.userModel
+        .findOneAndUpdate(
+          { email: result.email },
+          { $set: { isVerified: true } },
+          { new: true }, // возвращать обновленный документ
+        )
+        .exec();
+      return new UserResponseDto(updatedUser);
+    } catch (error) {
+      throw new HttpException(ERROR_AUTH.CONFIRM_REGISTRATION_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
   async findUser(email: string): Promise<UserDocument> {
     return this.userModel.findOne({ email }).exec();

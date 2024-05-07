@@ -15,4 +15,5 @@ export enum ERROR_AUTH {
   LOGIN_ERROR = 'Login must not be numeric',
   LOGIN_LENGTH_ERROR = 'Login length must be at least 3 characters',
   SEND_EMAIL_ERROR = 'Failed to  confirmation email.',
+  CONFIRM_REGISTRATION_ERROR = 'Error confirm data',
 }
