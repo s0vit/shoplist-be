@@ -1,7 +1,6 @@
-import { Body, Controller, HttpCode, Post, Delete, Get, BadRequestException } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Delete, Get, Query, Headers } from '@nestjs/common';
 import { AuthDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
-import { ERROR_AUTH } from './constants/auth-constants.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -9,16 +8,17 @@ export class AuthController {
 
   @Get('me')
   async me() {
-    return { message: 'auth me @GET' };
+    return 'GET me';
   }
 
   @Post('register')
-  async register(@Body() dto: AuthDto) {
-    const oldUser = await this.authService.findUser(dto.email);
-    if (oldUser) {
-      throw new BadRequestException(ERROR_AUTH.USER_ALREADY_EXISTS);
-    }
-    return this.authService.createUser(dto);
+  async register(@Body() dto: AuthDto, @Headers('origin') origin: string) {
+    return this.authService.register(dto, origin);
+  }
+
+  @Get('confirm')
+  async confirm(@Query('token') token: string) {
+    return this.authService.confirmRegistration(token);
   }
 
   @HttpCode(200)
@@ -27,7 +27,7 @@ export class AuthController {
 
   @HttpCode(200)
   @Post('logout')
-  async logout(@Body() { email }: AuthDto) {}
+  async logout() {}
 
   @Delete('delete')
   async delete(@Body() { email }: AuthDto) {}

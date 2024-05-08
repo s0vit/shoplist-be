@@ -7,7 +7,7 @@ import { ExpensesTypeModule } from './expenses-type/expenses-type.module';
 import { PaymentSourcesModule } from './payment-sources/payment-sources.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { getMongoConfigs } from './configs/getMongoConfigs';
+import { getMongoConfigs } from './configs/get-mongo.configs';
 
 @Module({
   imports: [
