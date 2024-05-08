@@ -27,8 +27,6 @@ export class AuthService {
     await newUser.save();
   }
   async register(dto: AuthDto, origin: string) {
-    // ToDo: Что тут возвращать?
-    //  Так как пусто на фронте может быть так "SyntaxError: Unexpected end of JSON input".
     const oldUser = await this.findUser(dto.email);
     if (oldUser) {
       throw new BadRequestException(ERROR_AUTH.USER_ALREADY_EXISTS);
@@ -47,14 +45,11 @@ export class AuthService {
     }
   }
   async confirmRegistration(token: string): Promise<UserResponseDto> {
+    //ToDO: Протестить на проде
     try {
       const result = this.jwtService.verify(token);
       const updatedUser = await this.userModel
-        .findOneAndUpdate(
-          { email: result.email },
-          { $set: { isVerified: true } },
-          { new: true }, // возвращать обновленный документ
-        )
+        .findOneAndUpdate({ email: result.email }, { $set: { isVerified: true } }, { new: true })
         .exec();
       return new UserResponseDto(updatedUser);
     } catch (error) {
