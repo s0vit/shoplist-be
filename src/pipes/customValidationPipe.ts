@@ -8,23 +8,23 @@ export const customValidationPipe = new ValidationPipe({
     enableImplicitConversion: true,
   },
   exceptionFactory: (errors) => {
-    const customErrors: CustomErrors = [];
+    const customErrors: CustomErrors = {};
 
     errors.forEach((e) => {
       if (!e.constraints) {
-        customErrors.push({ key: e.property, message: 'Unknown error' });
+        customErrors['unknow'] ? customErrors['unknow'].push(e.property) : (customErrors['unknow'] = ['unknow error']);
         return;
       }
-      const constraintKeys = Object.keys(e.constraints);
 
+      const constraintKeys = Object.keys(e.constraints);
       constraintKeys.forEach((cKey) => {
         const msg = e.constraints![cKey];
-
-        customErrors.push({ key: e.property, message: msg });
+        customErrors[e.property] ? customErrors[e.property].push(msg) : (customErrors[e.property] = [msg]);
       });
     });
+
     throw new BadRequestException(customErrors);
   },
 });
 
-type CustomErrors = { key: string; message: string }[];
+type CustomErrors = Record<string, string[]>;
