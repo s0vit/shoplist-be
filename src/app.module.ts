@@ -8,6 +8,8 @@ import { PaymentSourcesModule } from './payment-sources/payment-sources.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { getMongoConfigs } from './configs/get-mongo.configs';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { configThrottling } from './configs/config-throttling';
 
 @Module({
   imports: [
@@ -17,12 +19,23 @@ import { getMongoConfigs } from './configs/get-mongo.configs';
       inject: [ConfigService],
       useFactory: getMongoConfigs,
     }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: configThrottling,
+    }),
     AuthModule,
     ExpensesModule,
     ExpensesTypeModule,
     PaymentSourcesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: 'APP_GUARD',
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}
