@@ -25,10 +25,13 @@ importers:
         version: 10.2.0(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))
       '@nestjs/mongoose':
         specifier: ^10.0.6
-        version: 10.0.6(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.3.8(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@10.3.8)(reflect-metadata@0.2.2)(rxjs@7.8.1))(mongoose@8.3.2)(rxjs@7.8.1)
+        version: 10.0.6(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.3.8(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@10.3.8)(reflect-metadata@0.2.2)(rxjs@7.8.1))(mongoose@8.3.2(socks@2.8.3))(rxjs@7.8.1)
       '@nestjs/platform-express':
         specifier: ^10.0.0
         version: 10.3.8(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.3.8)
+      '@nestjs/throttler':
+        specifier: ^5.1.2
+        version: 5.1.2(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.3.8(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@10.3.8)(reflect-metadata@0.2.2)(rxjs@7.8.1))(reflect-metadata@0.2.2)
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
@@ -40,7 +43,7 @@ importers:
         version: 0.14.1
       mongoose:
         specifier: ^8.3.2
-        version: 8.3.2
+        version: 8.3.2(socks@2.8.3)
       reflect-metadata:
         specifier: ^0.2.0
         version: 0.2.2
@@ -629,6 +632,13 @@ packages:
         optional: true
       '@nestjs/platform-express':
         optional: true
+
+  '@nestjs/throttler@5.1.2':
+    resolution: {integrity: sha512-60MqhSLYUqWOgc38P6C6f76JIpf6mVjly7gpuPBCKtVd0p5e8Fq855j7bJuO4/v25vgaOo1OdVs0U1qtgYioGw==}
+    peerDependencies:
+      '@nestjs/common': ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
+      '@nestjs/core': ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
+      reflect-metadata: ^0.1.13 || ^0.2.0
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -2076,6 +2086,10 @@ packages:
     resolution: {integrity: sha512-agE4QfB2Lkp9uICn7BAqoscw4SZP9kTE2hxiFI3jBPmXJfdqiahTbUuKGsMoN2GtqL9AxhYioAcVvgsb1HvRbA==}
     engines: {node: '>= 0.10'}
 
+  ip-address@9.0.5:
+    resolution: {integrity: sha512-zHtQzGojZXTwZTHQqra+ETKd4Sn3vgi7uBmlPoXVWZqYvuKmtI0l/VZTjqGmJY9x88GGOaZ9+G9ES8hC4T4X8g==}
+    engines: {node: '>= 12'}
+
   ipaddr.js@1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
     engines: {node: '>= 0.10'}
@@ -2351,6 +2365,9 @@ packages:
   js-yaml@4.1.0:
     resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
     hasBin: true
+
+  jsbn@1.1.0:
+    resolution: {integrity: sha512-4bYVV3aAMtDTTu4+xsDYa6sy9GyJ69/amsu9sYF2zqjiEoZA5xJi3BrfX3uY+/IekIu7MwdObdbDWpoZdBv3/A==}
 
   jsesc@2.5.2:
     resolution: {integrity: sha512-OYu7XEzjkCQ3C5Ps3QIZsQfNpqoJyZZA99wd9aWd05NCtC5pWOkShK2mkL6HXQR6/Cy2lbNdPlZBpuQHXE63gA==}
@@ -3303,6 +3320,14 @@ packages:
   slick@1.12.2:
     resolution: {integrity: sha512-4qdtOGcBjral6YIBCWJ0ljFSKNLz9KkhbWtuGvUyRowl1kxfuE1x/Z/aJcaiilpb3do9bl5K7/1h9XC5wWpY/A==}
 
+  smart-buffer@4.2.0:
+    resolution: {integrity: sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==}
+    engines: {node: '>= 6.0.0', npm: '>= 3.0.0'}
+
+  socks@2.8.3:
+    resolution: {integrity: sha512-l5x7VUUWbjVFbafGLxPWkYsHIhEvmF85tbIeFZWc8ZPtoMyybuEhL7Jye/ooC4/d48FgOjSJXgsF/AJPYCW8Zw==}
+    engines: {node: '>= 10.0.0', npm: '>= 3.0.0'}
+
   source-map-support@0.5.13:
     resolution: {integrity: sha512-SHSKFHadjVA5oR4PPqhtAVdcBWwRYVd6g6cAXnIbRiIwc2EhPrTuKUBdSLvlEKyIP3GCf89fltvcZiP9MMFA1w==}
 
@@ -3322,6 +3347,9 @@ packages:
 
   sprintf-js@1.0.3:
     resolution: {integrity: sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==}
+
+  sprintf-js@1.1.3:
+    resolution: {integrity: sha512-Oo+0REFV59/rz3gfJNKQiBlwfHaSESl1pcGyABQsnnIfWOFt6JNj5gCog2U6MLZ//IGYD+nA8nI+mTShREReaA==}
 
   stack-utils@2.0.6:
     resolution: {integrity: sha512-XlkWvfIm6RmsWtNJx+uqtKLS8eqFbxUg0ZzLXqY0caEy9l7hruX8IpiDnjsLavoBgqCCR71TqWO8MaXYheJ3RQ==}
@@ -4416,11 +4444,11 @@ snapshots:
       '@types/jsonwebtoken': 9.0.5
       jsonwebtoken: 9.0.2
 
-  '@nestjs/mongoose@10.0.6(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.3.8(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@10.3.8)(reflect-metadata@0.2.2)(rxjs@7.8.1))(mongoose@8.3.2)(rxjs@7.8.1)':
+  '@nestjs/mongoose@10.0.6(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.3.8(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@10.3.8)(reflect-metadata@0.2.2)(rxjs@7.8.1))(mongoose@8.3.2(socks@2.8.3))(rxjs@7.8.1)':
     dependencies:
       '@nestjs/common': 10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1)
       '@nestjs/core': 10.3.8(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@10.3.8)(reflect-metadata@0.2.2)(rxjs@7.8.1)
-      mongoose: 8.3.2
+      mongoose: 8.3.2(socks@2.8.3)
       rxjs: 7.8.1
 
   '@nestjs/platform-express@10.3.8(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.3.8)':
@@ -4464,6 +4492,12 @@ snapshots:
       tslib: 2.6.2
     optionalDependencies:
       '@nestjs/platform-express': 10.3.8(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.3.8)
+
+  '@nestjs/throttler@5.1.2(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.3.8(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@10.3.8)(reflect-metadata@0.2.2)(rxjs@7.8.1))(reflect-metadata@0.2.2)':
+    dependencies:
+      '@nestjs/common': 10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1)
+      '@nestjs/core': 10.3.8(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@10.3.8)(reflect-metadata@0.2.2)(rxjs@7.8.1)
+      reflect-metadata: 0.2.2
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -6199,6 +6233,12 @@ snapshots:
 
   interpret@1.4.0: {}
 
+  ip-address@9.0.5:
+    dependencies:
+      jsbn: 1.1.0
+      sprintf-js: 1.1.3
+    optional: true
+
   ipaddr.js@1.9.1: {}
 
   is-arrayish@0.2.1: {}
@@ -6660,6 +6700,9 @@ snapshots:
   js-yaml@4.1.0:
     dependencies:
       argparse: 2.0.1
+
+  jsbn@1.1.0:
+    optional: true
 
   jsesc@2.5.2: {}
 
@@ -7275,17 +7318,19 @@ snapshots:
       '@types/whatwg-url': 11.0.4
       whatwg-url: 13.0.0
 
-  mongodb@6.5.0:
+  mongodb@6.5.0(socks@2.8.3):
     dependencies:
       '@mongodb-js/saslprep': 1.1.5
       bson: 6.6.0
       mongodb-connection-string-url: 3.0.0
+    optionalDependencies:
+      socks: 2.8.3
 
-  mongoose@8.3.2:
+  mongoose@8.3.2(socks@2.8.3):
     dependencies:
       bson: 6.6.0
       kareem: 2.6.3
-      mongodb: 6.5.0
+      mongodb: 6.5.0(socks@2.8.3)
       mpath: 0.9.0
       mquery: 5.0.0
       ms: 2.1.3
@@ -7896,6 +7941,15 @@ snapshots:
   slick@1.12.2:
     optional: true
 
+  smart-buffer@4.2.0:
+    optional: true
+
+  socks@2.8.3:
+    dependencies:
+      ip-address: 9.0.5
+      smart-buffer: 4.2.0
+    optional: true
+
   source-map-support@0.5.13:
     dependencies:
       buffer-from: 1.1.2
@@ -7915,6 +7969,9 @@ snapshots:
       memory-pager: 1.5.0
 
   sprintf-js@1.0.3: {}
+
+  sprintf-js@1.1.3:
+    optional: true
 
   stack-utils@2.0.6:
     dependencies:
