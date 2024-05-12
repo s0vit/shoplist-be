@@ -15,7 +15,7 @@ import { AuthDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 import { LoginDto } from './dto/login.dto';
-import { ERROR_AUTH } from './constants/auth-constants.enum';
+import { COOKIE_SETTINGS, ERROR_AUTH } from './constants/auth-constants.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -31,34 +31,40 @@ export class AuthController {
     return await this.authService.confirmRegistration(token);
   }
 
-  @Get('refresh')
-  async refresh(@Req() req: Request) {
-    if (req.cookies && req.cookies['accessToken']) {
-      const token = req.cookies['accessToken'];
-      return this.authService.loginWithCookies(token);
-    } else {
-      throw new BadRequestException(ERROR_AUTH.TOKEN_ERROR);
-    }
-  }
-
   @HttpCode(200)
   @Post('login')
   async login(@Body() dto: LoginDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     if (dto.email && dto.password) {
       const result = await this.authService.login(dto.email, dto.password);
-      res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: false });
-      return result;
-    } else if (req.cookies && req.cookies['token']) {
-      const token = req.cookies['token'];
-      return this.authService.loginWithCookies(token);
+      res.cookie('accessToken', result.accessToken, COOKIE_SETTINGS.ACCESS_TOKEN);
+      return { refreshToken: result.refreshToken };
+    } else if (req.cookies && req.cookies['accessToken']) {
+      const token = req.cookies['accessToken'];
+      return await this.authService.loginWithCookies(token);
     } else {
       throw new BadRequestException(ERROR_AUTH.INVALID_AUTHENTICATION_CREDENTIALS);
     }
   }
 
+  @Get('refresh')
+  async refresh(@Query('refreshToken') refreshToken: string, @Res({ passthrough: true }) res: Response) {
+    if (!refreshToken) {
+      throw new BadRequestException(ERROR_AUTH.AUTH_ERROR_NO_TOKEN);
+    }
+    const result = await this.authService.validateToken(refreshToken);
+    res.cookie('accessToken', result.accessToken, COOKIE_SETTINGS.ACCESS_TOKEN);
+    return { refreshToken: result.refreshToken };
+  }
+
   @HttpCode(200)
   @Delete('logout')
-  async logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('accessToken');
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    if (req.cookies && req.cookies['accessToken']) {
+      const accessToken = req.cookies['accessToken'];
+      await this.authService.logout(accessToken);
+      res.clearCookie('accessToken');
+    } else {
+      throw new BadRequestException(ERROR_AUTH.AUTH_ERROR_NO_TOKEN);
+    }
   }
 }

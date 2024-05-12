@@ -9,16 +9,34 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { ERROR_AUTH } from './constants/auth-constants.enum';
 import { ConfirmResponseDto } from './dto/confirm-response.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
+  private readonly accessSecret: string;
+  private readonly refreshSecret: string;
   constructor(
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
     private readonly jwtService: JwtService,
     private readonly mailerService: MailerService,
-  ) {}
-  async createUser(dto: AuthDto) {
+    private readonly configService: ConfigService,
+  ) {
+    this.accessSecret = this.configService.get<string>('ACCESS_TOKEN_KEY');
+    this.refreshSecret = this.configService.get<string>('REFRESH_TOKEN_KEY');
+  }
+
+  private async generateTokens<T>(payload: T) {
+    const accessSecret = this.accessSecret;
+    const refreshSecret = this.refreshSecret;
+    const accessToken = await this.jwtService.signAsync({ payload }, { secret: accessSecret, expiresIn: '2h' });
+    const refreshToken = await this.jwtService.signAsync({ payload }, { secret: refreshSecret, expiresIn: '7d' });
+    return { accessToken, refreshToken };
+  }
+  private async findUser(email: string): Promise<UserDocument> {
+    return this.userModel.findOne({ email }).exec();
+  }
+  private async createUser(dto: AuthDto) {
     const salt = await genSalt(10);
     const newUser = new this.userModel({
       email: dto.email,
@@ -27,13 +45,14 @@ export class AuthService {
     });
     await newUser.save();
   }
+
   async register(dto: AuthDto, origin: string) {
     const oldUser = await this.findUser(dto.email);
     if (oldUser) {
       throw new BadRequestException(ERROR_AUTH.USER_ALREADY_EXISTS);
     }
     try {
-      const token = await this.jwtService.signAsync({ email: dto.email }, { expiresIn: '15m' });
+      const token = await this.jwtService.signAsync({ email: dto.email });
       const confirmationUrl = `${origin}/confirm?token=${token}`;
       await this.mailerService.sendMail({
         to: dto.email,
@@ -46,9 +65,9 @@ export class AuthService {
     }
   }
   async confirmRegistration(token: string): Promise<ConfirmResponseDto> {
-    //ToDo: Протестить на проде
+    // ToDo: Test on production
     try {
-      const result = this.jwtService.verify(token);
+      const result = await this.jwtService.verifyAsync(token);
       const updatedUser = await this.userModel
         .findOneAndUpdate({ email: result.email }, { $set: { isVerified: true } }, { new: true })
         .exec();
@@ -61,10 +80,8 @@ export class AuthService {
       throw new HttpException(ERROR_AUTH.CONFIRM_REGISTRATION_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  async findUser(email: string): Promise<UserDocument> {
-    return this.userModel.findOne({ email }).exec();
-  }
   async login(email: string, password: string): Promise<LoginResponseDto> {
+    // Here return data for payload accessToken cookie
     const findUser = await this.findUser(email);
     if (!findUser) {
       throw new BadRequestException(ERROR_AUTH.UNAUTHORIZED);
@@ -73,23 +90,43 @@ export class AuthService {
     if (!validPassword) {
       throw new BadRequestException(ERROR_AUTH.UNAUTHORIZED);
     }
-    const accessToken = await this.jwtService.signAsync({ email }, { expiresIn: '2h' });
-    const refreshToken = await this.jwtService.signAsync({ email }, { expiresIn: '7d' });
-    const updatedUser = await this.userModel
-      .findOneAndUpdate({ email }, { $set: { refreshToken, accessToken } }, { new: true })
-      .exec();
+    const tokens = await this.generateTokens<{ email: string }>({ email });
+    const updatedUser = await this.userModel.findOneAndUpdate({ email }, { $set: { ...tokens } }, { new: true }).exec();
     return new LoginResponseDto(updatedUser);
   }
   async loginWithCookies(token: string) {
-    // ToDo: Реализовать проверку токена с БД
     try {
-      const result = this.jwtService.verify(token);
-      return { result };
+      const result = this.jwtService.verify(token, { secret: this.accessSecret });
+      return { email: result.email };
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         const jwtError = error as JsonWebTokenError;
         throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
       }
+    }
+  }
+  async validateToken(token: string) {
+    try {
+      const result = await this.jwtService.verifyAsync(token, { secret: this.refreshSecret });
+      const newTokens = await this.generateTokens<{ email: string }>({ email: result.payload.email });
+      return await this.userModel
+        .findOneAndUpdate({ email: result.payload.email }, { $set: { ...newTokens } }, { new: true })
+        .exec();
+    } catch (error) {
+      if (error instanceof JsonWebTokenError) {
+        const jwtError = error as JsonWebTokenError;
+        throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
+      }
+    }
+  }
+  async logout(accessToken: string) {
+    try {
+      const decoded = this.jwtService.decode(accessToken);
+      await this.userModel
+        .findOneAndUpdate({ email: decoded.payload.email }, { $set: { accessToken: null, refreshToken: null } })
+        .exec();
+    } catch (error) {
+      throw new HttpException(ERROR_AUTH.LOGOUT_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }
