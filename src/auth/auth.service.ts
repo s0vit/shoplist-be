@@ -61,7 +61,6 @@ export class AuthService {
       });
       await this.createUser(dto);
     } catch (error) {
-      console.log({ error });
       throw new HttpException(ERROR_AUTH.SEND_EMAIL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -109,7 +108,6 @@ export class AuthService {
   async validateToken(token: string) {
     try {
       const result = await this.jwtService.verifyAsync(token, { secret: this.refreshSecret });
-      console.log({ result });
       const newTokens = await this.generateTokens({ email: result.email });
       const foundUser = await this.userModel
         .findOneAndUpdate({ email: result.email }, { $set: { ...newTokens } }, { new: true })
@@ -117,7 +115,6 @@ export class AuthService {
       if (!foundUser) {
         throw new Error();
       }
-      console.log({ foundUser });
       return foundUser;
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
