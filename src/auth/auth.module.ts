@@ -22,6 +22,7 @@ import { jwtConfig } from '../configs/jwt.config';
       inject: [ConfigService],
       useFactory: getMailerConfig,
     }),
+    ConfigModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

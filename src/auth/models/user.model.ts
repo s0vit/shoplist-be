@@ -28,6 +28,14 @@ export class User {
   @IsOptional()
   @Prop({ default: false })
   isVerified?: boolean;
+
+  @IsOptional()
+  @Prop({ default: null })
+  accessToken?: string | null;
+
+  @IsOptional()
+  @Prop({ default: null })
+  refreshToken?: string | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

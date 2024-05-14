@@ -1,6 +1,6 @@
 import { UserDocument } from '../models/user.model';
 
-export class UserResponseDto {
+export class ConfirmResponseDto {
   email: string;
   login: string;
   createdAt: Date;
