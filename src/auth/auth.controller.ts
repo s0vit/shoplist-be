@@ -16,6 +16,7 @@ import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 import { LoginDto } from './dto/login.dto';
 import { COOKIE_SETTINGS, ERROR_AUTH } from './constants/auth-constants.enum';
+import { RefreshDto } from './dto/refresh.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -46,12 +47,9 @@ export class AuthController {
     }
   }
 
-  @Get('refresh')
-  async refresh(@Query('refreshToken') refreshToken: string, @Res({ passthrough: true }) res: Response) {
-    if (!refreshToken) {
-      throw new BadRequestException(ERROR_AUTH.AUTH_ERROR_NO_TOKEN);
-    }
-    const result = await this.authService.validateToken(refreshToken);
+  @Post('refresh')
+  async refresh(@Body() dto: RefreshDto, @Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.validateToken(dto.refreshToken);
     res.cookie('accessToken', result.accessToken, COOKIE_SETTINGS.ACCESS_TOKEN);
     return { refreshToken: result.refreshToken };
   }
