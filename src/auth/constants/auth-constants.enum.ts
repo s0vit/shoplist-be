@@ -6,7 +6,7 @@ export enum ERROR_AUTH {
   LOGOUT_SUCCESS = 'Logout success',
   SUCCESSFUL_AUTHORIZATION = 'Successful authorization',
   AUTH_ME_OK = 'Auth ok',
-  AUTH_ME_ERROR_INVALID = 'Invalid token',
+  AUTH_ERROR_TOKEN = 'No token or invalid token',
   TOKEN_ERROR = 'Token validation error',
   USER_SUCCESSFULLY_CREATED = 'User successfully created',
   AUTH_ERROR_NO_TOKEN = 'No token',
