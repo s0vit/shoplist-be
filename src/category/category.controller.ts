@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common';
 
 @Controller('expenses-type')
-export class ExpensesTypeController {
+export class CategoryController {
   @Post()
   async create(@Body('name') name: string) {}
 
