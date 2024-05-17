@@ -5,6 +5,8 @@ import { PaymentSource, PaymentSourceSchema } from './models/payment-source.mode
 
 @Module({
   controllers: [PaymentSourcesController],
-  imports: [MongooseModule.forFeature([{ name: PaymentSource.name, schema: PaymentSourceSchema }])],
+  imports: [
+    MongooseModule.forFeature([{ name: PaymentSource.name, schema: PaymentSourceSchema, collection: 'PaymentSource' }]),
+  ],
 })
 export class PaymentSourcesModule {}
