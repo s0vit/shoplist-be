@@ -90,7 +90,8 @@ export class AuthService {
     if (!validPassword) {
       throw new BadRequestException(ERROR_AUTH.UNAUTHORIZED);
     }
-    const tokens = await this.generateTokens({ email });
+    const payloadData = { email, userId: findUser._id };
+    const tokens = await this.generateTokens(payloadData);
     const updatedUser = await this.userModel.findOneAndUpdate({ email }, { $set: { ...tokens } }, { new: true }).exec();
     return new LoginResponseDto(updatedUser);
   }

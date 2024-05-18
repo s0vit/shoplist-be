@@ -10,6 +10,7 @@ import { getMongoConfigs } from './configs/get-mongo.configs';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { configThrottling } from './configs/config-throttling';
 import { CategoryModule } from './category/category.module';
+import { AccessControlModule } from './access-control/access-control.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { CategoryModule } from './category/category.module';
     ExpensesModule,
     CategoryModule,
     PaymentSourcesModule,
+    AccessControlModule,
   ],
   controllers: [AppController],
   providers: [
