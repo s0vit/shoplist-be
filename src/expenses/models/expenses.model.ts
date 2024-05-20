@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { IsOptional } from 'class-validator';
 
 export type ExpensesDocument = HydratedDocument<Expenses>;
 
@@ -20,7 +19,6 @@ export class Expenses {
   @Prop({ required: true })
   paymentSourceId: string;
 
-  @IsOptional()
   @Prop()
   comments?: string;
 
