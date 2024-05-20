@@ -11,19 +11,12 @@ export class User {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @IsOptional()
-  @Prop()
-  login?: string;
-
   @Prop({ required: true })
   passwordHash: string;
 
-  @Prop({ default: Date.now })
-  createdAt: Date;
-
   @IsOptional()
   @Prop()
-  loginDate?: Date;
+  login?: string;
 
   @IsOptional()
   @Prop({ default: false })
@@ -36,6 +29,13 @@ export class User {
   @IsOptional()
   @Prop({ default: null })
   refreshToken?: string | null;
+
+  @IsOptional()
+  @Prop()
+  loginDate?: Date;
+
+  @Prop({ default: Date.now })
+  createdAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
