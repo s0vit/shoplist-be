@@ -14,6 +14,6 @@ export class AccessControlController {
 
   @Delete(':id')
   async delete(@Param('id') id: string) {
-    return id;
+    return this.accessControlService.delete();
   }
 }

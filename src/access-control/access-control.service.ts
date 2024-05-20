@@ -28,7 +28,7 @@ export class AccessControlService {
       const result = await this.jwtService.verifyAsync(token, { secret: this.accessSecret });
       const accessControlInstance = new this.accessControlModel({
         userId: result.userId,
-        allowed: allowed.allowedUserId,
+        allowed: allowed.allowedUsersId,
       });
       const createdAccess = await accessControlInstance.save();
       return createdAccess.toObject({ versionKey: false });
@@ -52,7 +52,7 @@ export class AccessControlService {
       throw new HttpException('Error update access control', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  async delete(token: string) {
+  async delete(token: string = '') {
     try {
       const result = await this.jwtService.verifyAsync(token, { secret: this.accessSecret });
       return result;

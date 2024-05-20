@@ -1,6 +1,8 @@
-import { IsMongoId } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsMongoId } from 'class-validator';
 
 export class AllowedUserDto {
-  @IsMongoId()
-  allowedUserId: string;
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsMongoId({ each: true })
+  allowedUsersId: string[];
 }

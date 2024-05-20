@@ -56,17 +56,21 @@ export class ExpensesService {
       const currentUser = this.jwtService.verify(token, { secret: this.accessSecret });
       if (currentUser.userId !== userId) {
         const accessControlAllowed = await this.accessControlService.getAllowed(userId);
-        if (accessControlAllowed && accessControlAllowed.includes(currentUser.userId)) {
-          return await this.expensesModel.find({ userId });
+        if (accessControlAllowed?.includes(currentUser.userId)) {
+          const result = await this.expensesModel.find({ userId });
+          return result;
         }
-        return 'Access denied or not accesses';
+        throw Error('Access denied or not accesses');
+      } else {
+        throw Error('You are trying to get own expenses');
       }
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         const jwtError = error as JsonWebTokenError;
         throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
       }
-      throw new HttpException('Error find user', HttpStatus.INTERNAL_SERVER_ERROR);
+      const otherError = error as { message: string };
+      throw new HttpException(otherError.message || 'Error find user', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
