@@ -5,15 +5,14 @@ env:
 on:
   workflow_run:
     workflows: ["Continuous Integration"]
-    types:
-      - completed
+    types: [completed]
     branches-ignore:
       - main
 
 jobs:
   Deploy-Preview:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v2
       - name: Install pnpm globally
