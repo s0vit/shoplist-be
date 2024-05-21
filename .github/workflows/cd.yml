@@ -23,6 +23,8 @@ jobs:
         id: deploy
         run: |
           vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} | tee vercel_output.txt
+      - name: Output vercel_output.txt for debugging
+        run: cat vercel_output.txt
       - name: Extract URLs and add to summary
         run: |
           INSPECT_URL=$(grep -oP 'Inspect: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
