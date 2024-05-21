@@ -3,11 +3,16 @@ env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 on:
-  push:
-    branches:
-      - vercel-build-cd
+  workflow_run:
+    workflows: ["Continuous Integration"]
+    types:
+      - completed
+    branches-ignore:
+      - main
+
 jobs:
   Deploy-Preview:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -28,7 +33,7 @@ jobs:
       - name: Extract URLs and add to summary
         run: |
           INSPECT_URL=$(grep -oP 'Inspect: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
-          PROD_URL=$(grep -oP 'Production: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
+          PREVIEW_URL=$(grep -oP 'Preview: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
           echo "Production deployed :rocket:" >> $GITHUB_STEP_SUMMARY
           echo "Inspect URL: $INSPECT_URL" >> $GITHUB_STEP_SUMMARY
-          echo "Production URL: $PROD_URL" >> $GITHUB_STEP_SUMMARY
+          echo "Preview URL: $PREVIEW_URL" >> $GITHUB_STEP_SUMMARY

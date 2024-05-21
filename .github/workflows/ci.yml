@@ -3,10 +3,10 @@ name: Continuous Integration
 on:
   push:
     branches:
-      - main
+      - '**'
   pull_request:
     branches:
-      - main
+      - '**'
     types:
       - opened
       - reopened
@@ -30,29 +30,9 @@ jobs:
           cache: pnpm
       - name: Install deps
         run: pnpm install
-      - run: pnpm lint
-      - run: pnpm build
-
-#  test:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Setup Node 16.x
-#        uses: actions/setup-node@v3
-#        with:
-#          node-version: 16.x
-#          cache: yarn
-#      - run: yarn install
-#      - run: yarn run test
-#
-#  test-e2e:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Setup Node 16.x
-#        uses: actions/setup-node@v3
-#        with:
-#          node-version: 16.x
-#          cache: yarn
-#      - run: yarn install
-#      - run: yarn run test:e2e
+      - name: Lint check
+        run: pnpm lint
+      - name: Typescript typecheck
+        run: pnpm typecheck
+      - name: Prettier check
+        run: pnpm format
