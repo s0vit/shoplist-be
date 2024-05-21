@@ -25,8 +25,8 @@ jobs:
           vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} | tee vercel_output.txt
       - name: Extract URLs and add to summary
         run: |
-          INSPECT_URL=$(grep -oP 'Inspect: \K(https://[^\s]+)' vercel_output.txt)
-          PROD_URL=$(grep -oP 'Production: \K(https://[^\s]+)' vercel_output.txt)
-          echo "production deployd :rocket:" >> $GITHUB_STEP_SUMMARY
+          INSPECT_URL=$(grep -oP 'Inspect: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
+          PROD_URL=$(grep -oP 'Production: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
+          echo "Production deployed :rocket:" >> $GITHUB_STEP_SUMMARY
           echo "Inspect URL: $INSPECT_URL" >> $GITHUB_STEP_SUMMARY
           echo "Production URL: $PROD_URL" >> $GITHUB_STEP_SUMMARY
