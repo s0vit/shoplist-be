@@ -22,7 +22,7 @@ jobs:
       - name: Deploy Project Artifacts to Vercel and get Preview URL
         id: deploy
         run: |
-          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} | tee vercel_output.txt
+          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} > vercel_output.txt 2>&1
       - name: Output vercel_output.txt for debugging
         run: cat vercel_output.txt
       - name: Extract URLs and add to summary
