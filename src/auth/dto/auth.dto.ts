@@ -1,5 +1,5 @@
 import { IsEmail, IsString, Length, Matches, IsOptional } from 'class-validator';
-import { ERROR_AUTH } from '../constants/auth-constants.enum';
+import { ERROR_AUTH } from '../constants/auth-error.enum';
 
 export class AuthDto {
   @IsEmail()

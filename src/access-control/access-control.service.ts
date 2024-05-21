@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { AccessControl, AccessControlDocument } from './models/access-control.model';
 import { AllowedUserDto } from './dto/allowed-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
+import { ACCESS_CONTROL_ERROR } from './constants/access-control-error.enum';
 
 @Injectable()
 export class AccessControlService {
@@ -23,7 +24,6 @@ export class AccessControlService {
     if (result) return result.allowed;
   }
   async create(allowed: AllowedUserDto, token: string): Promise<AccessControlDocument> {
-    // adds only one at a time
     try {
       const result = await this.jwtService.verifyAsync(token, { secret: this.accessSecret });
       const accessControlInstance = new this.accessControlModel({
@@ -37,7 +37,7 @@ export class AccessControlService {
         const jwtError = error as JsonWebTokenError;
         throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
       }
-      throw new HttpException('Error create access control', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(ACCESS_CONTROL_ERROR.CREATE_ACCESS_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
   async update(token: string) {
@@ -49,7 +49,7 @@ export class AccessControlService {
         const jwtError = error as JsonWebTokenError;
         throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
       }
-      throw new HttpException('Error update access control', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(ACCESS_CONTROL_ERROR.UPDATE_ACCESS_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
   async delete(token: string = '') {
@@ -61,7 +61,7 @@ export class AccessControlService {
         const jwtError = error as JsonWebTokenError;
         throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
       }
-      throw new HttpException('Error update access control', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(ACCESS_CONTROL_ERROR.DELETE_ACCESS_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

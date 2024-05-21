@@ -6,7 +6,7 @@ import { AuthDto } from './dto/auth.dto';
 import { genSalt, hash, compare } from 'bcryptjs';
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
-import { ERROR_AUTH } from './constants/auth-constants.enum';
+import { ERROR_AUTH } from './constants/auth-error.enum';
 import { ConfirmResponseDto } from './dto/confirm-response.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { ConfigService } from '@nestjs/config';
