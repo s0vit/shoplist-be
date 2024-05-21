@@ -59,27 +59,27 @@ export class ExpensesService {
     return foundExpanse;
   }
 
-  async findByUserId(userId: string, token: string): Promise<CreateAccessResponseDto> {
+  async findByUserId(sharedUserId: string, token: string): Promise<CreateAccessResponseDto> {
     // ToDo: we need token typing, we need to know exactly what's inside
-    let currentUser;
+    let currentUser: { userId: string; email: string };
     try {
-      currentUser = this.jwtService.verify(token, { secret: this.accessSecret });
+      currentUser = this.jwtService.verify<{ userId: string; email: string }>(token, { secret: this.accessSecret });
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         const jwtError = error as JsonWebTokenError;
         throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
       }
     }
-    if (currentUser.userId === userId) {
+    if (currentUser.userId === sharedUserId) {
       throw new ForbiddenException(EXPENSES_ERROR.GET_OWN_EXPENSES);
     }
 
-    const accessControlAllowed = await this.accessControlService.getAllowed(userId);
+    const accessControlAllowed = await this.accessControlService.getAllowed(sharedUserId);
     if (!accessControlAllowed?.includes(currentUser.userId)) {
       throw new ForbiddenException(EXPENSES_ERROR.ACCESS_DENIED);
     }
 
-    const result = await this.expensesModel.find({ userId });
+    const result = await this.expensesModel.find({ userId: sharedUserId });
     if (!result) throw new BadRequestException(EXPENSES_ERROR.FIND_USER_ERROR);
     return new CreateAccessResponseDto(result);
   }
