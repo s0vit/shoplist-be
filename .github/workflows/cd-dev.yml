@@ -4,17 +4,25 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 on:
   workflow_run:
-    workflows: ["Continuous Integration"]
+    workflows: ["CI"]
     types:
       - completed
     branches-ignore:
       - main
+    branches:
+      - '**'
 
 jobs:
   Deploy-Preview:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
+      - name: Debug information # TODO: Remove this step
+        run: |
+          echo "Workflow run triggered"
+          echo "Branch: ${{ github.ref }}"
+          echo "Conclusion: ${{ github.event.workflow_run.conclusion }}"
+          echo "Workflow name: ${{ github.event.workflow_run.name }}"
       - uses: actions/checkout@v2
       - name: Install pnpm globally
         run: npm install -g pnpm
@@ -28,7 +36,7 @@ jobs:
         id: deploy
         run: |
           vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} > vercel_output.txt 2>&1
-      - name: Output vercel_output.txt for debugging
+      - name: Output vercel_output.txt for debugging #TODO Remove this step
         run: cat vercel_output.txt
       - name: Extract URLs and add to summary
         run: |
