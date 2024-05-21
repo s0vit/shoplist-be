@@ -6,8 +6,6 @@ on:
   workflow_run:
     workflows: ["Continuous Integration"]
     types: [completed]
-    branches-ignore:
-      - main
 
 jobs:
   Deploy-Preview:
