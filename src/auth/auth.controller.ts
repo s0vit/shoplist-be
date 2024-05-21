@@ -15,8 +15,9 @@ import { AuthDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 import { LoginDto } from './dto/login.dto';
-import { COOKIE_SETTINGS, ERROR_AUTH } from './constants/auth-constants.enum';
 import { RefreshDto } from './dto/refresh.dto';
+import { COOKIE_SETTINGS } from './constants/auth-constants';
+import { ERROR_AUTH } from './constants/auth-error.enum';
 
 @Controller('auth')
 export class AuthController {

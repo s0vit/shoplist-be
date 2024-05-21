@@ -1,4 +1,11 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ExpensesInputDto } from './dto/expenses-input.dto';
 import { Model } from 'mongoose';
 import { FindExpenseDto } from './dto/find-expense.dto';
@@ -8,6 +15,7 @@ import { EXPENSES_ERROR } from './constants/expenses-error.enum';
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AccessControlService } from '../access-control/access-control.service';
+import { CreateAccessResponseDto } from '../access-control/dto/create-response.dto';
 
 @Injectable()
 export class ExpensesService {
@@ -39,7 +47,7 @@ export class ExpensesService {
         const jwtError = error as JsonWebTokenError;
         throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
       }
-      throw new HttpException('Error create expenses', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(EXPENSES_ERROR.CREATE_EXPENSE_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -51,27 +59,29 @@ export class ExpensesService {
     return foundExpanse;
   }
 
-  async findByUserId(userId: string, token: string) {
+  async findByUserId(sharedUserId: string, token: string): Promise<CreateAccessResponseDto> {
+    // ToDo: we need token typing, we need to know exactly what's inside
+    let currentUser: { userId: string; email: string };
     try {
-      const currentUser = this.jwtService.verify(token, { secret: this.accessSecret });
-      if (currentUser.userId !== userId) {
-        const accessControlAllowed = await this.accessControlService.getAllowed(userId);
-        if (accessControlAllowed?.includes(currentUser.userId)) {
-          const result = await this.expensesModel.find({ userId });
-          return result;
-        }
-        throw Error('Access denied or not accesses');
-      } else {
-        throw Error('You are trying to get own expenses');
-      }
+      currentUser = this.jwtService.verify<{ userId: string; email: string }>(token, { secret: this.accessSecret });
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         const jwtError = error as JsonWebTokenError;
         throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
       }
-      const otherError = error as { message: string };
-      throw new HttpException(otherError.message || 'Error find user', HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    if (currentUser.userId === sharedUserId) {
+      throw new ForbiddenException(EXPENSES_ERROR.GET_OWN_EXPENSES);
+    }
+
+    const accessControlAllowed = await this.accessControlService.getAllowed(sharedUserId);
+    if (!accessControlAllowed?.includes(currentUser.userId)) {
+      throw new ForbiddenException(EXPENSES_ERROR.ACCESS_DENIED);
+    }
+
+    const result = await this.expensesModel.find({ userId: sharedUserId });
+    if (!result) throw new BadRequestException(EXPENSES_ERROR.FIND_USER_ERROR);
+    return new CreateAccessResponseDto(result);
   }
 
   async delete(id: string): Promise<ExpensesDocument> {
