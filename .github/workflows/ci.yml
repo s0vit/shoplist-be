@@ -16,7 +16,7 @@ on:
       - synchronize
 
 jobs:
-  build:
+  Testing-step:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -41,6 +41,7 @@ jobs:
         run: pnpm format
 
   Deploy-Preview:
+    needs: Testing-step
     runs-on: ubuntu-latest
     if: ${{ github.ref != 'refs/heads/main' }}
     steps:
@@ -66,6 +67,7 @@ jobs:
           echo "Preview URL: $PREVIEW_URL" >> $GITHUB_STEP_SUMMARY
 
   Deploy-Production:
+    needs: Testing-step
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
     steps:
