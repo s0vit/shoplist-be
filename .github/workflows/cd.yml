@@ -19,5 +19,14 @@ jobs:
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
       - name: Build Project Artifacts
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
-      - name: Deploy Project Artifacts to Vercel
-        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy Project Artifacts to Vercel and get Preview URL
+        id: deploy
+        run: |
+          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} | tee vercel_output.txt
+      - name: Extract URLs and add to summary
+        run: |
+          INSPECT_URL=$(grep -oP 'Inspect: \K(https://[^\s]+)' vercel_output.txt)
+          PROD_URL=$(grep -oP 'Production: \K(https://[^\s]+)' vercel_output.txt)
+          echo "production deployd :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "Inspect URL: $INSPECT_URL" >> $GITHUB_STEP_SUMMARY
+          echo "Production URL: $PROD_URL" >> $GITHUB_STEP_SUMMARY
