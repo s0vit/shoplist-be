@@ -57,7 +57,7 @@ jobs:
       - name: Deploy Project Artifacts to Vercel and get Preview URL
         id: deploy
         run: |
-          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} > vercel_output.txt 2>&1
+          vercel deploy --token=${{ secrets.VERCEL_TOKEN }} > vercel_output.txt 2>&1
       - name: Extract URLs and add to summary
         run: |
           INSPECT_URL=$(grep -oP 'Inspect: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
@@ -83,7 +83,7 @@ jobs:
       - name: Deploy Project Artifacts to Vercel and get Preview URL
         id: deploy
         run: |
-          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}  > vercel_output.txt 2>&1
+          vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}  > vercel_output.txt 2>&1
       - name: Extract URLs and add to summary
         run: |
           INSPECT_URL=$(grep -oP 'Inspect: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
