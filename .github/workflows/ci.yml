@@ -40,7 +40,7 @@ jobs:
       - name: Prettier check
         run: pnpm format
 
-  Deploy-Preview:
+  Deploy-to-Preview:
     needs: Testing-step
     runs-on: ubuntu-latest
     if: ${{ github.ref != 'refs/heads/main' }}
@@ -66,7 +66,7 @@ jobs:
           echo "Inspect URL: $INSPECT_URL" >> $GITHUB_STEP_SUMMARY
           echo "Preview URL: $PREVIEW_URL" >> $GITHUB_STEP_SUMMARY
 
-  Deploy-Production:
+  Deploy-to-Production:
     needs: Testing-step
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
