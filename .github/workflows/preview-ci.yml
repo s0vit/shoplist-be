@@ -5,8 +5,8 @@ env:
 
 on:
   push:
-    branches:
-      - '**'
+    branches-ignore:
+      - main
 
 jobs:
   Testing-step:
@@ -36,7 +36,6 @@ jobs:
   Deploy-to-Preview:
     needs: Testing-step
     runs-on: ubuntu-latest
-    if: ${{ github.ref != 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v2
       - name: Install pnpm globally

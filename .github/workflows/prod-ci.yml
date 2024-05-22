@@ -36,7 +36,6 @@ jobs:
   Deploy-to-Production:
     needs: Testing-step
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request'}}
     steps:
       - uses: actions/checkout@v2
       - name: Install pnpm globally
