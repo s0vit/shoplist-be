@@ -47,7 +47,7 @@ jobs:
       - name: Build Local Artefacts
         run: pnpm install &&  pnpm build
       - name: Build Project Artifacts
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Project Artifacts to Vercel and get Preview URL
         id: deploy
         run: |
@@ -58,4 +58,4 @@ jobs:
           PRODUCTION_URL=$(grep -oP 'Production: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
           echo "Production deployed :rocket:" >> $GITHUB_STEP_SUMMARY
           echo "Inspect URL: $INSPECT_URL" >> $GITHUB_STEP_SUMMARY
-          echo "Production URL: $PRODUCTION_URL" >> $GITHUB_STEP_SUMMARY
+          echo "Production URL: https://shoplist-be.vercel.app" >> $GITHUB_STEP_SUMMARY
