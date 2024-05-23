@@ -7,5 +7,10 @@ node_modules
 .idea
 .DS_Store
 .vscode
+
+# versel
 .vercel
 .env*.local
+
+# others
+.notes

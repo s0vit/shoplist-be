@@ -7,11 +7,14 @@ export type AccessControlDocument = HydratedDocument<AccessControl>;
 export class AccessControl {
   _id: Types.ObjectId;
 
-  @Prop()
-  userId: string;
+  @Prop({ required: true })
+  ownerId: string;
+
+  @Prop({ required: true })
+  sharedWith: string;
 
   @Prop()
-  allowed: string[];
+  expenseIds: string[];
 }
 
 export const AccessControlSchema = SchemaFactory.createForClass(AccessControl);
