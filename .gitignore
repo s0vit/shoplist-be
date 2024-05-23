@@ -8,5 +8,9 @@ node_modules
 .DS_Store
 .vscode
 
+# versel
+.vercel
+.env*.local
+
 # others
 .notes

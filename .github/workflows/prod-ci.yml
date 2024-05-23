@@ -1,0 +1,61 @@
+name: ci-prod
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  Testing-step:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 8
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+      - name: Install deps
+        run: pnpm install
+      - name: Lint check
+        run: pnpm lint
+      - name: Typescript typecheck
+        run: pnpm typecheck
+      - name: Prettier check
+        run: pnpm format
+
+  Deploy-to-Production:
+    needs: Testing-step
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install pnpm globally
+        run: npm install -g pnpm
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build Local Artefacts
+        run: pnpm install &&  pnpm build
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy Project Artifacts to Vercel and get Preview URL
+        id: deploy
+        run: |
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}  > vercel_output.txt 2>&1
+      - name: Extract URLs and add to summary
+        run: |
+          INSPECT_URL=$(grep -oP 'Inspect: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
+          PRODUCTION_URL=$(grep -oP 'Production: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
+          echo "Production deployed :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "Inspect URL: $INSPECT_URL" >> $GITHUB_STEP_SUMMARY
+          echo "Production URL: https://shoplist-be.vercel.app" >> $GITHUB_STEP_SUMMARY
