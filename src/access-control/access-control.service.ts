@@ -6,6 +6,7 @@ import { AccessControl, AccessControlDocument } from './models/access-control.mo
 import { AllowedUserDto } from './dto/allowed-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { ACCESS_CONTROL_ERROR } from './constants/access-control-error.enum';
+import { TokenPayload } from 'src/utils/interfaces/token.interface';
 
 @Injectable()
 export class AccessControlService {
@@ -26,7 +27,7 @@ export class AccessControlService {
   async create(allowed: AllowedUserDto, token: string): Promise<AccessControlDocument> {
     let currentUser: { userId: string; email: string };
     try {
-      currentUser = this.jwtService.verify<{ userId: string; email: string }>(token, { secret: this.accessSecret });
+      currentUser = this.jwtService.verify<TokenPayload>(token, { secret: this.accessSecret });
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         const jwtError = error as JsonWebTokenError;
@@ -60,7 +61,7 @@ export class AccessControlService {
   }
   async update(token: string) {
     try {
-      const result = await this.jwtService.verifyAsync(token, { secret: this.accessSecret });
+      const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.accessSecret });
       return result;
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
@@ -72,7 +73,7 @@ export class AccessControlService {
   }
   async delete(accessId: string, token: string) {
     try {
-      const result = await this.jwtService.verifyAsync(token, { secret: this.accessSecret });
+      const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.accessSecret });
       return result;
     } catch (error) {
       if (error instanceof JsonWebTokenError) {

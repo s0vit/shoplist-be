@@ -16,6 +16,7 @@ import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AccessControlService } from '../access-control/access-control.service';
 import { CreateAccessResponseDto } from '../access-control/dto/create-response.dto';
+import { TokenPayload } from 'src/utils/interfaces/token.interface';
 
 @Injectable()
 export class ExpensesService {
@@ -29,10 +30,10 @@ export class ExpensesService {
   ) {
     this.accessSecret = this.configService.get<string>('ACCESS_TOKEN_KEY');
   }
-  // ToDo: move errors to constants
+
   async create(expense: ExpensesInputDto, token: string): Promise<ExpensesDocument> {
     try {
-      const result = await this.jwtService.verifyAsync(token, { secret: this.accessSecret });
+      const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.accessSecret });
       const newExpansesInstance = new this.expensesModel({
         amount: expense.amount,
         categoryId: expense.categoryId,
@@ -63,7 +64,7 @@ export class ExpensesService {
     // ToDo: we need token typing, we need to know exactly what's inside
     let currentUser: { userId: string; email: string };
     try {
-      currentUser = this.jwtService.verify<{ userId: string; email: string }>(token, { secret: this.accessSecret });
+      currentUser = this.jwtService.verify<TokenPayload>(token, { secret: this.accessSecret });
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         const jwtError = error as JsonWebTokenError;

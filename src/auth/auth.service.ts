@@ -10,6 +10,7 @@ import { ERROR_AUTH } from './constants/auth-error.enum';
 import { ConfirmResponseDto } from './dto/confirm-response.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { ConfigService } from '@nestjs/config';
+import { TokenPayload } from 'src/utils/interfaces/token.interface';
 
 @Injectable()
 export class AuthService {
@@ -52,8 +53,8 @@ export class AuthService {
       throw new BadRequestException(ERROR_AUTH.USER_ALREADY_EXISTS);
     }
     try {
-      const token = await this.jwtService.signAsync({ email: dto.email });
-      const confirmationUrl = `${origin}/confirm?token=${token}`;
+      const confirmToken = await this.jwtService.signAsync({ email: dto.email });
+      const confirmationUrl = `${origin}/confirm?token=${confirmToken}`;
       await this.mailerService.sendMail({
         to: dto.email,
         subject: 'Confirm your registration',
@@ -64,10 +65,10 @@ export class AuthService {
       throw new HttpException(ERROR_AUTH.SEND_EMAIL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  async confirmRegistration(token: string): Promise<ConfirmResponseDto> {
+  async confirmRegistration(confirmToken: string): Promise<ConfirmResponseDto> {
     // ToDo: Test on production
     try {
-      const result = await this.jwtService.verifyAsync(token);
+      const result = await this.jwtService.verifyAsync<{ email: string }>(confirmToken);
       const updatedUser = await this.userModel
         .findOneAndUpdate({ email: result.email }, { $set: { isVerified: true } }, { new: true })
         .exec();
@@ -97,7 +98,7 @@ export class AuthService {
   }
   async loginWithCookies(token: string) {
     try {
-      const result = this.jwtService.verify(token, { secret: this.accessSecret });
+      const result = this.jwtService.verify<TokenPayload>(token, { secret: this.accessSecret });
       return { email: result.email };
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
@@ -108,8 +109,9 @@ export class AuthService {
   }
   async validateToken(token: string) {
     try {
-      const result = await this.jwtService.verifyAsync(token, { secret: this.refreshSecret });
-      const payloadData = { email: result.email, userId: result._id };
+      const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.refreshSecret });
+      const payloadData = { email: result.email, userId: result.userId };
+      console.log({ payloadData });
       const newTokens = await this.generateTokens(payloadData);
       const foundUser = await this.userModel
         .findOneAndUpdate({ email: result.email }, { $set: { ...newTokens } }, { new: true })
@@ -129,7 +131,7 @@ export class AuthService {
   }
   async logout(accessToken: string) {
     try {
-      const decoded = this.jwtService.decode(accessToken);
+      const decoded = this.jwtService.decode<TokenPayload>(accessToken);
       await this.userModel
         .findOneAndUpdate({ email: decoded.email }, { $set: { accessToken: null, refreshToken: null } })
         .exec();
