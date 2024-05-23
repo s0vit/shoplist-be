@@ -13,7 +13,8 @@ export class AccessControlController {
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return this.accessControlService.delete();
+  async delete(@Param('id') accessId: string, @Req() req: Request) {
+    const token = req.cookies['accessToken'];
+    return this.accessControlService.delete(accessId, token);
   }
 }

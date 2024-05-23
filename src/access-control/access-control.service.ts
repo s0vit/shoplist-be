@@ -21,22 +21,40 @@ export class AccessControlService {
 
   async getAllowed(userId: string) {
     const result = await this.accessControlModel.findOne({ userId }).exec();
-    if (result) return result.allowed;
+    if (result) return result.expenseIds;
   }
   async create(allowed: AllowedUserDto, token: string): Promise<AccessControlDocument> {
+    let currentUser: { userId: string; email: string };
     try {
-      const result = await this.jwtService.verifyAsync(token, { secret: this.accessSecret });
-      const accessControlInstance = new this.accessControlModel({
-        userId: result.userId,
-        allowed: allowed.allowedUsersId,
-      });
-      const createdAccess = await accessControlInstance.save();
-      return createdAccess.toObject({ versionKey: false });
+      currentUser = this.jwtService.verify<{ userId: string; email: string }>(token, { secret: this.accessSecret });
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         const jwtError = error as JsonWebTokenError;
         throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
       }
+    }
+
+    const isExist = await this.accessControlModel
+      .findOne({ ownerId: currentUser.userId, sharedWith: allowed.sharedWith })
+      .exec();
+    if (isExist) {
+      const updatedAccess = await this.accessControlModel.findOneAndUpdate(
+        { ownerId: currentUser.userId, sharedWith: allowed.sharedWith },
+        // add new expenseIds to accessControlModel, excluding duplicate
+        { $addToSet: { expenseIds: { $each: allowed.expenseIds } } },
+        { new: true },
+      );
+      return updatedAccess.toObject({ versionKey: false });
+    }
+    const accessControlInstance = new this.accessControlModel({
+      ownerId: currentUser.userId, // owner who shares
+      sharedWith: allowed.sharedWith, // permitted user who gets access
+      expenseIds: allowed.expenseIds, // permitted expensesIds
+    });
+    try {
+      const createdAccess = await accessControlInstance.save();
+      return createdAccess.toObject({ versionKey: false });
+    } catch (error) {
       throw new HttpException(ACCESS_CONTROL_ERROR.CREATE_ACCESS_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -52,7 +70,7 @@ export class AccessControlService {
       throw new HttpException(ACCESS_CONTROL_ERROR.UPDATE_ACCESS_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  async delete(token: string = '') {
+  async delete(accessId: string, token: string) {
     try {
       const result = await this.jwtService.verifyAsync(token, { secret: this.accessSecret });
       return result;

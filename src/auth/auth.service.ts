@@ -109,7 +109,8 @@ export class AuthService {
   async validateToken(token: string) {
     try {
       const result = await this.jwtService.verifyAsync(token, { secret: this.refreshSecret });
-      const newTokens = await this.generateTokens({ email: result.email });
+      const payloadData = { email: result.email, userId: result._id };
+      const newTokens = await this.generateTokens(payloadData);
       const foundUser = await this.userModel
         .findOneAndUpdate({ email: result.email }, { $set: { ...newTokens } }, { new: true })
         .exec();
