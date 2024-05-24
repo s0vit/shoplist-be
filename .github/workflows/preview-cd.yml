@@ -3,6 +3,7 @@ name: CD Preview
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  PROJECTS_ROOT: "itbalis-projects"
 
 on:
   push:
@@ -54,11 +55,11 @@ jobs:
       - name: Deploy Project Artifacts to Vercel and set custom alias
         run: |
           url=$(vercel deploy --prebuilt --name=${{ github.ref_name }} --token=${{ secrets.VERCEL_TOKEN }})
-          alias="${{ github.ref_name }}.${{ secrets.PROJECT_NAME }}.vercel.app"
+          alias="${{ github.ref_name }}.${PROJECTS_ROOT}.vercel.app"
           vercel alias set $url $alias --token=${{ secrets.VERCEL_TOKEN }}
       - name: Extract URLs and add to summary
         run: |
           DEPLOY_NAME=${GITHUB_REF#refs/heads/}
-          alias="https://${DEPLOY_NAME}.${{ secrets.PROJECT_NAME }}.vercel.app"
+          alias="https://${DEPLOY_NAME}.${PROJECTS_ROOT}.vercel.app"
           echo "Preview deployed :rocket:" >> $GITHUB_STEP_SUMMARY
           echo "Preview URL: $alias" >> $GITHUB_STEP_SUMMARY
