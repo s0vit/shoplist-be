@@ -2,7 +2,6 @@
   "name": "shoplist-be",
   "version": "0.0.1",
   "description": "",
-  "packageManager": "pnpm@9.1.0",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
