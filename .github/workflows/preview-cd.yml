@@ -54,7 +54,8 @@ jobs:
       - name: Deploy Project Artifacts to Vercel and get Preview URL
         id: deploy
         run: |
-          DEPLOY_NAME=${GITHUB_REF#refs/heads/} 
+          DEPLOY_NAME=${{ github.ref_name }}
+          echo "Deploying $DEPLOY_NAME"
           vercel deploy --prebuilt --name=$DEPLOY_NAME --token=${{ secrets.VERCEL_TOKEN }} > vercel_output.txt 2>&1
       - name: Extract URLs and add to summary
         run: |
