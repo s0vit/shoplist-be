@@ -60,7 +60,7 @@ jobs:
             .  # Убедитесь, что все необходимые файлы для сборки включены
 
   deploy:
-    needs: build-and-deploy
+    needs: build-and-cache
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
