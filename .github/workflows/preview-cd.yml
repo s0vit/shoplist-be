@@ -54,10 +54,10 @@ jobs:
         with:
           name: build-artifacts
           path: |
+            **/*
             !**/node_modules/**
             !**/.git/**
             !**/.github/**
-            .  # Убедитесь, что все необходимые файлы для сборки включены
 
   deploy:
     needs: build-and-cache
