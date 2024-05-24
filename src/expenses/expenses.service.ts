@@ -16,7 +16,7 @@ import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AccessControlService } from '../access-control/access-control.service';
 import { CreateAccessResponseDto } from '../access-control/dto/create-response.dto';
-import { TokenPayload } from 'src/utils/interfaces/token.interface';
+import { TokenPayload } from 'src/common/interfaces/token.interface';
 
 @Injectable()
 export class ExpensesService {

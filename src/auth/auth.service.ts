@@ -10,7 +10,7 @@ import { ERROR_AUTH } from './constants/auth-error.enum';
 import { ConfirmResponseDto } from './dto/confirm-response.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { ConfigService } from '@nestjs/config';
-import { TokenPayload } from 'src/utils/interfaces/token.interface';
+import { TokenPayload } from 'src/common/interfaces/token.interface';
 
 @Injectable()
 export class AuthService {
