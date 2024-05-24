@@ -54,11 +54,11 @@ jobs:
       - name: Deploy Project Artifacts to Vercel and set custom alias
         run: |
           url=$(vercel deploy --prebuilt --name=${{ github.ref_name }} --token=${{ secrets.VERCEL_TOKEN }})
-          alias="https://${{ github.ref_name }}.${{ secrets.VERCEL_PROJECT_NAME }}.vercel.app"
+          alias="${{ github.ref_name }}.${{ secrets.PROJECT_NAME }}.vercel.app"
           vercel alias set $url $alias --token=${{ secrets.VERCEL_TOKEN }}
       - name: Extract URLs and add to summary
         run: |
           DEPLOY_NAME=${GITHUB_REF#refs/heads/}
-          alias="https://${DEPLOY_NAME}.${{ secrets.VERCEL_PROJECT_NAME }}.vercel.app"
+          alias="https://${DEPLOY_NAME}.${{ secrets.PROJECT_NAME }}.vercel.app"
           echo "Preview deployed :rocket:" >> $GITHUB_STEP_SUMMARY
           echo "Preview URL: $alias" >> $GITHUB_STEP_SUMMARY
