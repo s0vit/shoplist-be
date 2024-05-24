@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
@@ -6,7 +6,7 @@ import { AccessControl, AccessControlDocument } from './models/access-control.mo
 import { AllowedUserDto } from './dto/allowed-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { ACCESS_CONTROL_ERROR } from './constants/access-control-error.enum';
-import { TokenPayload } from 'src/utils/interfaces/token.interface';
+import { TokenPayload } from 'src/common/interfaces/token.interface';
 
 @Injectable()
 export class AccessControlService {
@@ -34,27 +34,16 @@ export class AccessControlService {
         throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
       }
     }
-
-    const isExist = await this.accessControlModel
-      .findOne({ ownerId: currentUser.userId, sharedWith: allowed.sharedWith })
-      .exec();
-    if (isExist) {
-      const updatedAccess = await this.accessControlModel.findOneAndUpdate(
-        { ownerId: currentUser.userId, sharedWith: allowed.sharedWith },
-        // add new expenseIds to accessControlModel, excluding duplicate
-        { $addToSet: { expenseIds: { $each: allowed.expenseIds } } },
-        { new: true },
-      );
-      return updatedAccess.toObject({ versionKey: false });
+    if (currentUser.userId === allowed.sharedWith) {
+      throw new ForbiddenException(ACCESS_CONTROL_ERROR.OWN_ACCESS_ERROR);
     }
-    const accessControlInstance = new this.accessControlModel({
-      ownerId: currentUser.userId, // owner who shares
-      sharedWith: allowed.sharedWith, // permitted user who gets access
-      expenseIds: allowed.expenseIds, // permitted expensesIds
-    });
     try {
-      const createdAccess = await accessControlInstance.save();
-      return createdAccess.toObject({ versionKey: false });
+      const accessControl = await this.accessControlModel.findOneAndUpdate(
+        { ownerId: currentUser.userId, sharedWith: allowed.sharedWith },
+        { $addToSet: { expenseIds: { $each: allowed.expenseIds } } },
+        { upsert: true, new: true }, // upsert: true creates a new document if it doesn't exist
+      );
+      return accessControl.toObject({ versionKey: false });
     } catch (error) {
       throw new HttpException(ACCESS_CONTROL_ERROR.CREATE_ACCESS_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
