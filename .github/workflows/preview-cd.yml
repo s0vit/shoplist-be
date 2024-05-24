@@ -51,16 +51,14 @@ jobs:
         run: pnpm install && pnpm build
       - name: Build Project Artifacts
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
-      - name: Deploy Project Artifacts to Vercel and get Preview URL
-        id: deploy
+      - name: Deploy Project Artifacts to Vercel and set custom alias
         run: |
-          vercel deploy --prebuilt --name=${{ github.ref_name }} --token=${{ secrets.VERCEL_TOKEN }} > vercel_output.txt 2>&1
-      - name: Show Vercel Output
-        run: cat vercel_output.txt
+          url=$(vercel deploy --prebuilt --name=${{ github.ref_name }} --token=${{ secrets.VERCEL_TOKEN }})
+          alias="https://${{ github.ref_name }}.${{ secrets.VERCEL_PROJECT_NAME }}.vercel.app"
+          vercel alias set $url $alias --token=${{ secrets.VERCEL_TOKEN }}
       - name: Extract URLs and add to summary
         run: |
-          INSPECT_URL=$(grep -oP 'Inspect: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
-          PREVIEW_URL=$(grep -oP 'Preview: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
+          DEPLOY_NAME=${GITHUB_REF#refs/heads/}
+          alias="https://${DEPLOY_NAME}.${{ secrets.VERCEL_PROJECT_NAME }}.vercel.app"
           echo "Preview deployed :rocket:" >> $GITHUB_STEP_SUMMARY
-          echo "Inspect URL: $INSPECT_URL" >> $GITHUB_STEP_SUMMARY
-          echo "Preview URL: $PREVIEW_URL" >> $GITHUB_STEP_SUMMARY
+          echo "Preview URL: $alias" >> $GITHUB_STEP_SUMMARY
