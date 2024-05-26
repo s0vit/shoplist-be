@@ -20,7 +20,7 @@ export class AccessControlService {
     this.accessSecret = this.configService.get<string>('ACCESS_TOKEN_KEY');
   }
 
-  async getAllowed(userId: string, currentUserID: string) {
+  async _getAllowedExpensesId(userId: string, currentUserID: string) {
     const result = await this.accessControlModel.findOne({ ownerId: userId, sharedWith: currentUserID }).exec();
     if (result) return result.expenseIds;
   }

@@ -65,10 +65,11 @@ export class ExpensesService {
     if (currentUserId === sharedUserId) {
       throw new ForbiddenException(EXPENSES_ERROR.GET_OWN_EXPENSES);
     }
-    const accessControlAllowed = await this.accessControlService.getAllowed(sharedUserId, currentUserId);
+    const accessControlAllowed = await this.accessControlService._getAllowedExpensesId(sharedUserId, currentUserId);
     if (!accessControlAllowed) {
       throw new ForbiddenException(EXPENSES_ERROR.ACCESS_DENIED);
     }
+    // ToDo: add try/catch
     const arrayExpenses = await this.expensesModel.find({ _id: { $in: accessControlAllowed } });
     return arrayExpenses.map((expenses) => expenses.toObject({ versionKey: false }));
   }

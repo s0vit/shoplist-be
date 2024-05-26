@@ -1,6 +1,6 @@
 import { IsMongoId } from 'class-validator';
 
-export class SharedDto {
+export class SharedExpenseDto {
   @IsMongoId()
   sharedId: string;
 }
