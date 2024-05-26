@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, ValidationPipe, UsePipes } from '@nestjs/common';
 import { ExpensesInputDto } from './dto/expenses-input.dto';
 import { FindExpenseDto } from './dto/find-expense.dto';
 import { ExpensesService } from './expenses.service';
 import { Request } from 'express';
+import { SharedDto } from './dto/get-shared.dto';
 
 @Controller('expenses')
 export class ExpensesController {
@@ -14,21 +15,28 @@ export class ExpensesController {
   }
 
   // Get expenses by _id
-  @Get(':id')
+  @Get('by-id/:id')
   async getById(@Param('id') id: string) {
     return this.expensesService.getById(id);
   }
 
-  // Get all expenses by userId
-  @Get('/user/:userId')
-  async getByUserId(@Param('userId') userId: string, @Req() req: Request) {
-    // ToDo: We need token verification middleware
+  // Get own expenses
+  @Get('own')
+  async getOwn(@Req() req: Request) {
     const token = req.cookies['accessToken'];
-    return this.expensesService.findByUserId(userId, token);
+    return this.expensesService.getOwn(token);
+  }
+
+  // Get shared expenses
+  // we need a request/router "is anything for me at all?!"
+  @Get('shared/:sharedId')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async getShared(@Param() { sharedId }: SharedDto, @Req() req: Request) {
+    const token = req.cookies['accessToken'];
+    return this.expensesService.getSharedExpenses(sharedId, token);
   }
 
   // Get more expenses by other parameters
-  @HttpCode(200)
   @Get('by-parameters')
   async find(@Body() dto: FindExpenseDto) {
     return this.expensesService.find(dto);

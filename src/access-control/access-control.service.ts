@@ -20,8 +20,8 @@ export class AccessControlService {
     this.accessSecret = this.configService.get<string>('ACCESS_TOKEN_KEY');
   }
 
-  async getAllowed(userId: string) {
-    const result = await this.accessControlModel.findOne({ userId }).exec();
+  async getAllowed(userId: string, currentUserID: string) {
+    const result = await this.accessControlModel.findOne({ ownerId: userId, sharedWith: currentUserID }).exec();
     if (result) return result.expenseIds;
   }
   async create(allowed: AllowedUserDto, token: string): Promise<AccessControlDocument> {
@@ -61,6 +61,7 @@ export class AccessControlService {
     }
   }
   async delete(accessId: string, token: string) {
+    // when delete all expenseIds, need to delete record
     try {
       const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.accessSecret });
       return result;

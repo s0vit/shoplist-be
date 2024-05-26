@@ -15,7 +15,6 @@ import { EXPENSES_ERROR } from './constants/expenses-error.enum';
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AccessControlService } from '../access-control/access-control.service';
-import { CreateAccessResponseDto } from '../access-control/dto/create-response.dto';
 import { TokenPayload } from 'src/common/interfaces/token.interface';
 
 @Injectable()
@@ -60,8 +59,21 @@ export class ExpensesService {
     return foundExpanse;
   }
 
-  async findByUserId(sharedUserId: string, token: string): Promise<CreateAccessResponseDto> {
-    // ToDo: we need token typing, we need to know exactly what's inside
+  async getOwn(token: string) {
+    let user: { userId: string; email: string };
+    try {
+      user = this.jwtService.verify<TokenPayload>(token, { secret: this.accessSecret });
+    } catch (error) {
+      if (error instanceof JsonWebTokenError) {
+        const jwtError = error as JsonWebTokenError;
+        throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
+      }
+    }
+    const arrayExpenses = await this.expensesModel.find({ userId: user.userId });
+    return arrayExpenses.map((expenses) => expenses.toObject({ versionKey: false }));
+  }
+
+  async getSharedExpenses(sharedUserId: string, token: string): Promise<ExpensesDocument[]> {
     let currentUser: { userId: string; email: string };
     try {
       currentUser = this.jwtService.verify<TokenPayload>(token, { secret: this.accessSecret });
@@ -74,15 +86,12 @@ export class ExpensesService {
     if (currentUser.userId === sharedUserId) {
       throw new ForbiddenException(EXPENSES_ERROR.GET_OWN_EXPENSES);
     }
-
-    const accessControlAllowed = await this.accessControlService.getAllowed(sharedUserId);
-    if (!accessControlAllowed?.includes(currentUser.userId)) {
+    const accessControlAllowed = await this.accessControlService.getAllowed(sharedUserId, currentUser.userId);
+    if (!accessControlAllowed) {
       throw new ForbiddenException(EXPENSES_ERROR.ACCESS_DENIED);
     }
-
-    const result = await this.expensesModel.find({ userId: sharedUserId });
-    if (!result) throw new BadRequestException(EXPENSES_ERROR.FIND_USER_ERROR);
-    return new CreateAccessResponseDto(result);
+    const arrayExpenses = await this.expensesModel.find({ _id: { $in: accessControlAllowed } });
+    return arrayExpenses.map((expenses) => expenses.toObject({ versionKey: false }));
   }
 
   async delete(id: string): Promise<ExpensesDocument> {
