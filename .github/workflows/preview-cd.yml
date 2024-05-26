@@ -1,0 +1,105 @@
+name: CD Preview
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  PROJECTS_ROOT: "itbalis-projects"
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  build-and-cache:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-store-${{ matrix.node-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ matrix.node-version }}-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint check
+        run: pnpm lint
+
+      - name: Typescript typecheck
+        run: pnpm typecheck
+
+      - name: Prettier check
+        run: pnpm format
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            **/*
+            !**/node_modules/**
+            !**/.git/**
+            !**/.github/**
+
+  deploy:
+    needs: build-and-cache
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install Vercel CLI
+        run: pnpm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel and set custom alias
+        run: |
+          vercel deploy --prebuilt --name=${{ github.ref_name }} --token=${{ secrets.VERCEL_TOKEN }} >> vercel_output.txt 2>&1
+          alias="${{ github.ref_name }}.${PROJECTS_ROOT}.vercel.app"
+          vercel alias set $(cat vercel_output.txt | grep -oP 'Preview: \K(https://[^\s]+)') $alias --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Extract URLs and add to summary
+        run: |
+          DEPLOY_NAME=${GITHUB_REF#refs/heads/}
+          alias="https://${DEPLOY_NAME}.${PROJECTS_ROOT}.vercel.app"
+          INSPECT_URL=$(grep -oP 'Inspect: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
+          PREVIEW_URL=$(grep -oP 'Preview: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
+          echo "Preview deployed :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "Alias URL: $alias" >> $GITHUB_STEP_SUMMARY
+          echo "Tech links: =========================================================" >> $GITHUB_STEP_SUMMARY 
+          echo "Inspect URL: $INSPECT_URL" >> $GITHUB_STEP_SUMMARY
+          echo "Preview URL: $PREVIEW_URL" >> $GITHUB_STEP_SUMMARY
