@@ -6,18 +6,54 @@ env:
   PROJECTS_ROOT: "itbalis-projects"
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
   push:
     branches-ignore:
       - main
 
 jobs:
-  build-and-cache:
+  test-build-and-cache:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check PR Description for Issue Link
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_BODY=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} | jq -r .body)
+          ISSUE_NUMBER=$(echo "$PR_BODY" | grep -oP '#\K[0-9]+' || echo "")
+          
+          if [ -z "$ISSUE_NUMBER" ]; then
+            echo ":name_badge: Pull request description must contain a link to an issue (e.g., #123)." >> $GITHUB_STEP_SUMMARY
+            echo "Error: Pull request description must contain a link to an issue (e.g., #123)." >&2
+            exit 1
+          fi
+
+          ISSUE_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${{ github.repository }}/issues/$ISSUE_NUMBER)
+          ISSUE_HTML_URL=$(echo "$ISSUE_DATA" | jq -r .html_url)
+          EXPECTED_URL="https://github.com/${{ github.repository }}/issues/$ISSUE_NUMBER"
+          
+          echo "Issue number: $ISSUE_NUMBER"
+          echo "Issue HTML URL: $ISSUE_HTML_URL"
+          echo "Expected URL: $EXPECTED_URL"
+          
+          if [ "$ISSUE_HTML_URL" != "$EXPECTED_URL" ]; then
+            echo ":name_badge: The issue linked in the pull request description does not belong to this repository." >> $GITHUB_STEP_SUMMARY
+            echo "Error: The issue linked in the pull request description does not belong to this repository." >&2
+            exit 1
+          fi
+          
+          ISSUE_STATE=$(echo "$ISSUE_DATA" | jq -r .state)
+          if [ "$ISSUE_STATE" == "closed" ]; then
+            echo ":name_badge: The issue linked in the pull request description is closed." >> $GITHUB_STEP_SUMMARY
+            echo "Error: The issue linked in the pull request description is closed." >&2
+            exit 1
+          fi
+
+          echo "Pull request description contains a valid link to an open issue in this repository."
 
       - uses: pnpm/action-setup@v4
         with:
@@ -63,8 +99,9 @@ jobs:
             !**/.github/**
 
   deploy:
-    needs: build-and-cache
+    needs: test-build-and-cache
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v4
 
@@ -99,7 +136,7 @@ jobs:
           INSPECT_URL=$(grep -oP 'Inspect: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
           PREVIEW_URL=$(grep -oP 'Preview: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
           echo "Preview deployed :rocket:" >> $GITHUB_STEP_SUMMARY
-          echo "Alias URL: $alias" >> $GITHUB_STEP_SUMMARY
+          echo ":white_check_mark: Alias URL: $alias" >> $GITHUB_STEP_SUMMARY
           echo "Tech links: =========================================================" >> $GITHUB_STEP_SUMMARY 
           echo "Inspect URL: $INSPECT_URL" >> $GITHUB_STEP_SUMMARY
           echo "Preview URL: $PREVIEW_URL" >> $GITHUB_STEP_SUMMARY
