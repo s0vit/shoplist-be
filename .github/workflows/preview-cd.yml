@@ -27,7 +27,7 @@ jobs:
           if echo "$PR_BODY" | grep -q '#[0-9]\+'; then
             echo "Pull request description contains a link to an issue."
           else
-            echo "Pull request description must contain a link to an issue (e.g., #123)." >> $GITHUB_STEP_SUMMARY
+            echo ":name_badge: Pull request description must contain a link to an issue (e.g., #123)." >> $GITHUB_STEP_SUMMARY
             echo "Error: Pull request description must contain a link to an issue (e.g., #123)." >&2
             exit 1
           fi
@@ -113,7 +113,7 @@ jobs:
           INSPECT_URL=$(grep -oP 'Inspect: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
           PREVIEW_URL=$(grep -oP 'Preview: \K(https://[^\s]+)' vercel_output.txt || echo "Not Found")
           echo "Preview deployed :rocket:" >> $GITHUB_STEP_SUMMARY
-          echo "Alias URL: $alias" >> $GITHUB_STEP_SUMMARY
+          echo ":white_check_mark: Alias URL: $alias" >> $GITHUB_STEP_SUMMARY
           echo "Tech links: =========================================================" >> $GITHUB_STEP_SUMMARY 
           echo "Inspect URL: $INSPECT_URL" >> $GITHUB_STEP_SUMMARY
           echo "Preview URL: $PREVIEW_URL" >> $GITHUB_STEP_SUMMARY
