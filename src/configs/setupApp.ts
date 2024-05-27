@@ -3,12 +3,12 @@ import LoggerInterceptor from '../utils/interceptors/loggerInterceptor';
 import { customValidationPipe } from '../pipes/customValidationPipe';
 import ErrorExceptionFilter from '../utils/exeptionFilters/errorExeptionFilter';
 import * as cookieParser from 'cookie-parser';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export const setupApp = async (app: INestApplication) => {
   const CLIENT_URL = process.env.CLIENT_URL;
   app.setGlobalPrefix('api');
   app.useGlobalInterceptors(new LoggerInterceptor());
-
   app.useGlobalPipes(customValidationPipe);
   app.useGlobalFilters(new ErrorExceptionFilter());
   app.enableCors({
@@ -16,4 +16,14 @@ export const setupApp = async (app: INestApplication) => {
     credentials: true,
   });
   app.use(cookieParser());
+
+  const options = new DocumentBuilder()
+    .setTitle('Shoplist API')
+    .setDescription('Shoplist API description')
+    .setVersion('1.0')
+    .addTag('Expenses')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup('api', app, document);
 };
