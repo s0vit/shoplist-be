@@ -27,7 +27,8 @@ jobs:
           if echo "$PR_BODY" | grep -q '#[0-9]\+'; then
             echo "Pull request description contains a link to an issue."
           else
-            echo "Pull request description must contain a link to an issue (e.g., #123)."
+            echo "Pull request description must contain a link to an issue (e.g., #123)." >> $GITHUB_STEP_SUMMARY
+            echo "Error: Pull request description must contain a link to an issue (e.g., #123)." >&2
             exit 1
           fi
 
