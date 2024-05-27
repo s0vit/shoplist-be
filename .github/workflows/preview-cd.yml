@@ -6,8 +6,9 @@ env:
   PROJECTS_ROOT: "itbalis-projects"
 
 on:
-  push:
   pull_request:
+    types: [ opened, synchronize, reopened ]
+  push:
     branches-ignore:
       - main
 
