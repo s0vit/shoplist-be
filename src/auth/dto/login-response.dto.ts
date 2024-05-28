@@ -9,7 +9,7 @@ export class LoginResponseDto {
   email: string;
 
   @ApiProperty({
-    example: 'login',
+    example: 'Bob',
     description: 'Login user',
   })
   login: string;

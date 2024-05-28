@@ -13,6 +13,7 @@ import { LoginSwaggerDecorators } from './decorators/login-swagger-decorator';
 import { RefreshTokenSwaggerDecorator } from './decorators/refresh-token-swagger-decorator';
 import { LogoutSwaggerDecorator } from './decorators/logout-swagger-decorator';
 import { LoginResponseDto } from './dto/login-response.dto';
+import { ConfirmResponseDto } from './dto/confirm-response.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -21,14 +22,14 @@ export class AuthController {
 
   @RegisterSwaggerDecorators()
   @Post('register')
-  async register(@Body() dto: InputAuthDto, @Req() req: Request) {
+  async register(@Body() dto: InputAuthDto, @Req() req: Request): Promise<void> {
     const origin = req.headers['origin'];
     return this.authService.register(dto, origin);
   }
 
   @ConfirmEmailSwaggerDecorators()
   @Get('confirm')
-  async confirm(@Query('token') token: string) {
+  async confirm(@Query('token') token: string): Promise<ConfirmResponseDto> {
     return await this.authService.confirmRegistration(token);
   }
 
@@ -53,7 +54,7 @@ export class AuthController {
 
   @RefreshTokenSwaggerDecorator()
   @Post('refresh')
-  async refresh(@Body() dto: RefreshDto, @Res({ passthrough: true }) res: Response) {
+  async refresh(@Body() dto: RefreshDto, @Res({ passthrough: true }) res: Response): Promise<RefreshDto> {
     const result = await this.authService.validateToken(dto.refreshToken);
     res.cookie('accessToken', result.accessToken, COOKIE_SETTINGS.ACCESS_TOKEN);
     return { refreshToken: result.refreshToken };
@@ -61,7 +62,7 @@ export class AuthController {
 
   @LogoutSwaggerDecorator()
   @Delete('logout')
-  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<void> {
     if (req.cookies && req.cookies['accessToken']) {
       const accessToken = req.cookies['accessToken'];
       await this.authService.logout(accessToken);

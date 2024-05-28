@@ -140,6 +140,10 @@ export class AuthService {
         .findOneAndUpdate({ email: decoded.email }, { $set: { accessToken: null, refreshToken: null } })
         .exec();
     } catch (error) {
+      if (error instanceof JsonWebTokenError) {
+        const jwtError = error as JsonWebTokenError;
+        throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
+      }
       throw new HttpException(ERROR_AUTH.LOGOUT_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
