@@ -1,8 +1,8 @@
-import { IsEmail, IsString, Length, Matches, IsOptional } from 'class-validator';
+import { IsEmail, IsString, Length, Matches } from 'class-validator';
 import { ERROR_AUTH } from '../constants/auth-error.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class AuthDto {
+export class InputAuthDto {
   @ApiProperty({
     example: 'example@gmail.com',
     description: 'User email',
@@ -20,15 +20,4 @@ export class AuthDto {
     message: ERROR_AUTH.PASSWORD_ERROR,
   })
   password: string;
-
-  @ApiProperty({
-    example: 'John',
-    description: 'User email without domain',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  @Matches(/^[^0-9]*$/, { message: ERROR_AUTH.LOGIN_ERROR })
-  @Length(3, 30, { message: ERROR_AUTH.LOGIN_LENGTH_ERROR })
-  login?: string;
 }

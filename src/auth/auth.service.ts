@@ -2,7 +2,7 @@ import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundExc
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './models/user.model';
-import { AuthDto } from './dto/auth.dto';
+import { InputAuthDto } from './dto/input-auth.dto';
 import { genSalt, hash, compare } from 'bcryptjs';
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -37,17 +37,17 @@ export class AuthService {
   private async findUser(email: string): Promise<UserDocument> {
     return this.userModel.findOne({ email }).exec();
   }
-  private async createUser(dto: AuthDto) {
+  private async createUser(dto: InputAuthDto) {
     const salt = await genSalt(10);
     const newUser = new this.userModel({
       email: dto.email,
-      login: dto.login ? dto.login : dto.email.split('@')[0],
+      login: dto.email.split('@')[0],
       passwordHash: await hash(dto.password, salt),
     });
     await newUser.save();
   }
 
-  async register(dto: AuthDto, origin: string) {
+  async register(dto: InputAuthDto, origin: string) {
     const oldUser = await this.findUser(dto.email);
     if (oldUser) {
       throw new BadRequestException(ERROR_AUTH.USER_ALREADY_EXISTS);
@@ -99,7 +99,12 @@ export class AuthService {
   async loginWithCookies(token: string) {
     try {
       const result = this.jwtService.verify<TokenPayload>(token, { secret: this.accessSecret });
-      return { email: result.email };
+      const payloadData = { email: result.email, userId: result.userId };
+      const tokens = await this.generateTokens(payloadData);
+      const updatedUser = await this.userModel
+        .findOneAndUpdate({ email: result.email }, { $set: { ...tokens } }, { new: true })
+        .exec();
+      return new LoginResponseDto(updatedUser);
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         const jwtError = error as JsonWebTokenError;
@@ -135,6 +140,10 @@ export class AuthService {
         .findOneAndUpdate({ email: decoded.email }, { $set: { accessToken: null, refreshToken: null } })
         .exec();
     } catch (error) {
+      if (error instanceof JsonWebTokenError) {
+        const jwtError = error as JsonWebTokenError;
+        throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
+      }
       throw new HttpException(ERROR_AUTH.LOGOUT_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
