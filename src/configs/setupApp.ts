@@ -6,13 +6,13 @@ import * as cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export const setupApp = async (app: INestApplication) => {
-  const CLIENT_URL = process.env.CLIENT_URL;
+  const CLIENT_URLS = process.env.CLIENT_URLS;
   app.setGlobalPrefix('api');
   app.useGlobalInterceptors(new LoggerInterceptor());
   app.useGlobalPipes(customValidationPipe);
   app.useGlobalFilters(new ErrorExceptionFilter());
   app.enableCors({
-    origin: CLIENT_URL,
+    origin: JSON.parse(CLIENT_URLS),
     credentials: true,
   });
   app.use(cookieParser());
