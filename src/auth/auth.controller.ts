@@ -1,5 +1,5 @@
-import { BadRequestException, Body, Controller, Delete, Get, Headers, Post, Query, Req, Res } from '@nestjs/common';
-import { AuthDto } from './dto/auth.dto';
+import { BadRequestException, Body, Controller, Delete, Get, Post, Query, Req, Res } from '@nestjs/common';
+import { InputAuthDto } from './dto/input-auth.dto';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 import { LoginDto } from './dto/login.dto';
@@ -12,6 +12,7 @@ import { ConfirmEmailSwaggerDecorators } from './decorators/confirm-email-swagge
 import { LoginSwaggerDecorators } from './decorators/login-swagger-decorator';
 import { RefreshTokenSwaggerDecorator } from './decorators/refresh-token-swagger-decorator';
 import { LogoutSwaggerDecorator } from './decorators/logout-swagger-decorator';
+import { LoginResponseDto } from './dto/login-response.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -20,7 +21,8 @@ export class AuthController {
 
   @RegisterSwaggerDecorators()
   @Post('register')
-  async register(@Body() dto: AuthDto, @Headers('origin') origin: string) {
+  async register(@Body() dto: InputAuthDto, @Req() req: Request) {
+    const origin = req.headers['origin'];
     return this.authService.register(dto, origin);
   }
 
@@ -32,11 +34,15 @@ export class AuthController {
 
   @LoginSwaggerDecorators()
   @Post('login')
-  async login(@Body() dto: LoginDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  async login(
+    @Body() dto: LoginDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<LoginResponseDto> {
     if (dto.email && dto.password) {
       const result = await this.authService.login(dto.email, dto.password);
       res.cookie('accessToken', result.accessToken, COOKIE_SETTINGS.ACCESS_TOKEN);
-      return { refreshToken: result.refreshToken };
+      return result;
     } else if (req.cookies && req.cookies['accessToken']) {
       const token = req.cookies['accessToken'];
       return await this.authService.loginWithCookies(token);
