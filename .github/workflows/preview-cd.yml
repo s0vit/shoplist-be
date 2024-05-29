@@ -126,8 +126,9 @@ jobs:
 
       - name: Deploy Project Artifacts to Vercel and set custom alias
         run: |
-          vercel deploy --prebuilt --name=${{ github.ref_name }} --token=${{ secrets.VERCEL_TOKEN }} >> vercel_output.txt 2>&1
-          alias="${{ github.ref_name }}.${PROJECTS_ROOT}.vercel.app"
+          sanitized_ref_name=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9-]//g' | cut -c1-60)
+          vercel deploy --prebuilt --name=${sanitized_ref_name} --token=${{ secrets.VERCEL_TOKEN }} >> vercel_output.txt 2>&1
+          alias="${sanitized_ref_name}.${PROJECTS_ROOT}.vercel.app"
           vercel alias set $(cat vercel_output.txt | grep -oP 'Preview: \K(https://[^\s]+)') $alias --token=${{ secrets.VERCEL_TOKEN }}
       - name: Extract URLs and add to summary
         run: |
