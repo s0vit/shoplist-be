@@ -98,7 +98,7 @@ export class AuthService {
   }
   async loginWithCookies(token: string) {
     try {
-      const result = this.jwtService.verify<TokenPayload>(token, { secret: this.accessSecret });
+      const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.accessSecret });
       const payloadData = { email: result.email, userId: result.userId };
       const tokens = await this.generateTokens(payloadData);
       const updatedUser = await this.userModel
