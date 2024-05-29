@@ -15,7 +15,7 @@ import { LogoutSwaggerDecorator } from './decorators/logout-swagger-decorator';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { ConfirmResponseDto } from './dto/confirm-response.dto';
 
-@ApiTags('auth')
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

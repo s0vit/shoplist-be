@@ -2,7 +2,9 @@ import { Body, Controller, Delete, Param, Post, Req } from '@nestjs/common';
 import { AccessControlService } from './access-control.service';
 import { AllowedUserDto } from './dto/allowed-user.dto';
 import { Request } from 'express';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Access control')
 @Controller('access-control')
 export class AccessControlController {
   constructor(private readonly accessControlService: AccessControlService) {}

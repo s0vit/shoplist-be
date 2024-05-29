@@ -1,10 +1,29 @@
-import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { CustomRequest } from '../common/interfaces/token.interface';
+import { CategoryService } from './category.service';
+import { AccessJwtGuard } from '../auth/guards/access-jwt.guard';
+import { GetCategorySwaggerDecorators } from './decorators/get-category-swagger-decorator';
+import { ApiTags } from '@nestjs/swagger';
+import { CategoryInputDto } from './dto/category-input.dto';
+import { CreateCategorySwaggerDecorators } from './decorators/create-category-swagger-decorator';
+import { Category } from './models/category.model';
 
-@Controller('expenses-type')
+@ApiTags('Category')
+@Controller('category')
 export class CategoryController {
-  @Post()
-  async create(@Body('name') name: string) {
-    return name;
+  constructor(private readonly categoryService: CategoryService) {}
+  @GetCategorySwaggerDecorators()
+  @Get()
+  @UseGuards(AccessJwtGuard)
+  async get(@Req() req: CustomRequest) {
+    return this.categoryService.get(req.user.userId);
+  }
+
+  @CreateCategorySwaggerDecorators()
+  @Post('create')
+  @UseGuards(AccessJwtGuard)
+  async create(@Body() dto: CategoryInputDto, @Req() req: CustomRequest): Promise<Category> {
+    return this.categoryService.create(dto, req.user.userId);
   }
 
   @Delete(':id')

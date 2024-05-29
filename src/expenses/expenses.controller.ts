@@ -16,9 +16,11 @@ import { FindExpenseDto } from './dto/find-expense.dto';
 import { ExpensesService } from './expenses.service';
 import { Request } from 'express';
 import { SharedExpenseDto } from './dto/get-shared.dto';
-import { AccessJwtGuard } from './guards/access-jwt-guard.service';
 import { CustomRequest } from '../common/interfaces/token.interface';
+import { AccessJwtGuard } from '../auth/guards/access-jwt.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Expenses')
 @Controller('expenses')
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
