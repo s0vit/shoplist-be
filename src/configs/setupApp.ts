@@ -4,6 +4,7 @@ import { customValidationPipe } from '../pipes/customValidationPipe';
 import ErrorExceptionFilter from '../utils/exeptionFilters/errorExeptionFilter';
 import * as cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as serveStatic from 'serve-static';
 
 export const setupApp = async (app: INestApplication) => {
   const CLIENT_URLS = process.env.CLIENT_URLS;
@@ -25,5 +26,6 @@ export const setupApp = async (app: INestApplication) => {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('/swagger', app, document);
+  app.use('/swagger', serveStatic('node_modules/swagger-ui-dist', { index: ['index.html'] }));
 };
