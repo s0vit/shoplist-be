@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { ExpensesInputDto } from './dto/expenses-input.dto';
 import { Model } from 'mongoose';
 import { FindExpenseDto } from './dto/find-expense.dto';
@@ -89,12 +82,9 @@ export class ExpensesService {
   }
   async find(dto: FindExpenseDto): Promise<ExpensesDocument[]> {
     //check if the dto.createdAt is an array of two Dates or is undefined and throw an error if it is not
-    if (dto?.createdAt && dto.createdAt.length !== 2) {
-      throw new BadRequestException(EXPENSES_ERROR.INVALID_DATE_RANGE);
-    }
     return this.expensesModel
       .find({
-        createdAt: { $gte: dto?.createdAt?.[0], $lte: dto?.createdAt?.[1] },
+        createdAt: { $gte: dto?.createdStartDate, $lte: dto?.createdEndDate },
         paymentSourceId: dto?.paymentSourceId,
         expensesTypeId: dto?.expensesTypeId,
       })

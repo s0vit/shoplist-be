@@ -1,18 +1,27 @@
-import { IsOptional } from 'class-validator';
+import { IsDateString, IsMongoId, IsOptional, IsPositive } from 'class-validator';
 
 export class FindExpenseDto {
   @IsOptional()
-  createdAt: [Date, Date];
+  @IsDateString()
+  createdStartDate?: string;
 
   @IsOptional()
-  paymentSourceId: string;
+  @IsDateString()
+  createdEndDate?: string;
 
   @IsOptional()
-  expensesTypeId: string;
+  @IsMongoId()
+  paymentSourceId?: string;
 
   @IsOptional()
-  limit: number;
+  @IsMongoId()
+  expensesTypeId?: string;
 
   @IsOptional()
-  skip: number;
+  @IsPositive()
+  limit?: number;
+
+  @IsOptional()
+  @IsPositive()
+  skip?: number;
 }
