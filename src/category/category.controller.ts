@@ -2,10 +2,10 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } fro
 import { CustomRequest } from '../common/interfaces/token.interface';
 import { CategoryService } from './category.service';
 import { AccessJwtGuard } from '../auth/guards/access-jwt.guard';
-import { GetCategorySwaggerDecorators } from './decorators/get-category-swagger-decorator';
+import { GetCategorySwaggerDecorators } from './decorators/get-category-sw.decorator';
 import { ApiTags } from '@nestjs/swagger';
-import { CategoryInputDto } from './dto/category-input.dto';
-import { CreateCategorySwaggerDecorators } from './decorators/create-category-swagger-decorator';
+import { CreateCategoryInputDto } from './dto/create-category-input.dto';
+import { CreateCategorySwaggerDecorators } from './decorators/create-category-sw.decorator';
 import { Category } from './models/category.model';
 
 @ApiTags('Category')
@@ -22,7 +22,7 @@ export class CategoryController {
   @CreateCategorySwaggerDecorators()
   @Post('create')
   @UseGuards(AccessJwtGuard)
-  async create(@Body() dto: CategoryInputDto, @Req() req: CustomRequest): Promise<Category> {
+  async create(@Body() dto: CreateCategoryInputDto, @Req() req: CustomRequest): Promise<Category> {
     return this.categoryService.create(dto, req.user.userId);
   }
 

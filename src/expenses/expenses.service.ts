@@ -1,36 +1,28 @@
 import { ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { ExpensesInputDto } from './dto/expenses-input.dto';
 import { Model } from 'mongoose';
-import { FindExpenseDto } from './dto/find-expense.dto';
+import { FindExpenseInputDto } from './dto/find-expense-input.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Expenses, ExpensesDocument } from './models/expenses.model';
 import { EXPENSES_ERROR } from './constants/expenses-error.enum';
-import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import { JsonWebTokenError } from '@nestjs/jwt';
 import { AccessControlService } from '../access-control/access-control.service';
-import { TokenPayload } from 'src/common/interfaces/token.interface';
 
 @Injectable()
 export class ExpensesService {
-  private readonly accessSecret: string;
   constructor(
     @InjectModel(Expenses.name)
     private readonly expensesModel: Model<Expenses>,
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
     private readonly accessControlService: AccessControlService,
-  ) {
-    this.accessSecret = this.configService.get<string>('ACCESS_TOKEN_KEY');
-  }
+  ) {}
 
-  async create(expense: ExpensesInputDto, token: string): Promise<ExpensesDocument> {
+  async create(expense: ExpensesInputDto, userId: string): Promise<ExpensesDocument> {
     try {
-      const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.accessSecret });
       const newExpansesInstance = new this.expensesModel({
         amount: expense.amount,
         categoryId: expense.categoryId,
         paymentSourceId: expense.paymentSourceId,
-        userId: result.userId,
+        userId: userId,
         comments: expense.comments,
       });
       const createdExpanse = await newExpansesInstance.save();
@@ -50,9 +42,8 @@ export class ExpensesService {
     }
     return foundExpanse;
   }
-  async getOwn(userId: string) {
-    const arrayExpenses = await this.expensesModel.find({ userId });
-    return arrayExpenses.map((expenses) => expenses.toObject({ versionKey: false }));
+  async getOwn(userId: string): Promise<ExpensesDocument[]> {
+    return this.expensesModel.find({ userId }).select('-__v').lean();
   }
   async getSharedExpenses(sharedUserId: string, currentUserId: string): Promise<ExpensesDocument[]> {
     if (currentUserId === sharedUserId) {
@@ -62,9 +53,14 @@ export class ExpensesService {
     if (!accessControlAllowed) {
       throw new ForbiddenException(EXPENSES_ERROR.ACCESS_DENIED);
     }
-    // ToDo: add try/catch
-    const arrayExpenses = await this.expensesModel.find({ _id: { $in: accessControlAllowed } });
-    return arrayExpenses.map((expenses) => expenses.toObject({ versionKey: false }));
+    try {
+      return this.expensesModel
+        .find({ _id: { $in: accessControlAllowed } })
+        .select('-__v')
+        .lean();
+    } catch (error) {
+      throw new HttpException(EXPENSES_ERROR.GET_SHARED_EXPENSES, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
   async delete(id: string): Promise<ExpensesDocument> {
     const expense = await this.expensesModel.findById(id);
@@ -80,7 +76,7 @@ export class ExpensesService {
     }
     return this.expensesModel.findByIdAndUpdate(id, expense, { new: true }).lean();
   }
-  async find(dto: FindExpenseDto): Promise<ExpensesDocument[]> {
+  async find(dto: FindExpenseInputDto): Promise<ExpensesDocument[]> {
     //check if the dto.createdAt is an array of two Dates or is undefined and throw an error if it is not
     return this.expensesModel
       .find({

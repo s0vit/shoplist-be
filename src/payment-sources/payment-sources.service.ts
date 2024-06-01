@@ -4,7 +4,7 @@ import { PaymentSource } from './models/payment-source.model';
 import { PaymentSourceInputDto } from './dto/payment-source-input.dto';
 import { PaymentSourcesError } from './constants/error.constant';
 import { InjectModel } from '@nestjs/mongoose';
-import { PaymentSourceResponseDto } from './dto/payment-source-response.dto';
+import { PaymentSourceOutputDto } from './dto/payment-source-output.dto';
 
 @Injectable()
 export class PaymentSourcesService {
@@ -13,7 +13,7 @@ export class PaymentSourcesService {
     private readonly PaymentSourcesModel: Model<PaymentSource>,
   ) {}
 
-  async create(userId: string, inputDTO: PaymentSourceInputDto): Promise<PaymentSourceResponseDto> {
+  async create(userId: string, inputDTO: PaymentSourceInputDto): Promise<PaymentSourceOutputDto> {
     const titleToSearch = new RegExp(`^${inputDTO.title}$`, 'i');
     const existingPaymentSourceForCurrentUser = await this.PaymentSourcesModel.findOne({
       title: titleToSearch,
@@ -31,7 +31,7 @@ export class PaymentSourcesService {
     return (await newPaymentSource.save()).toObject({ versionKey: false });
   }
 
-  async delete(id: string, userId: string): Promise<PaymentSourceResponseDto> {
+  async delete(id: string, userId: string): Promise<PaymentSourceOutputDto> {
     const toBeDeletedPaymentSource = await this.PaymentSourcesModel.findById(id);
     if (!toBeDeletedPaymentSource) {
       throw new ConflictException(PaymentSourcesError.NOT_FOUND);
@@ -43,7 +43,7 @@ export class PaymentSourcesService {
     return toBeDeletedPaymentSource.toObject({ versionKey: false });
   }
 
-  async update(id: string, inputDTO: PaymentSourceInputDto, userId: string): Promise<PaymentSourceResponseDto> {
+  async update(id: string, inputDTO: PaymentSourceInputDto, userId: string): Promise<PaymentSourceOutputDto> {
     const paymentSource = await this.PaymentSourcesModel.findById(id);
     if (!paymentSource) {
       throw new ConflictException(PaymentSourcesError.NOT_FOUND);
@@ -61,7 +61,7 @@ export class PaymentSourcesService {
     return paymentSource.toObject({ versionKey: false });
   }
 
-  async getOne(id: string, userId: string): Promise<PaymentSourceResponseDto> {
+  async getOne(id: string, userId: string): Promise<PaymentSourceOutputDto> {
     const paymentSource = await this.PaymentSourcesModel.findById(id);
     if (!paymentSource) {
       throw new ConflictException(PaymentSourcesError.NOT_FOUND);
@@ -72,7 +72,7 @@ export class PaymentSourcesService {
     return paymentSource.toObject({ versionKey: false });
   }
 
-  async getAll(userId: string): Promise<PaymentSourceResponseDto[]> {
+  async getAll(userId: string): Promise<PaymentSourceOutputDto[]> {
     return this.PaymentSourcesModel.find({ userId }).select('-__v').lean();
   }
 }

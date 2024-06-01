@@ -1,7 +1,8 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ExpensesOutputDto } from '../dto/expenses-output.dto';
 
-export function GetExpensesSwDec() {
+export function GetExpensesSwDecorator() {
   return applyDecorators(
     ApiOperation({
       summary: 'Get users Expenses',
@@ -49,10 +50,12 @@ export function GetExpensesSwDec() {
       description: 'Count of expenses to skip',
       example: 10,
     }),
-    ApiCookieAuth('accessToken'),
+    ApiCookieAuth(),
     ApiResponse({
       status: 200,
       description: 'The users Expenses successfully received.',
+      type: ExpensesOutputDto,
+      isArray: true,
     }),
   );
 }

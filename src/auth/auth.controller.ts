@@ -1,19 +1,19 @@
 import { BadRequestException, Body, Controller, Delete, Get, Post, Query, Req, Res } from '@nestjs/common';
-import { InputAuthDto } from './dto/input-auth.dto';
+import { InputAuthInputDto } from './dto/input-auth-input.dto';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
-import { LoginDto } from './dto/login.dto';
-import { RefreshDto } from './dto/refresh.dto';
+import { LoginInputDto } from './dto/login-input.dto';
+import { RefreshInputDto } from './dto/refresh-input.dto';
 import { COOKIE_SETTINGS } from './constants/auth-constants';
 import { ERROR_AUTH } from './constants/auth-error.enum';
 import { ApiTags } from '@nestjs/swagger';
-import { RegisterSwaggerDecorators } from './decorators/register-swagger.decorator';
-import { ConfirmEmailSwaggerDecorators } from './decorators/confirm-email-swagger.decorator';
-import { LoginSwaggerDecorators } from './decorators/login-swagger.decorator';
-import { RefreshTokenSwaggerDecorator } from './decorators/refresh-token-swagger.decorator';
-import { LogoutSwaggerDecorator } from './decorators/logout-swagger.decorator';
-import { LoginResponseDto } from './dto/login-response.dto';
-import { ConfirmResponseDto } from './dto/confirm-response.dto';
+import { RegisterSwaggerDecorators } from './decorators/register-sw.decorator';
+import { ConfirmEmailSwaggerDecorators } from './decorators/confirm-email-sw.decorator';
+import { LoginSwaggerDecorators } from './decorators/login-sw.decorator';
+import { RefreshTokenSwDecorator } from './decorators/refresh-token-sw.decorator';
+import { LogoutSwDecorator } from './decorators/logout-sw.decorator';
+import { LoginOutputDto } from './dto/login-output.dto';
+import { ConfirmOutputDto } from './dto/confirm-output.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -22,24 +22,24 @@ export class AuthController {
 
   @RegisterSwaggerDecorators()
   @Post('register')
-  async register(@Body() dto: InputAuthDto, @Req() req: Request): Promise<void> {
+  async register(@Body() dto: InputAuthInputDto, @Req() req: Request): Promise<void> {
     const origin = req.headers['origin'];
     return this.authService.register(dto, origin);
   }
 
   @ConfirmEmailSwaggerDecorators()
   @Get('confirm')
-  async confirm(@Query('token') token: string): Promise<ConfirmResponseDto> {
+  async confirm(@Query('token') token: string): Promise<ConfirmOutputDto> {
     return await this.authService.confirmRegistration(token);
   }
 
   @LoginSwaggerDecorators()
   @Post('login')
   async login(
-    @Body() dto: LoginDto,
+    @Body() dto: LoginInputDto,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<LoginResponseDto> {
+  ): Promise<LoginOutputDto> {
     if (dto.email && dto.password) {
       const result = await this.authService.login(dto.email, dto.password);
       res.cookie('accessToken', result.accessToken, COOKIE_SETTINGS.ACCESS_TOKEN);
@@ -52,15 +52,15 @@ export class AuthController {
     }
   }
 
-  @RefreshTokenSwaggerDecorator()
+  @RefreshTokenSwDecorator()
   @Post('refresh')
-  async refresh(@Body() dto: RefreshDto, @Res({ passthrough: true }) res: Response): Promise<RefreshDto> {
+  async refresh(@Body() dto: RefreshInputDto, @Res({ passthrough: true }) res: Response): Promise<RefreshInputDto> {
     const result = await this.authService.validateToken(dto.refreshToken);
     res.cookie('accessToken', result.accessToken, COOKIE_SETTINGS.ACCESS_TOKEN);
     return { refreshToken: result.refreshToken };
   }
 
-  @LogoutSwaggerDecorator()
+  @LogoutSwDecorator()
   @Delete('logout')
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<void> {
     if (req.cookies && req.cookies['accessToken']) {

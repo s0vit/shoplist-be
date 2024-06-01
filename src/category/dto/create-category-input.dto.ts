@@ -2,7 +2,7 @@ import { IsOptional, IsString, Length } from 'class-validator';
 import { CATEGORY_ERROR } from '../constants/category-error.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CategoryInputDto {
+export class CreateCategoryInputDto {
   @ApiProperty({
     example: 'Products',
     description: 'Category name',

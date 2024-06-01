@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 
-export class ExpensesResponseDto {
+export class ExpensesOutputDto {
   @ApiProperty({
     example: '6616f96da226986482597b6c',
     description: 'Unique identifier of the expense.',
@@ -39,13 +39,13 @@ export class ExpensesResponseDto {
   comments?: string;
 
   @ApiProperty({
-    example: '2024-05-18T08:36:41.000',
+    example: new Date(),
     description: 'Date created the expense.',
   })
   createdAt: Date;
 
   @ApiProperty({
-    example: '2024-05-18T08:36:41.000',
+    example: new Date(),
     description: 'Date updated the expense.',
   })
   updatedAt: Date;

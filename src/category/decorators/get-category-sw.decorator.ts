@@ -7,10 +7,11 @@ export function GetCategorySwaggerDecorators() {
       summary: 'Get users categories',
       description: 'Requires a token in cookies',
     }),
-    ApiCookieAuth('accessToken'),
+    ApiCookieAuth(),
     ApiResponse({
       status: 200,
       description: 'The users categories successfully received.',
+      // ToDo: add type response
     }),
   );
 }

@@ -1,7 +1,7 @@
 import { applyDecorators, HttpCode } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-export function LogoutSwaggerDecorator() {
+export function LogoutSwDecorator() {
   return applyDecorators(
     ApiOperation({
       summary: 'Logout user',

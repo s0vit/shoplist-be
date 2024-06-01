@@ -9,7 +9,7 @@ import { DeletePaymentSourceSwaggerDecorator } from './decorators/delete-payment
 import { GetAllPaymentSourceSwaggerDecorator } from './decorators/get-all-payment-source-swagger.decorator';
 import { GetByIdPaymentSourceSwaggerDecorator } from './decorators/get-by-id-payment-source-swagger.decorator';
 import { UpdatePaymentSourceSwaggerDecorator } from './decorators/update-payment-source-swagger.decorator';
-import { PaymentSourceResponseDto } from './dto/payment-source-response.dto';
+import { PaymentSourceOutputDto } from './dto/payment-source-output.dto';
 
 @ApiTags('Payment sources')
 @Controller('payment-sources')
@@ -18,25 +18,25 @@ export class PaymentSourcesController {
   constructor(private readonly paymentSourcesService: PaymentSourcesService) {}
   @CreatePaymentSourceSwaggerDecorator()
   @Post()
-  async create(@Body() inputDTO: PaymentSourceInputDto, @Req() req: CustomRequest): Promise<PaymentSourceResponseDto> {
+  async create(@Body() inputDTO: PaymentSourceInputDto, @Req() req: CustomRequest): Promise<PaymentSourceOutputDto> {
     return this.paymentSourcesService.create(req.user.userId, inputDTO);
   }
 
   @DeletePaymentSourceSwaggerDecorator()
   @Delete(':id')
-  async delete(@Param('id') id: string, @Req() req: CustomRequest): Promise<PaymentSourceResponseDto> {
+  async delete(@Param('id') id: string, @Req() req: CustomRequest): Promise<PaymentSourceOutputDto> {
     return this.paymentSourcesService.delete(id, req.user.userId);
   }
 
   @GetByIdPaymentSourceSwaggerDecorator()
   @Get(':id')
-  async getOne(@Param('id') id: string, @Req() req: CustomRequest): Promise<PaymentSourceResponseDto> {
+  async getOne(@Param('id') id: string, @Req() req: CustomRequest): Promise<PaymentSourceOutputDto> {
     return this.paymentSourcesService.getOne(id, req.user.userId);
   }
 
   @GetAllPaymentSourceSwaggerDecorator()
   @Get()
-  async getAll(@Req() req: CustomRequest): Promise<PaymentSourceResponseDto[]> {
+  async getAll(@Req() req: CustomRequest): Promise<PaymentSourceOutputDto[]> {
     return this.paymentSourcesService.getAll(req.user.userId);
   }
 
@@ -46,7 +46,7 @@ export class PaymentSourcesController {
     @Param('id') id: string,
     @Body() inputDTO: PaymentSourceInputDto,
     @Req() req: CustomRequest,
-  ): Promise<PaymentSourceResponseDto> {
+  ): Promise<PaymentSourceOutputDto> {
     return this.paymentSourcesService.update(id, inputDTO, req.user.userId);
   }
 }
