@@ -2,13 +2,13 @@ import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundExc
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './models/user.model';
-import { InputAuthDto } from './dto/input-auth.dto';
+import { InputAuthInputDto } from './dto/input-auth-input.dto';
 import { genSalt, hash, compare } from 'bcryptjs';
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ERROR_AUTH } from './constants/auth-error.enum';
-import { ConfirmResponseDto } from './dto/confirm-response.dto';
-import { LoginResponseDto } from './dto/login-response.dto';
+import { ConfirmOutputDto } from './dto/confirm-output.dto';
+import { LoginOutputDto } from './dto/login-output.dto';
 import { ConfigService } from '@nestjs/config';
 import { TokenPayload } from 'src/common/interfaces/token.interface';
 
@@ -37,7 +37,7 @@ export class AuthService {
   private async findUser(email: string): Promise<UserDocument> {
     return this.userModel.findOne({ email }).exec();
   }
-  private async createUser(dto: InputAuthDto) {
+  private async createUser(dto: InputAuthInputDto) {
     const salt = await genSalt(10);
     const newUser = new this.userModel({
       email: dto.email,
@@ -47,7 +47,7 @@ export class AuthService {
     await newUser.save();
   }
 
-  async register(dto: InputAuthDto, origin: string) {
+  async register(dto: InputAuthInputDto, origin: string) {
     const oldUser = await this.findUser(dto.email);
     if (oldUser) {
       throw new BadRequestException(ERROR_AUTH.USER_ALREADY_EXISTS);
@@ -65,14 +65,14 @@ export class AuthService {
       throw new HttpException(ERROR_AUTH.SEND_EMAIL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  async confirmRegistration(confirmToken: string): Promise<ConfirmResponseDto> {
+  async confirmRegistration(confirmToken: string): Promise<ConfirmOutputDto> {
     // ToDo: Test on production
     try {
       const result = await this.jwtService.verifyAsync<{ email: string }>(confirmToken);
       const updatedUser = await this.userModel
         .findOneAndUpdate({ email: result.email }, { $set: { isVerified: true } }, { new: true })
         .exec();
-      return new ConfirmResponseDto(updatedUser);
+      return new ConfirmOutputDto(updatedUser);
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         const jwtError = error as JsonWebTokenError;
@@ -81,7 +81,7 @@ export class AuthService {
       throw new HttpException(ERROR_AUTH.CONFIRM_REGISTRATION_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  async login(email: string, password: string): Promise<LoginResponseDto> {
+  async login(email: string, password: string): Promise<LoginOutputDto> {
     // Here return data for payload accessToken cookie
     const findUser = await this.findUser(email);
     if (!findUser) {
@@ -94,7 +94,7 @@ export class AuthService {
     const payloadData = { email, userId: findUser._id };
     const tokens = await this.generateTokens(payloadData);
     const updatedUser = await this.userModel.findOneAndUpdate({ email }, { $set: { ...tokens } }, { new: true }).exec();
-    return new LoginResponseDto(updatedUser);
+    return new LoginOutputDto(updatedUser);
   }
   async loginWithCookies(token: string) {
     try {
@@ -104,7 +104,7 @@ export class AuthService {
       const updatedUser = await this.userModel
         .findOneAndUpdate({ email: result.email }, { $set: { ...tokens } }, { new: true })
         .exec();
-      return new LoginResponseDto(updatedUser);
+      return new LoginOutputDto(updatedUser);
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         const jwtError = error as JsonWebTokenError;

@@ -1,7 +1,7 @@
 import { UserDocument } from '../models/user.model';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class LoginResponseDto {
+export class LoginOutputDto {
   @ApiProperty({
     example: 'example@gmail.com',
     description: 'Email user',

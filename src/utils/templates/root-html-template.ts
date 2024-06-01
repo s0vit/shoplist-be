@@ -1,4 +1,4 @@
-export const getHtmlTemplate = (host: string): string => `
+export const getHtmlTemplate = (host: string, protocol: string): string => `
     <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +8,7 @@ export const getHtmlTemplate = (host: string): string => `
     </head>
     <body>
     <h1>Hello!</h1>
-    <p>Swagger Shoplist API: <a href="http://${host}:3000/swagger">API</a></p>
+    <p>Swagger Shoplist API: <a href="${protocol}://${host}/swagger">API</a></p>
 <p>Visit my GitHub project: <a href="https://github.com/s0vit/shoplist-be">Shoplist</a></p>
 </body>
 </html>

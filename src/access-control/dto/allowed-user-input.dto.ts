@@ -1,6 +1,6 @@
 import { ArrayNotEmpty, IsArray, IsMongoId } from 'class-validator';
 
-export class AllowedUserDto {
+export class AllowedUserInputDto {
   @IsMongoId()
   sharedWith: string;
 

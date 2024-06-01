@@ -2,7 +2,7 @@ import { IsEmail, IsString, Length, Matches } from 'class-validator';
 import { ERROR_AUTH } from '../constants/auth-error.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class InputAuthDto {
+export class InputAuthInputDto {
   @ApiProperty({
     example: 'example@gmail.com',
     description: 'User email',

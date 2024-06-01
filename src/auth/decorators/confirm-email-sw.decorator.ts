@@ -1,6 +1,6 @@
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
-import { ConfirmResponseDto } from '../dto/confirm-response.dto';
+import { ConfirmOutputDto } from '../dto/confirm-output.dto';
 
 export function ConfirmEmailSwaggerDecorators() {
   return applyDecorators(
@@ -8,7 +8,7 @@ export function ConfirmEmailSwaggerDecorators() {
     ApiResponse({
       status: 200,
       description: 'The user registration has been successfully confirmed.',
-      type: ConfirmResponseDto,
+      type: ConfirmOutputDto,
     }),
   );
 }

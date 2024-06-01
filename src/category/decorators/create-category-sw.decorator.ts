@@ -1,7 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { CategoryInputDto } from '../dto/category-input.dto';
-import { CategoryInputResponseDto } from '../dto/category-input-response.dto';
+import { CreateCategoryInputDto } from '../dto/create-category-input.dto';
+import { CreateCategoryOutputDto } from '../dto/create-category-output.dto';
 
 export function CreateCategorySwaggerDecorators() {
   return applyDecorators(
@@ -9,11 +9,11 @@ export function CreateCategorySwaggerDecorators() {
       summary: 'Create category',
       description: 'Requires a token in cookies and title and userId',
     }),
-    ApiBody({ type: CategoryInputDto }),
-    ApiCookieAuth('accessToken'),
+    ApiBody({ type: CreateCategoryInputDto }),
+    ApiCookieAuth(),
     ApiResponse({
       description: 'Categories have been successfully created!',
-      type: CategoryInputResponseDto,
+      type: CreateCategoryOutputDto,
     }),
   );
 }

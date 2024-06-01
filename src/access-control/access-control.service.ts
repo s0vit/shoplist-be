@@ -3,7 +3,7 @@ import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
 import { AccessControl, AccessControlDocument } from './models/access-control.model';
-import { AllowedUserDto } from './dto/allowed-user.dto';
+import { AllowedUserInputDto } from './dto/allowed-user-input.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { ACCESS_CONTROL_ERROR } from './constants/access-control-error.enum';
 import { TokenPayload } from 'src/common/interfaces/token.interface';
@@ -24,7 +24,7 @@ export class AccessControlService {
     const result = await this.accessControlModel.findOne({ ownerId: userId, sharedWith: currentUserID }).exec();
     if (result) return result.expenseIds;
   }
-  async create(allowed: AllowedUserDto, token: string): Promise<AccessControlDocument> {
+  async create(allowed: AllowedUserInputDto, token: string): Promise<AccessControlDocument> {
     let currentUser: { userId: string; email: string };
     try {
       currentUser = this.jwtService.verify<TokenPayload>(token, { secret: this.accessSecret });

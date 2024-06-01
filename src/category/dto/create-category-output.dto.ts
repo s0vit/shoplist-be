@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CategoryDocument } from '../models/category.model';
 
-export class CategoryInputResponseDto {
+export class CreateCategoryOutputDto {
   @ApiProperty({
     example: '6616f96da226986482597b6c',
     description: 'Category ID',

@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Category } from './models/category.model';
-import { CategoryInputDto } from './dto/category-input.dto';
+import { CreateCategoryInputDto } from './dto/create-category-input.dto';
 import { CATEGORY_ERROR } from './constants/category-error.enum';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class CategoryService {
   async get(userId: string) {
     return 'GET api/category - userId: ' + userId;
   }
-  async create(category: CategoryInputDto, userId: string) {
+  async create(category: CreateCategoryInputDto, userId: string) {
     try {
       const newCategoryInstance = new this.categoryModel({
         userId,
