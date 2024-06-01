@@ -1,21 +1,52 @@
-import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common';
-
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { PaymentSourcesService } from './payment-sources.service';
+import { PaymentSourceInputDto } from './dto/payment-source-input.dto';
+import { AccessJwtGuard } from '../auth/guards/access-jwt.guard';
+import { CustomRequest } from '../common/interfaces/token.interface';
+import { CreatePaymentSourceSwaggerDecorator } from './decorators/create-payment-source-swagger.decorator';
+import { DeletePaymentSourceSwaggerDecorator } from './decorators/delete-payment-source-swagger.decorator';
+import { GetAllPaymentSourceSwaggerDecorator } from './decorators/get-all-payment-source-swagger.decorator';
+import { GetByIdPaymentSourceSwaggerDecorator } from './decorators/get-by-id-payment-source-swagger.decorator';
+import { UpdatePaymentSourceSwaggerDecorator } from './decorators/update-payment-source-swagger.decorator';
+import { PaymentSourceResponseDto } from './dto/payment-source-response.dto';
+
 @ApiTags('Payment sources')
 @Controller('payment-sources')
+@UseGuards(AccessJwtGuard)
 export class PaymentSourcesController {
+  constructor(private readonly paymentSourcesService: PaymentSourcesService) {}
+  @CreatePaymentSourceSwaggerDecorator()
   @Post()
-  async create(@Body('name') name: string) {
-    return { name };
+  async create(@Body() inputDTO: PaymentSourceInputDto, @Req() req: CustomRequest): Promise<PaymentSourceResponseDto> {
+    return this.paymentSourcesService.create(req.user.userId, inputDTO);
   }
 
+  @DeletePaymentSourceSwaggerDecorator()
   @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return { id };
+  async delete(@Param('id') id: string, @Req() req: CustomRequest): Promise<PaymentSourceResponseDto> {
+    return this.paymentSourcesService.delete(id, req.user.userId);
   }
 
-  @Patch(':id')
-  async update(@Param('id') id: string, @Body('name') name: string) {
-    return { id, name };
+  @GetByIdPaymentSourceSwaggerDecorator()
+  @Get(':id')
+  async getOne(@Param('id') id: string, @Req() req: CustomRequest): Promise<PaymentSourceResponseDto> {
+    return this.paymentSourcesService.getOne(id, req.user.userId);
+  }
+
+  @GetAllPaymentSourceSwaggerDecorator()
+  @Get()
+  async getAll(@Req() req: CustomRequest): Promise<PaymentSourceResponseDto[]> {
+    return this.paymentSourcesService.getAll(req.user.userId);
+  }
+
+  @UpdatePaymentSourceSwaggerDecorator()
+  @Put(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() inputDTO: PaymentSourceInputDto,
+    @Req() req: CustomRequest,
+  ): Promise<PaymentSourceResponseDto> {
+    return this.paymentSourcesService.update(id, inputDTO, req.user.userId);
   }
 }
