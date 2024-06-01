@@ -7,11 +7,11 @@ import { RefreshDto } from './dto/refresh.dto';
 import { COOKIE_SETTINGS } from './constants/auth-constants';
 import { ERROR_AUTH } from './constants/auth-error.enum';
 import { ApiTags } from '@nestjs/swagger';
-import { RegisterSwaggerDecorators } from './decorators/register-swagger-decorator';
-import { ConfirmEmailSwaggerDecorators } from './decorators/confirm-email-swagger-decorator';
-import { LoginSwaggerDecorators } from './decorators/login-swagger-decorator';
-import { RefreshTokenSwaggerDecorator } from './decorators/refresh-token-swagger-decorator';
-import { LogoutSwaggerDecorator } from './decorators/logout-swagger-decorator';
+import { RegisterSwaggerDecorators } from './decorators/register-swagger.decorator';
+import { ConfirmEmailSwaggerDecorators } from './decorators/confirm-email-swagger.decorator';
+import { LoginSwaggerDecorators } from './decorators/login-swagger.decorator';
+import { RefreshTokenSwaggerDecorator } from './decorators/refresh-token-swagger.decorator';
+import { LogoutSwaggerDecorator } from './decorators/logout-swagger.decorator';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { ConfirmResponseDto } from './dto/confirm-response.dto';
 

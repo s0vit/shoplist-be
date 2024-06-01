@@ -16,6 +16,9 @@ export class PaymentSource {
   @Prop()
   comments?: string;
 
+  @Prop()
+  color?: string;
+
   @Prop({ default: Date.now })
   createdAt: Date;
 

@@ -22,5 +22,8 @@ export const setupSwagger = (app: INestApplication) => {
       'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.min.css',
       'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.css',
     ],
+    swaggerOptions: {
+      withCredentials: true,
+    },
   });
 };
