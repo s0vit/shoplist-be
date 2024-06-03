@@ -11,10 +11,22 @@ export class AccessControl {
   ownerId: string;
 
   @Prop({ required: true })
-  sharedWith: string;
+  sharedWith: string[];
 
   @Prop()
   expenseIds: string[];
+
+  @Prop()
+  categoryIds: string[];
+
+  @Prop()
+  paymentSourceIds: string[];
+
+  @Prop({ default: new Date() })
+  createdAt: Date;
+
+  @Prop({ default: new Date() })
+  updatedAt: Date;
 }
 
 export const AccessControlSchema = SchemaFactory.createForClass(AccessControl);
