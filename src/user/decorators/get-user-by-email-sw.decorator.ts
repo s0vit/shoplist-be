@@ -1,4 +1,4 @@
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
 import { FindByEmailOutputDto } from '../dto/find-by-email-output.dto';
 
