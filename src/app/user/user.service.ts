@@ -16,4 +16,9 @@ export class UserService {
       .lean();
     return foundUsers as FindByEmailOutputDto[];
   }
+
+  async isUserVerified(userId: string) {
+    const foundUser = await this.userModel.findById(userId).lean();
+    return foundUser.isVerified;
+  }
 }

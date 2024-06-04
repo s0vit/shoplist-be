@@ -3,13 +3,15 @@ import { ExpensesInputDto } from './dto/expenses-input.dto';
 import { FindExpenseInputDto } from './dto/find-expense-input.dto';
 import { ExpensesService } from './expenses.service';
 import { SharedExpenseDto } from './dto/get-shared-input.dto';
-import { CustomRequest } from '../common/interfaces/token.interface';
-import { AccessJwtGuard } from '../auth/guards/access-jwt.guard';
+import { AccessJwtGuard } from '../../guards/access-jwt.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { GetExpensesSwDecorator } from './decorators/get-expenses-sw.decorator';
 import { CreateExpensesSwDecorator } from './decorators/create-expenses-sw.decorator';
 import { ExpensesOutputDto } from './dto/expenses-output.dto';
+import { CustomRequest } from '../../common/interfaces/token.interface';
+import { IsUserVerifiedGuard } from '../../guards/is-user-verified-guard';
 
+@UseGuards(AccessJwtGuard, IsUserVerifiedGuard)
 @ApiTags('Expenses')
 @Controller('expenses')
 export class ExpensesController {
@@ -17,7 +19,6 @@ export class ExpensesController {
 
   @CreateExpensesSwDecorator()
   @Post('create')
-  @UseGuards(AccessJwtGuard)
   async create(@Body() dto: ExpensesInputDto, @Req() req: CustomRequest): Promise<ExpensesOutputDto> {
     return this.expensesService.create(dto, req.user.userId);
   }
@@ -31,7 +32,6 @@ export class ExpensesController {
   // Get own expenses
   @GetExpensesSwDecorator()
   @Get()
-  @UseGuards(AccessJwtGuard)
   async getOwn(@Query() dto: FindExpenseInputDto, @Req() req: CustomRequest) {
     // ToDo: data from "dto" is not processed
     return this.expensesService.getOwn(req.user.userId);
@@ -40,7 +40,6 @@ export class ExpensesController {
   // Get shared expenses
   // we need a request/router "is anything for me at all?!"
   @Get('shared/:sharedId')
-  @UseGuards(AccessJwtGuard)
   async getShared(@Param() { sharedId }: SharedExpenseDto, @Req() req: CustomRequest) {
     return this.expensesService.getSharedExpenses(sharedId, req.user.userId);
   }

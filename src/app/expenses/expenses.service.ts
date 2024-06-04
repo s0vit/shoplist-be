@@ -1,4 +1,11 @@
-import { ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+  UseGuards,
+} from '@nestjs/common';
 import { ExpensesInputDto } from './dto/expenses-input.dto';
 import { Model } from 'mongoose';
 import { FindExpenseInputDto } from './dto/find-expense-input.dto';
@@ -6,7 +13,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Expenses, ExpensesDocument } from './models/expenses.model';
 import { EXPENSES_ERROR } from './constants/expenses-error.enum';
 import { JsonWebTokenError } from '@nestjs/jwt';
-import { AccessControlService } from '../access-control/access-control.service';
+import { AccessControlService } from '../../access-control/access-control.service';
 
 @Injectable()
 export class ExpensesService {
