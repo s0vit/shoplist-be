@@ -10,9 +10,10 @@ export class UserService {
 
   async findByEmail(email: string): Promise<FindByEmailOutputDto[]> {
     const emailRegex = new RegExp(email, 'i');
-    const foundUsers = await this.userModel.find({ email: emailRegex });
-    return foundUsers.map(
-      (user) => new FindByEmailOutputDto(user._id, user.email, user.login, user.isVerified, user.loginDate),
-    );
+    const foundUsers = await this.userModel
+      .find({ email: emailRegex })
+      .select(['email', '_id', 'login', 'isVerified', 'loginDate'])
+      .lean();
+    return foundUsers as FindByEmailOutputDto[];
   }
 }

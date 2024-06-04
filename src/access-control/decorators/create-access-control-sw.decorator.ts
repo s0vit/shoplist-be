@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiCookieAuth, ApiOperation, ApiProperty, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AccessControlInputDto } from '../dto/access-control-input.dto';
 import { AccessControlOutputDto } from '../dto/access-control-output.dto';
 

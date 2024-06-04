@@ -1,20 +1,11 @@
-import {
-  ForbiddenException,
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-  UseGuards,
-} from '@nestjs/common';
+import { ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { AccessControl } from './models/access-control.model';
 import { AccessControlInputDto } from './dto/access-control-input.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { ACCESS_CONTROL_ERROR } from './constants/access-control-error.enum';
-import { AccessJwtGuard } from '../auth/guards/access-jwt.guard';
 import { AccessControlOutputDto } from './dto/access-control-output.dto';
 
-@UseGuards(AccessJwtGuard)
 @Injectable()
 export class AccessControlService {
   constructor(

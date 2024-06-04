@@ -6,7 +6,7 @@ export class FindByEmailOutputDto {
     description: 'User id',
     example: '60d4b5a2c1f5f83b2c0b7c0b',
   })
-  id: string | Types.ObjectId;
+  _id: string | Types.ObjectId;
 
   @ApiProperty({
     description: 'User email',
@@ -28,12 +28,12 @@ export class FindByEmailOutputDto {
 
   @ApiProperty({
     description: 'Last login date',
-    example: '2021-06-24T12:00:00.000Z',
+    example: new Date(),
   })
   loginDate: Date;
 
   constructor(id: Types.ObjectId, email: string, login: string, isVerified: boolean, loginDate: Date) {
-    this.id = id;
+    this._id = id;
     this.email = email;
     this.login = login;
     this.isVerified = isVerified;
