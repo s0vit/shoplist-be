@@ -4,12 +4,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { getMongoConfigs } from './configs/get-mongo.configs';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { configThrottling } from './configs/config-throttling';
-import { AuthModule } from './auth/auth.module';
-import { ExpensesModule } from './expenses/expenses.module';
-import { CategoryModule } from './category/category.module';
-import { PaymentSourcesModule } from './payment-sources/payment-sources.module';
 import { AccessControlModule } from './access-control/access-control.module';
-import { UserModule } from './user/user.module';
+import { AuthModule } from './app/auth/auth.module';
+import { ExpensesModule } from './app/expenses/expenses.module';
+import { CategoryModule } from './app/category/category.module';
+import { PaymentSourcesModule } from './app/payment-sources/payment-sources.module';
+import { UserModule } from './app/user/user.module';
 
 export const appModuleImports: ModuleMetadata['imports'] = [
   ConfigModule.forRoot(),

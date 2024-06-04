@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
-import { CustomRequest } from '../common/interfaces/token.interface';
+import { CustomRequest } from '../../common/interfaces/token.interface';
 import { CategoryService } from './category.service';
-import { AccessJwtGuard } from '../auth/guards/access-jwt.guard';
+import { AccessJwtGuard } from '../../guards/access-jwt.guard';
 import { GetCategorySwaggerDecorators } from './decorators/get-category-sw.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateCategoryInputDto } from './dto/create-category-input.dto';

@@ -5,9 +5,9 @@ import { User, UserSchema } from './models/user.model';
 import { AuthService } from './auth.service';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { getMailerConfig } from '../configs/get-mailer.config';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConfig } from '../configs/jwt.config';
+import { jwtConfig } from '../../configs/jwt.config';
+import { getMailerConfig } from '../../configs/get-mailer.config';
 
 @Module({
   imports: [

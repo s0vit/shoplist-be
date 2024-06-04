@@ -8,7 +8,7 @@ import { CreateAccessControlSwDecorator } from './decorators/create-access-contr
 import { UpdateAccessControlSwDecorator } from './decorators/update-access-control-sw.decorator';
 import { DeleteAccessControlSwDecorator } from './decorators/delete-access-control-sw.decorator';
 import { GetAllAccessControlSwDecorator } from './decorators/get-all-access-control-sw.decorator';
-import { AccessJwtGuard } from '../auth/guards/access-jwt.guard';
+import { AccessJwtGuard } from '../guards/access-jwt.guard';
 
 @UseGuards(AccessJwtGuard)
 @ApiTags('Access control')
