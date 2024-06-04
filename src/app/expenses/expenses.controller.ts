@@ -9,9 +9,9 @@ import { GetExpensesSwDecorator } from './decorators/get-expenses-sw.decorator';
 import { CreateExpensesSwDecorator } from './decorators/create-expenses-sw.decorator';
 import { ExpensesOutputDto } from './dto/expenses-output.dto';
 import { CustomRequest } from '../../common/interfaces/token.interface';
-import { IsUserVerifiedGuard } from '../../guards/is-user-verified-guard';
 
-@UseGuards(AccessJwtGuard, IsUserVerifiedGuard)
+@UseGuards(AccessJwtGuard)
+@UseGuards(AccessJwtGuard)
 @ApiTags('Expenses')
 @Controller('expenses')
 export class ExpensesController {
@@ -33,7 +33,7 @@ export class ExpensesController {
   @GetExpensesSwDecorator()
   @Get()
   async getOwn(@Query() dto: FindExpenseInputDto, @Req() req: CustomRequest) {
-    // ToDo: data from "dto" is not processed
+    // ToDo: data from "Query" is not processed
     return this.expensesService.getOwn(req.user.userId);
   }
 

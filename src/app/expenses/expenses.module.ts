@@ -10,7 +10,6 @@ import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
 import { jwtConfig } from '../../configs/jwt.config';
 import { AccessControlModule } from '../../access-control/access-control.module';
 import { AccessControlService } from '../../access-control/access-control.service';
-import { UserService } from '../user/user.service';
 import { User, UserSchema } from '../auth/models/user.model';
 
 @Module({
@@ -27,6 +26,6 @@ import { User, UserSchema } from '../auth/models/user.model';
     PassportModule,
   ],
   controllers: [ExpensesController],
-  providers: [ExpensesService, AccessControlService, AccessJwtStrategy, UserService],
+  providers: [ExpensesService, AccessControlService, AccessJwtStrategy],
 })
 export class ExpensesModule {}

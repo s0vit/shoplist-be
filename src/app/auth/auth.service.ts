@@ -87,6 +87,9 @@ export class AuthService {
     if (!findUser) {
       throw new BadRequestException(ERROR_AUTH.UNAUTHORIZED);
     }
+    if (!findUser.isVerified) {
+      throw new BadRequestException(ERROR_AUTH.VERIFIED_USER_ERROR);
+    }
     const validPassword = await compare(password, findUser.passwordHash);
     if (!validPassword) {
       throw new BadRequestException(ERROR_AUTH.UNAUTHORIZED);

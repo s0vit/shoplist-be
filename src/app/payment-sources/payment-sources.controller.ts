@@ -10,11 +10,10 @@ import { GetByIdPaymentSourceSwaggerDecorator } from './decorators/get-by-id-pay
 import { UpdatePaymentSourceSwaggerDecorator } from './decorators/update-payment-source-swagger.decorator';
 import { PaymentSourceOutputDto } from './dto/payment-source-output.dto';
 import { CustomRequest } from '../../common/interfaces/token.interface';
-import { IsUserVerifiedGuard } from '../../guards/is-user-verified-guard';
 
 @ApiTags('Payment sources')
 @Controller('payment-sources')
-@UseGuards(AccessJwtGuard, IsUserVerifiedGuard)
+@UseGuards(AccessJwtGuard)
 export class PaymentSourcesController {
   constructor(private readonly paymentSourcesService: PaymentSourcesService) {}
   @CreatePaymentSourceSwaggerDecorator()
