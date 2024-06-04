@@ -10,8 +10,6 @@ export const setupApp = async (app: INestApplication) => {
   const CLIENT_URLS = process.env.CLIENT_URLS;
   app.setGlobalPrefix('api');
   app.getHttpAdapter().get('/', (req, res) => {
-    // console.log(req.headers.host);
-    console.log(req.protocol);
     const host = req.headers.host;
     const protocol = req.protocol;
     res.send(getHtmlTemplate(host, protocol));

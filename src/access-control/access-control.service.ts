@@ -1,76 +1,60 @@
-import { ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
+import { ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { Model } from 'mongoose';
-import { ConfigService } from '@nestjs/config';
-import { AccessControl, AccessControlDocument } from './models/access-control.model';
-import { AllowedUserInputDto } from './dto/allowed-user-input.dto';
+import { AccessControl } from './models/access-control.model';
+import { AccessControlInputDto } from './dto/access-control-input.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { ACCESS_CONTROL_ERROR } from './constants/access-control-error.enum';
-import { TokenPayload } from 'src/common/interfaces/token.interface';
+import { AccessControlOutputDto } from './dto/access-control-output.dto';
 
 @Injectable()
 export class AccessControlService {
-  private readonly accessSecret: string;
   constructor(
     @InjectModel(AccessControl.name)
     private readonly accessControlModel: Model<AccessControl>,
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-  ) {
-    this.accessSecret = this.configService.get<string>('ACCESS_TOKEN_KEY');
+  ) {}
+
+  async getAll(userId: string): Promise<AccessControlOutputDto[]> {
+    return this.accessControlModel.find({ ownerId: userId }).select('-__v').lean();
   }
 
-  async _getAllowedExpensesId(userId: string, currentUserID: string) {
-    const result = await this.accessControlModel.findOne({ ownerId: userId, sharedWith: currentUserID }).exec();
+  async _getAllowedExpensesId(ownerId: string, participantID: string): Promise<string[]> {
+    const result = await this.accessControlModel.findOne({ ownerId, sharedWith: participantID });
     if (result) return result.expenseIds;
   }
-  async create(allowed: AllowedUserInputDto, token: string): Promise<AccessControlDocument> {
-    let currentUser: { userId: string; email: string };
-    try {
-      currentUser = this.jwtService.verify<TokenPayload>(token, { secret: this.accessSecret });
-    } catch (error) {
-      if (error instanceof JsonWebTokenError) {
-        const jwtError = error as JsonWebTokenError;
-        throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
-      }
-    }
-    if (currentUser.userId === allowed.sharedWith) {
+
+  async create(userId: string, dto: AccessControlInputDto): Promise<AccessControlOutputDto> {
+    if (dto.sharedWith.includes(userId)) {
       throw new ForbiddenException(ACCESS_CONTROL_ERROR.OWN_ACCESS_ERROR);
     }
     try {
-      const accessControl = await this.accessControlModel.findOneAndUpdate(
-        { ownerId: currentUser.userId, sharedWith: allowed.sharedWith },
-        { $addToSet: { expenseIds: { $each: allowed.expenseIds } } },
-        { upsert: true, new: true }, // upsert: true creates a new document if it doesn't exist
-      );
-      return accessControl.toObject({ versionKey: false });
+      const accessControl = new this.accessControlModel({ ownerId: userId, ...dto });
+      const result = await accessControl.save();
+      return result.toObject({ versionKey: false });
     } catch (error) {
       throw new HttpException(ACCESS_CONTROL_ERROR.CREATE_ACCESS_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  async update(token: string) {
-    try {
-      const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.accessSecret });
-      return result;
-    } catch (error) {
-      if (error instanceof JsonWebTokenError) {
-        const jwtError = error as JsonWebTokenError;
-        throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
-      }
-      throw new HttpException(ACCESS_CONTROL_ERROR.UPDATE_ACCESS_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+
+  async update(userId: string, accessId: string, dto: AccessControlInputDto): Promise<AccessControlOutputDto> {
+    if (dto.sharedWith?.includes(userId)) {
+      throw new ForbiddenException(ACCESS_CONTROL_ERROR.OWN_ACCESS_ERROR);
     }
+    const result = await this.accessControlModel.findById(accessId);
+    if (result?.ownerId !== userId) {
+      throw new ForbiddenException(ACCESS_CONTROL_ERROR.FORBIDDEN);
+    }
+    if (!result) {
+      throw new NotFoundException(ACCESS_CONTROL_ERROR.NOT_FOUND);
+    }
+    result.set({ ...dto, updatedAt: new Date() });
+    result.save();
+    return result.toObject({ versionKey: false });
   }
-  async delete(accessId: string, token: string) {
-    // when delete all expenseIds, need to delete record
-    try {
-      const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.accessSecret });
-      return result;
-    } catch (error) {
-      if (error instanceof JsonWebTokenError) {
-        const jwtError = error as JsonWebTokenError;
-        throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
-      }
-      throw new HttpException(ACCESS_CONTROL_ERROR.DELETE_ACCESS_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+  async delete(userId: string, accessId: string): Promise<AccessControlOutputDto> {
+    const result = await this.accessControlModel.findByIdAndDelete(accessId, { ownerId: userId });
+    if (!result) {
+      throw new NotFoundException(ACCESS_CONTROL_ERROR.DELETE_ACCESS_ERROR);
     }
+    return result.toObject({ versionKey: false });
   }
 }

@@ -9,6 +9,7 @@ import { ExpensesModule } from './expenses/expenses.module';
 import { CategoryModule } from './category/category.module';
 import { PaymentSourcesModule } from './payment-sources/payment-sources.module';
 import { AccessControlModule } from './access-control/access-control.module';
+import { UserModule } from './user/user.module';
 
 export const appModuleImports: ModuleMetadata['imports'] = [
   ConfigModule.forRoot(),
@@ -27,4 +28,5 @@ export const appModuleImports: ModuleMetadata['imports'] = [
   CategoryModule,
   PaymentSourcesModule,
   AccessControlModule,
+  UserModule,
 ];
