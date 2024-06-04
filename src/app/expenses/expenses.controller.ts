@@ -11,7 +11,6 @@ import { ExpensesOutputDto } from './dto/expenses-output.dto';
 import { CustomRequest } from '../../common/interfaces/token.interface';
 
 @UseGuards(AccessJwtGuard)
-@UseGuards(AccessJwtGuard)
 @ApiTags('Expenses')
 @Controller('expenses')
 export class ExpensesController {
