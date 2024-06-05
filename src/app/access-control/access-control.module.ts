@@ -3,7 +3,7 @@ import { AccessControlController } from './access-control.controller';
 import { AccessControlService } from './access-control.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AccessControl, AccessControlSchema } from './models/access-control.model';
-import { ExpansesSchema, Expenses } from '../app/expenses/models/expenses.model';
+import { ExpansesSchema, Expenses } from '../expenses/models/expenses.model';
 
 @Module({
   imports: [

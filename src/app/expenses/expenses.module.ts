@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
-import { ExpensesController } from './expenses.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ExpensesService } from './expenses.service';
-import { ExpansesSchema, Expenses } from './models/expenses.model';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { jwtConfig } from '../../configs/jwt.config';
-import { AccessControlModule } from '../../access-control/access-control.module';
-import { AccessControlService } from '../../access-control/access-control.service';
+import { ExpensesController } from './expenses.controller';
+import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
+import { ExpensesService } from './expenses.service';
+import { AccessControlService } from '../access-control/access-control.service';
+import { ExpansesSchema, Expenses } from './models/expenses.model';
 import { User, UserSchema } from '../auth/models/user.model';
+import { AccessControlModule } from '../access-control/access-control.module';
 
 @Module({
   imports: [

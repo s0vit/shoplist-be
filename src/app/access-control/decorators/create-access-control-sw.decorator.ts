@@ -3,7 +3,7 @@ import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagg
 import { AccessControlInputDto } from '../dto/access-control-input.dto';
 import { AccessControlOutputDto } from '../dto/access-control-output.dto';
 
-export function CreateAccessControlSwDecorator() {
+export function CreateAccessControlSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Create access control',

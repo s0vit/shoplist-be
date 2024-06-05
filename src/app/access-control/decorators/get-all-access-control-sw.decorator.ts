@@ -2,7 +2,7 @@ import { ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
 import { AccessControlOutputDto } from '../dto/access-control-output.dto';
 
-export function GetAllAccessControlSwDecorator() {
+export function GetAllAccessControlSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Get all access control',

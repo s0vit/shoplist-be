@@ -6,7 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Expenses, ExpensesDocument } from './models/expenses.model';
 import { EXPENSES_ERROR } from './constants/expenses-error.enum';
 import { JsonWebTokenError } from '@nestjs/jwt';
-import { AccessControlService } from '../../access-control/access-control.service';
+import { AccessControlService } from '../access-control/access-control.service';
 
 @Injectable()
 export class ExpensesService {
