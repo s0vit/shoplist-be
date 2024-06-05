@@ -3,7 +3,7 @@ import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagg
 import { LoginOutputDto } from '../dto/login-output.dto';
 import { LoginInputDto } from '../dto/login-input.dto';
 
-export function LoginSwaggerDecorators() {
+export function LoginSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Login user',

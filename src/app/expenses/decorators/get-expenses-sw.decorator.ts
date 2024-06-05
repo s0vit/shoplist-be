@@ -2,7 +2,7 @@ import { applyDecorators } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { ExpensesOutputDto } from '../dto/expenses-output.dto';
 
-export function GetExpensesSwDecorator() {
+export function GetExpensesSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Get users Expenses',

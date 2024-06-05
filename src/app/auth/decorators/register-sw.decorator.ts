@@ -1,7 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-export function RegisterSwaggerDecorators() {
+export function RegisterSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Register a new user',

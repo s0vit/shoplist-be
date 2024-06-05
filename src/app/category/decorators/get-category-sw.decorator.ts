@@ -1,7 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-export function GetCategorySwaggerDecorators() {
+export function GetCategorySwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Get users categories',

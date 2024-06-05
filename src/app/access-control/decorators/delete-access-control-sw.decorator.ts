@@ -1,7 +1,7 @@
 import { ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
 
-export function DeleteAccessControlSwDecorator() {
+export function DeleteAccessControlSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Delete access control',

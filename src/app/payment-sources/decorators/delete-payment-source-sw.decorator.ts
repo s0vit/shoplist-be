@@ -2,7 +2,7 @@ import { ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swag
 import { applyDecorators } from '@nestjs/common';
 import { PaymentSourceOutputDto } from '../dto/payment-source-output.dto';
 
-export function GetByIdPaymentSourceSwaggerDecorator() {
+export function DeletePaymentSourceSwDec() {
   return applyDecorators(
     ApiCookieAuth(),
     ApiParam({
@@ -11,12 +11,12 @@ export function GetByIdPaymentSourceSwaggerDecorator() {
       description: 'The payment source id',
     }),
     ApiOperation({
-      summary: 'Get a payment source by id',
-      description: 'The payment source has been successfully retrieved.',
+      summary: 'Delete a payment source',
+      description: 'The payment source has been successfully deleted.',
     }),
     ApiResponse({
       status: 200,
-      description: 'The payment source has been successfully retrieved.',
+      description: 'The payment source has been successfully deleted.',
       type: PaymentSourceOutputDto,
     }),
   );

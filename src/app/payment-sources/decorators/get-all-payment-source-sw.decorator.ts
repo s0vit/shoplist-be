@@ -2,7 +2,7 @@ import { ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
 import { PaymentSourceOutputDto } from '../dto/payment-source-output.dto';
 
-export function GetAllPaymentSourceSwaggerDecorator() {
+export function GetAllPaymentSourceSwDec() {
   return applyDecorators(
     ApiCookieAuth(),
     ApiOperation({

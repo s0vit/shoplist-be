@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { TokenPayload } from '../../../common/interfaces/token.interface';
+import { ERROR_AUTH } from '../constants/auth-error.enum';
 
 @Injectable()
 export class AccessJwtStrategy extends PassportStrategy(Strategy) {
@@ -15,7 +16,10 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate({ userId, email }: TokenPayload) {
+  async validate({ userId, email, isVerified }: TokenPayload) {
+    if (!isVerified) {
+      throw new UnauthorizedException(ERROR_AUTH.VERIFIED_USER_ERROR);
+    }
     return { userId, email };
   }
 }

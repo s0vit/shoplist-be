@@ -1,9 +1,9 @@
-import { ApiBody, ApiCookieAuth, ApiOperation, ApiParam, ApiProperty, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
 import { AccessControlInputDto } from '../dto/access-control-input.dto';
 import { AccessControlOutputDto } from '../dto/access-control-output.dto';
 
-export function UpdateAccessControlSwDecorator() {
+export function UpdateAccessControlSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Update access control',

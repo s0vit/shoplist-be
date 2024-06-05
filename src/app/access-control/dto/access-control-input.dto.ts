@@ -1,4 +1,4 @@
-import { IsOptionalMongoidArray } from '../decorators/is-optional-mongoid-array';
+import { IsOptionalMongoidArrayDec } from '../decorators/is-optional-mongoid-array.decorator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AccessControlInputDto {
@@ -7,7 +7,7 @@ export class AccessControlInputDto {
     description: 'User id',
     type: [String],
   })
-  @IsOptionalMongoidArray()
+  @IsOptionalMongoidArrayDec()
   sharedWith: string[];
 
   @ApiProperty({
@@ -15,7 +15,7 @@ export class AccessControlInputDto {
     description: 'Expense ids',
     type: [String],
   })
-  @IsOptionalMongoidArray()
+  @IsOptionalMongoidArrayDec()
   expenseIds: string[];
 
   @ApiProperty({
@@ -23,7 +23,7 @@ export class AccessControlInputDto {
     description: 'Category ids',
     type: [String],
   })
-  @IsOptionalMongoidArray()
+  @IsOptionalMongoidArrayDec()
   categoryIds: string[];
 
   @ApiProperty({
@@ -31,6 +31,6 @@ export class AccessControlInputDto {
     description: 'Payment source ids',
     type: [String],
   })
-  @IsOptionalMongoidArray()
+  @IsOptionalMongoidArrayDec()
   paymentSourceIds: string[];
 }

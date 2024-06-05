@@ -5,19 +5,18 @@ import { ExpensesService } from './expenses.service';
 import { SharedExpenseDto } from './dto/get-shared-input.dto';
 import { AccessJwtGuard } from '../../guards/access-jwt.guard';
 import { ApiTags } from '@nestjs/swagger';
-import { GetExpensesSwDecorator } from './decorators/get-expenses-sw.decorator';
-import { CreateExpensesSwDecorator } from './decorators/create-expenses-sw.decorator';
+import { GetExpensesSwDec } from './decorators/get-expenses-sw.decorator';
+import { CreateExpensesSwDec } from './decorators/create-expenses-sw.decorator';
 import { ExpensesOutputDto } from './dto/expenses-output.dto';
 import { CustomRequest } from '../../common/interfaces/token.interface';
-import { IsUserVerifiedGuard } from '../../guards/is-user-verified-guard';
 
-@UseGuards(AccessJwtGuard, IsUserVerifiedGuard)
+@UseGuards(AccessJwtGuard)
 @ApiTags('Expenses')
 @Controller('expenses')
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
-  @CreateExpensesSwDecorator()
+  @CreateExpensesSwDec()
   @Post('create')
   async create(@Body() dto: ExpensesInputDto, @Req() req: CustomRequest): Promise<ExpensesOutputDto> {
     return this.expensesService.create(dto, req.user.userId);
@@ -30,10 +29,10 @@ export class ExpensesController {
   }
 
   // Get own expenses
-  @GetExpensesSwDecorator()
+  @GetExpensesSwDec()
   @Get()
   async getOwn(@Query() dto: FindExpenseInputDto, @Req() req: CustomRequest) {
-    // ToDo: data from "dto" is not processed
+    // ToDo: data from "Query" is not processed
     return this.expensesService.getOwn(req.user.userId);
   }
 
