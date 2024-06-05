@@ -7,11 +7,11 @@ import { RefreshInputDto } from './dto/refresh-input.dto';
 import { COOKIE_SETTINGS } from './constants/auth-constants';
 import { ERROR_AUTH } from './constants/auth-error.enum';
 import { ApiTags } from '@nestjs/swagger';
-import { RegisterSwaggerDecorators } from './decorators/register-sw.decorator';
-import { ConfirmEmailSwaggerDecorators } from './decorators/confirm-email-sw.decorator';
-import { LoginSwaggerDecorators } from './decorators/login-sw.decorator';
-import { RefreshTokenSwDecorator } from './decorators/refresh-token-sw.decorator';
-import { LogoutSwDecorator } from './decorators/logout-sw.decorator';
+import { RegisterSwDec } from './decorators/register-sw.decorator';
+import { ConfirmEmailSwDec } from './decorators/confirm-email-sw.decorator';
+import { LoginSwDec } from './decorators/login-sw.decorator';
+import { RefreshTokenSwDec } from './decorators/refresh-token-sw.decorator';
+import { LogoutSwDec } from './decorators/logout-sw.decorator';
 import { LoginOutputDto } from './dto/login-output.dto';
 import { ConfirmOutputDto } from './dto/confirm-output.dto';
 
@@ -20,20 +20,20 @@ import { ConfirmOutputDto } from './dto/confirm-output.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @RegisterSwaggerDecorators()
+  @RegisterSwDec()
   @Post('register')
   async register(@Body() dto: InputAuthInputDto, @Req() req: Request): Promise<void> {
     const origin = req.headers['origin'];
     return this.authService.register(dto, origin);
   }
 
-  @ConfirmEmailSwaggerDecorators()
+  @ConfirmEmailSwDec()
   @Get('confirm')
   async confirm(@Query('token') token: string): Promise<ConfirmOutputDto> {
     return await this.authService.confirmRegistration(token);
   }
 
-  @LoginSwaggerDecorators()
+  @LoginSwDec()
   @Post('login')
   async login(
     @Body() dto: LoginInputDto,
@@ -52,7 +52,7 @@ export class AuthController {
     }
   }
 
-  @RefreshTokenSwDecorator()
+  @RefreshTokenSwDec()
   @Post('refresh')
   async refresh(@Body() dto: RefreshInputDto, @Res({ passthrough: true }) res: Response): Promise<RefreshInputDto> {
     const result = await this.authService.validateToken(dto.refreshToken);
@@ -60,7 +60,7 @@ export class AuthController {
     return { refreshToken: result.refreshToken };
   }
 
-  @LogoutSwDecorator()
+  @LogoutSwDec()
   @Delete('logout')
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<void> {
     if (req.cookies && req.cookies['accessToken']) {

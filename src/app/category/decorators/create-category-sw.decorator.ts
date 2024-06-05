@@ -3,7 +3,7 @@ import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagg
 import { CreateCategoryInputDto } from '../dto/create-category-input.dto';
 import { CreateCategoryOutputDto } from '../dto/create-category-output.dto';
 
-export function CreateCategorySwaggerDecorators() {
+export function CreateCategorySwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Create category',

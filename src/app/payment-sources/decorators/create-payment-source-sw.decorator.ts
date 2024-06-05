@@ -3,7 +3,7 @@ import { applyDecorators } from '@nestjs/common';
 import { PaymentSourceOutputDto } from '../dto/payment-source-output.dto';
 import { PaymentSourceInputDto } from '../dto/payment-source-input.dto';
 
-export function CreatePaymentSourceSwaggerDecorator() {
+export function CreatePaymentSourceSwDec() {
   return applyDecorators(
     ApiCookieAuth(),
     ApiOperation({

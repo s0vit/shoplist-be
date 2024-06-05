@@ -3,7 +3,7 @@ import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagg
 import { ExpensesInputDto } from '../dto/expenses-input.dto';
 import { ExpensesOutputDto } from '../dto/expenses-output.dto';
 
-export function CreateExpensesSwDecorator() {
+export function CreateExpensesSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Create a new expense.',

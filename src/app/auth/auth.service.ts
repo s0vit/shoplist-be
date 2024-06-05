@@ -87,14 +87,11 @@ export class AuthService {
     if (!findUser) {
       throw new BadRequestException(ERROR_AUTH.UNAUTHORIZED);
     }
-    if (!findUser.isVerified) {
-      throw new BadRequestException(ERROR_AUTH.VERIFIED_USER_ERROR);
-    }
     const validPassword = await compare(password, findUser.passwordHash);
     if (!validPassword) {
       throw new BadRequestException(ERROR_AUTH.UNAUTHORIZED);
     }
-    const payloadData = { email, userId: findUser._id };
+    const payloadData = { email, userId: findUser._id, isVerified: findUser.isVerified };
     const tokens = await this.generateTokens(payloadData);
     const updatedUser = await this.userModel.findOneAndUpdate({ email }, { $set: { ...tokens } }, { new: true }).exec();
     return new LoginOutputDto(updatedUser);
@@ -102,7 +99,7 @@ export class AuthService {
   async loginWithCookies(token: string) {
     try {
       const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.accessSecret });
-      const payloadData = { email: result.email, userId: result.userId };
+      const payloadData = { email: result.email, userId: result.userId, isVerified: result.isVerified };
       const tokens = await this.generateTokens(payloadData);
       const updatedUser = await this.userModel
         .findOneAndUpdate({ email: result.email }, { $set: { ...tokens } }, { new: true })
@@ -118,7 +115,7 @@ export class AuthService {
   async validateToken(token: string) {
     try {
       const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.refreshSecret });
-      const payloadData = { email: result.email, userId: result.userId };
+      const payloadData = { email: result.email, userId: result.userId, isVerified: result.isVerified };
       const newTokens = await this.generateTokens(payloadData);
       const foundUser = await this.userModel
         .findOneAndUpdate({ email: result.email }, { $set: { ...newTokens } }, { new: true })
