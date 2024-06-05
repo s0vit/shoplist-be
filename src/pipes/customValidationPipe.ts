@@ -1,4 +1,4 @@
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationError, ValidationPipe } from '@nestjs/common';
 
 export const customValidationPipe = new ValidationPipe({
   whitelist: true,
@@ -7,12 +7,14 @@ export const customValidationPipe = new ValidationPipe({
   transformOptions: {
     enableImplicitConversion: true,
   },
-  exceptionFactory: (errors) => {
+  exceptionFactory: (errors: ValidationError[]) => {
     const customErrors: CustomErrors = {};
 
     errors.forEach((e) => {
       if (!e.constraints) {
-        customErrors['unknow'] ? customErrors['unknow'].push(e.property) : (customErrors['unknow'] = ['unknow error']);
+        customErrors['unknown']
+          ? customErrors['unknown'].push(e.property)
+          : (customErrors['unknown'] = ['unknown error']);
         return;
       }
 
