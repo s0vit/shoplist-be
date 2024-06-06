@@ -39,10 +39,11 @@ export class AuthService {
   }
   private async createUser(dto: InputAuthInputDto) {
     const salt = await genSalt(10);
+    const passwordHash = await hash(dto.password, salt);
     const newUser = new this.userModel({
       email: dto.email,
       login: dto.email.split('@')[0],
-      passwordHash: await hash(dto.password, salt),
+      passwordHash,
     });
     await newUser.save();
   }

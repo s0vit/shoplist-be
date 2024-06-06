@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ObjectId } from 'mongoose';
 
 export class AccessControlOutputDto {
   @ApiProperty({
@@ -7,7 +6,7 @@ export class AccessControlOutputDto {
     description: 'Access control id',
     type: String,
   })
-  _id: string | ObjectId;
+  _id: string;
 
   @ApiProperty({
     example: '5f6a0c8b3e0b8f001f8e7e7c',
