@@ -48,7 +48,8 @@ export class AuthController {
 
   @ForgotPasswordSwDec()
   @Post('forgot-password')
-  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<void> {
+  async forgotPassword(@Body() dto: ForgotPasswordDto, @Req() req: Request): Promise<void> {
+    const origin = req.headers['origin'];
     const email = dto.email;
     return await this.authService.forgotPassword(email, origin);
   }
