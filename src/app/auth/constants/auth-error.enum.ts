@@ -9,4 +9,5 @@ export enum ERROR_AUTH {
   CONFIRM_REGISTRATION_ERROR = 'Error confirm data',
   INVALID_AUTHENTICATION_CREDENTIALS = 'Invalid authentication credentials',
   VERIFIED_USER_ERROR = 'User is not verified',
+  NOT_FOUND_USER = 'User not found',
 }

@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, Post, Query, Req, Res } from '@nestjs/common';
-import { InputAuthInputDto } from './dto/input-auth-input.dto';
+import { AuthInputDto } from './dto/auth-input.dto';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 import { LoginInputDto } from './dto/login-input.dto';
@@ -14,6 +14,11 @@ import { RefreshTokenSwDec } from './decorators/refresh-token-sw.decorator';
 import { LogoutSwDec } from './decorators/logout-sw.decorator';
 import { LoginOutputDto } from './dto/login-output.dto';
 import { ConfirmOutputDto } from './dto/confirm-output.dto';
+import { ReRequestVerificationTokenSwDec } from './decorators/re-request-validate-token-sw.decorator';
+import { ForgotPasswordSwDec } from './decorators/forgot-password-sw.decorator';
+import { ResetPasswordSwDec } from './decorators/reset-password-sw.decorator';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -22,7 +27,7 @@ export class AuthController {
 
   @RegisterSwDec()
   @Post('register')
-  async register(@Body() dto: InputAuthInputDto, @Req() req: Request): Promise<void> {
+  async register(@Body() dto: AuthInputDto, @Req() req: Request): Promise<void> {
     const origin = req.headers['origin'];
     return this.authService.register(dto, origin);
   }
@@ -31,6 +36,27 @@ export class AuthController {
   @Get('confirm')
   async confirm(@Query('token') token: string): Promise<ConfirmOutputDto> {
     return await this.authService.confirmRegistration(token);
+  }
+
+  @ReRequestVerificationTokenSwDec()
+  @Post('request-confirm')
+  async reRequestVerification(@Req() req: Request): Promise<void> {
+    const accessToken = req.cookies['accessToken'];
+    const origin = req.headers['origin'];
+    return await this.authService.requestConfirm(accessToken, origin);
+  }
+
+  @ForgotPasswordSwDec()
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<void> {
+    const email = dto.email;
+    return await this.authService.forgotPassword(email, origin);
+  }
+
+  @ResetPasswordSwDec()
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto, @Query('token') passwordResetToken: string): Promise<void> {
+    return await this.authService.resetPassword(dto.password, passwordResetToken);
   }
 
   @LoginSwDec()
