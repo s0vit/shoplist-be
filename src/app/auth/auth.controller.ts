@@ -18,6 +18,7 @@ import { ReRequestVerificationTokenSwDec } from './decorators/re-request-validat
 import { ForgotPasswordSwDec } from './decorators/forgot-password-sw.decorator';
 import { ResetPasswordSwDec } from './decorators/reset-password-sw.decorator';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -47,21 +48,15 @@ export class AuthController {
 
   @ForgotPasswordSwDec()
   @Post('forgot-password')
-  async forgotPassword(@Req() req: Request): Promise<void> {
-    const origin = req.headers['origin'];
-    const token = req.cookies['accessToken'];
-    return await this.authService.forgotPassword(token, origin);
+  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<void> {
+    const email = dto.email;
+    return await this.authService.forgotPassword(email, origin);
   }
 
   @ResetPasswordSwDec()
   @Post('reset-password')
-  async resetPassword(
-    @Body() dto: ResetPasswordDto,
-    @Req() req: Request,
-    @Query('token') passwordResetToken: string,
-  ): Promise<void> {
-    const accessToken = req.cookies['accessToken'];
-    return await this.authService.resetPassword(accessToken, dto.password, passwordResetToken);
+  async resetPassword(@Body() dto: ResetPasswordDto, @Query('token') passwordResetToken: string): Promise<void> {
+    return await this.authService.resetPassword(dto.password, passwordResetToken);
   }
 
   @LoginSwDec()

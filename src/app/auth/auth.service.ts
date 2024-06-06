@@ -11,6 +11,7 @@ import { ConfirmOutputDto } from './dto/confirm-output.dto';
 import { LoginOutputDto } from './dto/login-output.dto';
 import { ConfigService } from '@nestjs/config';
 import { TokenPayload } from 'src/common/interfaces/token.interface';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -165,16 +166,13 @@ export class AuthService {
     }
   }
 
-  async forgotPassword(accessToken: string, origin: string) {
+  async forgotPassword(email: string, origin: string) {
     try {
-      const decoded = this.jwtService.decode<TokenPayload>(accessToken);
-      const resetToken = await this.jwtService.signAsync({ email: decoded.email });
+      const resetToken = await this.jwtService.signAsync({ email });
       const resetPasswordLink = `${origin}/reset-password?token=${resetToken}`;
-      await this.userModel
-        .findOneAndUpdate({ email: decoded.email }, { $set: { resetPasswordToken: resetToken } })
-        .exec();
+      await this.userModel.findOneAndUpdate({ email }, { $set: { resetPasswordToken: resetToken } }).exec();
       await this.mailerService.sendMail({
-        to: decoded.email,
+        to: email,
         subject: 'Reset your password',
         text: resetPasswordLink,
       });
@@ -183,8 +181,8 @@ export class AuthService {
     }
   }
 
-  async resetPassword(accessToken: string, newPassword: string, resetPasswordToken: string) {
-    const decoded = this.jwtService.decode<TokenPayload>(accessToken);
+  async resetPassword(newPassword: string, resetPasswordToken: string) {
+    const decoded = this.jwtService.decode<{ email: string }>(resetPasswordToken);
     const salt = await genSalt(10);
     const passwordHash = await hash(newPassword, salt);
     const updatedUser = await this.userModel
