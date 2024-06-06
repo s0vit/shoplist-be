@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CategoryDocument } from '../models/category.model';
+import { ObjectId } from 'mongoose';
 
-export class CreateCategoryOutputDto {
+export class CategoryOutputDto {
   @ApiProperty({
     example: '6616f96da226986482597b6c',
     description: 'Category ID',
   })
-  categoryId: string;
+  _id: ObjectId;
 
   @ApiProperty({
     example: 'Products',
@@ -37,13 +37,4 @@ export class CreateCategoryOutputDto {
     description: 'Date of last update',
   })
   updatedAt: Date;
-
-  constructor(category: CategoryDocument) {
-    this.categoryId = String(category._id);
-    this.title = category.title;
-    this.userId = category.userId;
-    this.comments = category.comments;
-    this.createdAt = category.createdAt;
-    this.updatedAt = category.updatedAt;
-  }
 }

@@ -24,12 +24,14 @@ export class PaymentSourcesController {
 
   @DeletePaymentSourceSwDec()
   @Delete(':id')
+  // ToDo: No id verification
   async delete(@Param('id') id: string, @Req() req: CustomRequest): Promise<PaymentSourceOutputDto> {
     return this.paymentSourcesService.delete(id, req.user.userId);
   }
 
   @GetByIdPaymentSourceSwDec()
   @Get(':id')
+  // ToDo: No id verification
   async getOne(@Param('id') id: string, @Req() req: CustomRequest): Promise<PaymentSourceOutputDto> {
     return this.paymentSourcesService.getOne(id, req.user.userId);
   }
@@ -43,6 +45,7 @@ export class PaymentSourcesController {
   @UpdatePaymentSourceSwDec()
   @Put(':id')
   async update(
+    // ToDo: No id verification
     @Param('id') id: string,
     @Body() inputDTO: PaymentSourceInputDto,
     @Req() req: CustomRequest,

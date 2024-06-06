@@ -1,11 +1,11 @@
-import { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument, ObjectId } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export type CategoryDocument = HydratedDocument<Category>;
 
 @Schema()
 export class Category {
-  _id: Types.ObjectId;
+  _id: ObjectId;
 
   @Prop({ required: true })
   title: string;
@@ -14,6 +14,9 @@ export class Category {
   userId: string;
 
   @Prop()
+  color: string;
+
+  @Prop({ default: '' })
   comments?: string;
 
   @Prop({ default: Date.now })

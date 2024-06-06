@@ -1,37 +1,62 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { CustomRequest } from '../../common/interfaces/token.interface';
 import { CategoryService } from './category.service';
 import { AccessJwtGuard } from '../../guards/access-jwt.guard';
-import { GetCategorySwDec } from './decorators/get-category-sw.decorator';
+import { GetCategoriesSwDec } from './decorators/get-categories-sw.decorator';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateCategoryInputDto } from './dto/create-category-input.dto';
+import { CategoryInputDto } from './dto/category-input.dto';
 import { CreateCategorySwDec } from './decorators/create-category-sw.decorator';
-import { Category } from './models/category.model';
+import { UpdateCategorySwDec } from './decorators/update-category-sw.decorator';
+import { CategoryOutputDto } from './dto/category-output.dto';
+import { GetByCategoryIdSwDec } from './decorators/get-by-category-id-sw.decorator';
+import { DeleteCategorySwDec } from './decorators/delete-category-sw.decorator';
+import { ValidMongoIdInParamsDec } from '../../common/decorators/valid-mongo-id.decorator';
 
 @UseGuards(AccessJwtGuard)
 @ApiTags('Category')
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
-  @GetCategorySwDec()
+
+  @GetCategoriesSwDec()
   @Get()
-  async get(@Req() req: CustomRequest) {
-    return this.categoryService.get(req.user.userId);
+  async getAll(@Req() req: CustomRequest): Promise<CategoryOutputDto[]> {
+    return this.categoryService.getAll(req.user.userId);
+  }
+
+  @GetByCategoryIdSwDec()
+  @Get(':categoryId')
+  async getOne(
+    @ValidMongoIdInParamsDec({ param: 'categoryId' })
+    categoryId: string,
+    @Req() req: CustomRequest,
+  ): Promise<CategoryOutputDto> {
+    return this.categoryService.getOne(categoryId, req.user.userId);
   }
 
   @CreateCategorySwDec()
   @Post('create')
-  async create(@Body() dto: CreateCategoryInputDto, @Req() req: CustomRequest): Promise<Category> {
-    return this.categoryService.create(dto, req.user.userId);
+  async create(@Body() inputDTO: CategoryInputDto, @Req() req: CustomRequest): Promise<CategoryOutputDto> {
+    return this.categoryService.create(inputDTO, req.user.userId);
   }
 
-  @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return id;
+  @UpdateCategorySwDec()
+  @Put(':categoryId')
+  async update(
+    @ValidMongoIdInParamsDec({ param: 'categoryId' })
+    categoryId: string,
+    @Body() inputDTO: CategoryInputDto,
+    @Req() req: CustomRequest,
+  ): Promise<CategoryOutputDto> {
+    return this.categoryService.update(categoryId, inputDTO, req.user.userId);
   }
 
-  @Patch(':id')
-  async update(@Param('id') id: string, @Body('name') name: string) {
-    return { id, name };
+  @DeleteCategorySwDec()
+  @Delete(':categoryId')
+  async delete(
+    @ValidMongoIdInParamsDec({ param: 'categoryId' }) categoryId: string,
+    @Req() req: CustomRequest,
+  ): Promise<CategoryOutputDto> {
+    return this.categoryService.delete(categoryId, req.user.userId);
   }
 }
