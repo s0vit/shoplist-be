@@ -2,7 +2,7 @@ import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundExc
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './models/user.model';
-import { InputAuthInputDto } from './dto/input-auth-input.dto';
+import { AuthInputDto } from './dto/auth-input.dto';
 import { genSalt, hash, compare } from 'bcryptjs';
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -37,7 +37,7 @@ export class AuthService {
   private async findUser(email: string): Promise<UserDocument> {
     return this.userModel.findOne({ email }).exec();
   }
-  private async createUser(dto: InputAuthInputDto) {
+  private async createUser(dto: AuthInputDto) {
     const salt = await genSalt(10);
     const newUser = new this.userModel({
       email: dto.email,
@@ -47,7 +47,7 @@ export class AuthService {
     await newUser.save();
   }
 
-  async register(dto: InputAuthInputDto, origin: string) {
+  async register(dto: AuthInputDto, origin: string) {
     const oldUser = await this.findUser(dto.email);
     if (oldUser) {
       throw new BadRequestException(ERROR_AUTH.USER_ALREADY_EXISTS);
@@ -82,16 +82,15 @@ export class AuthService {
     }
   }
   async login(email: string, password: string): Promise<LoginOutputDto> {
-    // Here return data for payload accessToken cookie
-    const findUser = await this.findUser(email);
-    if (!findUser) {
+    const foundUser = await this.findUser(email);
+    if (!foundUser) {
       throw new BadRequestException(ERROR_AUTH.UNAUTHORIZED);
     }
-    const validPassword = await compare(password, findUser.passwordHash);
+    const validPassword = await compare(password, foundUser.passwordHash);
     if (!validPassword) {
       throw new BadRequestException(ERROR_AUTH.UNAUTHORIZED);
     }
-    const payloadData = { email, userId: findUser._id, isVerified: findUser.isVerified };
+    const payloadData = { email, userId: foundUser._id, isVerified: foundUser.isVerified };
     const tokens = await this.generateTokens(payloadData);
     const updatedUser = await this.userModel.findOneAndUpdate({ email }, { $set: { ...tokens } }, { new: true }).exec();
     return new LoginOutputDto(updatedUser);
@@ -145,6 +144,57 @@ export class AuthService {
         throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
       }
       throw new HttpException(ERROR_AUTH.LOGOUT_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async requestConfirm(accessToken: string, origin: string) {
+    if (!accessToken) {
+      throw new BadRequestException(ERROR_AUTH.AUTH_ERROR_NO_TOKEN);
+    }
+    try {
+      const decoded = this.jwtService.decode<TokenPayload>(accessToken);
+      const confirmToken = await this.jwtService.signAsync({ email: decoded.email });
+      const confirmationUrl = `${origin}/confirm?token=${confirmToken}`;
+      await this.mailerService.sendMail({
+        to: decoded.email,
+        subject: 'Confirm your registration',
+        text: confirmationUrl,
+      });
+    } catch (error) {
+      throw new HttpException(ERROR_AUTH.SEND_EMAIL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async forgotPassword(accessToken: string, origin: string) {
+    try {
+      const decoded = this.jwtService.decode<TokenPayload>(accessToken);
+      const resetToken = await this.jwtService.signAsync({ email: decoded.email });
+      const resetPasswordLink = `${origin}/reset-password?token=${resetToken}`;
+      await this.userModel
+        .findOneAndUpdate({ email: decoded.email }, { $set: { resetPasswordToken: resetToken } })
+        .exec();
+      await this.mailerService.sendMail({
+        to: decoded.email,
+        subject: 'Reset your password',
+        text: resetPasswordLink,
+      });
+    } catch (error) {
+      throw new HttpException(ERROR_AUTH.SEND_EMAIL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async resetPassword(accessToken: string, newPassword: string, resetPasswordToken: string) {
+    const decoded = this.jwtService.decode<TokenPayload>(accessToken);
+    const salt = await genSalt(10);
+    const passwordHash = await hash(newPassword, salt);
+    const updatedUser = await this.userModel
+      .findOneAndUpdate(
+        { email: decoded.email, resetPasswordToken },
+        { $set: { passwordHash, resetPasswordToken: null } },
+      )
+      .lean();
+    if (!updatedUser) {
+      throw new NotFoundException(ERROR_AUTH.NOT_FOUND_USER);
     }
   }
 }
