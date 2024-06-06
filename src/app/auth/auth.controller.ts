@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Query, Req, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Post, Query, Req, Res } from '@nestjs/common';
 import { AuthInputDto } from './dto/auth-input.dto';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
@@ -60,7 +60,8 @@ export class AuthController {
     @Req() req: Request,
     @Query('token') passwordResetToken: string,
   ): Promise<void> {
-    return await this.authService.resetPassword(req.cookies['accessToken'], dto.password, passwordResetToken);
+    const accessToken = req.cookies['accessToken'];
+    return await this.authService.resetPassword(accessToken, dto.password, passwordResetToken);
   }
 
   @LoginSwDec()
