@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './models/user.model';
 import { AuthInputDto } from './dto/auth-input.dto';
-import { genSalt, hash, compare } from 'bcryptjs';
+import { compare, genSalt, hash } from 'bcryptjs';
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ERROR_AUTH } from './constants/auth-error.enum';
@@ -11,7 +11,6 @@ import { ConfirmOutputDto } from './dto/confirm-output.dto';
 import { LoginOutputDto } from './dto/login-output.dto';
 import { ConfigService } from '@nestjs/config';
 import { TokenPayload } from 'src/common/interfaces/token.interface';
-import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
