@@ -8,6 +8,7 @@ import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { jwtConfig } from '../../configs/jwt.config';
+import { UtilsService } from '../../common/utils/utils.service';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { jwtConfig } from '../../configs/jwt.config';
     ConfigModule,
     PassportModule,
   ],
+  exports: [UtilsService],
   controllers: [CategoryController],
-  providers: [CategoryService, AccessJwtStrategy],
+  providers: [CategoryService, AccessJwtStrategy, UtilsService],
 })
 export class CategoryModule {}

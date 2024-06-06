@@ -1,23 +1,18 @@
-import {
-  BadRequestException,
-  ConflictException,
-  HttpException,
-  HttpStatus,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { Category, CategoryDocument } from './models/category.model';
 import { CategoryInputDto } from './dto/category-input.dto';
 import { CATEGORY_ERROR } from './constants/category-error.enum';
 import { CategoryOutputDto } from './dto/category-output.dto';
+import { UtilsService } from '../../common/utils/utils.service';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectModel(Category.name)
     private readonly categoryModel: Model<CategoryDocument>,
+    private readonly utilsService: UtilsService,
   ) {}
 
   async getAll(userId: string): Promise<CategoryOutputDto[]> {
@@ -29,9 +24,6 @@ export class CategoryService {
   }
 
   async getOne(categoryId: string, userId: string): Promise<CategoryOutputDto> {
-    if (!Types.ObjectId.isValid(categoryId)) {
-      throw new BadRequestException(CATEGORY_ERROR.INVALID_MONGODB_OBJECT_ID);
-    }
     const category = await this.categoryModel.findById(categoryId);
     if (!category) {
       throw new ConflictException(CATEGORY_ERROR.CATEGORY_NOT_FOUND);
@@ -43,7 +35,7 @@ export class CategoryService {
   }
 
   async create(inputDTO: CategoryInputDto, userId: string): Promise<CategoryOutputDto> {
-    const titleToSearch = new RegExp(`^${inputDTO.title}$`, 'i');
+    const titleToSearch = this.utilsService.createTitleRegex(inputDTO.title);
     const category = await this.categoryModel.findOne({ title: titleToSearch, userId });
     if (category) {
       throw new ConflictException(CATEGORY_ERROR.CATEGORY_ALREADY_EXIST);
@@ -62,9 +54,6 @@ export class CategoryService {
     }
   }
   async update(categoryId: string, inputDTO: any, userId: string): Promise<CategoryOutputDto> {
-    if (!Types.ObjectId.isValid(categoryId)) {
-      throw new BadRequestException(CATEGORY_ERROR.INVALID_MONGODB_OBJECT_ID);
-    }
     const category = await this.categoryModel.findById(categoryId);
     if (!category) {
       throw new ConflictException(CATEGORY_ERROR.CATEGORY_NOT_FOUND);
@@ -85,9 +74,6 @@ export class CategoryService {
     }
   }
   async delete(categoryId: string, userId: string): Promise<CategoryOutputDto> {
-    if (!Types.ObjectId.isValid(categoryId)) {
-      throw new BadRequestException(CATEGORY_ERROR.INVALID_MONGODB_OBJECT_ID);
-    }
     const category = await this.categoryModel.findById(categoryId);
     if (!category) {
       throw new ConflictException(CATEGORY_ERROR.CATEGORY_NOT_FOUND);

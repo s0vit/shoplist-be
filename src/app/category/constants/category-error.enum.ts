@@ -1,6 +1,4 @@
 export enum CATEGORY_ERROR {
-  TITLE_SHOULD_BE_LESS_THAN_16_CHARACTERS = 'Title should be less than 16 characters',
-  COMMENTS_SHOULD_BE_LESS_THAN_100_CHARACTERS = 'Comments should be less than 100 characters',
   CREATE_CATEGORY_ERROR = 'Error create category',
   UPDATE_CATEGORY_ERROR = 'Error update category',
   GET_CATEGORIES_ERROR = 'Error get categories',

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { CustomRequest } from '../../common/interfaces/token.interface';
 import { CategoryService } from './category.service';
 import { AccessJwtGuard } from '../../guards/access-jwt.guard';
@@ -10,6 +10,7 @@ import { UpdateCategorySwDec } from './decorators/update-category-sw.decorator';
 import { CategoryOutputDto } from './dto/category-output.dto';
 import { GetByCategoryIdSwDec } from './decorators/get-by-category-id-sw.decorator';
 import { DeleteCategorySwDec } from './decorators/delete-category-sw.decorator';
+import { ValidMongoIdInParamsDec } from '../../common/decorators/valid-mongo-id.decorator';
 
 @UseGuards(AccessJwtGuard)
 @ApiTags('Category')
@@ -25,7 +26,11 @@ export class CategoryController {
 
   @GetByCategoryIdSwDec()
   @Get(':categoryId')
-  async getOne(@Param('categoryId') categoryId: string, @Req() req: CustomRequest): Promise<CategoryOutputDto> {
+  async getOne(
+    @ValidMongoIdInParamsDec({ param: 'categoryId' })
+    categoryId: string,
+    @Req() req: CustomRequest,
+  ): Promise<CategoryOutputDto> {
     return this.categoryService.getOne(categoryId, req.user.userId);
   }
 
@@ -38,7 +43,8 @@ export class CategoryController {
   @UpdateCategorySwDec()
   @Put(':categoryId')
   async update(
-    @Param('categoryId') categoryId: string,
+    @ValidMongoIdInParamsDec({ param: 'categoryId' })
+    categoryId: string,
     @Body() inputDTO: CategoryInputDto,
     @Req() req: CustomRequest,
   ): Promise<CategoryOutputDto> {
@@ -47,7 +53,10 @@ export class CategoryController {
 
   @DeleteCategorySwDec()
   @Delete(':categoryId')
-  async delete(@Param('categoryId') categoryId: string, @Req() req: CustomRequest): Promise<CategoryOutputDto> {
+  async delete(
+    @ValidMongoIdInParamsDec({ param: 'categoryId' }) categoryId: string,
+    @Req() req: CustomRequest,
+  ): Promise<CategoryOutputDto> {
     return this.categoryService.delete(categoryId, req.user.userId);
   }
 }

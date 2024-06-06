@@ -5,16 +5,18 @@ import { PaymentSourceInputDto } from './dto/payment-source-input.dto';
 import { PAYMENT_SOURCES_ERROR } from './constants/error.constant';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaymentSourceOutputDto } from './dto/payment-source-output.dto';
+import { UtilsService } from '../../common/utils/utils.service';
 
 @Injectable()
 export class PaymentSourcesService {
   constructor(
     @InjectModel(PaymentSource.name)
     private readonly paymentSourcesModel: Model<PaymentSource>,
+    private readonly utilsService: UtilsService,
   ) {}
 
   async create(userId: string, inputDTO: PaymentSourceInputDto): Promise<PaymentSourceOutputDto> {
-    const titleToSearch = new RegExp(`^${inputDTO.title}$`, 'i');
+    const titleToSearch = this.utilsService.createTitleRegex(inputDTO.title);
     const existingPaymentSourceForCurrentUser = await this.paymentSourcesModel.findOne({
       title: titleToSearch,
       userId,
