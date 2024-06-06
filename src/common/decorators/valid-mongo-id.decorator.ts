@@ -7,9 +7,9 @@ interface ValidMongoIdParams {
 
 export const ValidMongoIdInParamsDec = createParamDecorator((data: ValidMongoIdParams, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest();
-  const categoryId = request.params[data.param];
-  if (!Types.ObjectId.isValid(categoryId)) {
+  const paramValue = request.params[data.param];
+  if (!Types.ObjectId.isValid(paramValue)) {
     throw new BadRequestException('Invalid MongoDB object id');
   }
-  return categoryId;
+  return paramValue;
 });
