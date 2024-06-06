@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './models/user.model';
 import { AuthInputDto } from './dto/auth-input.dto';
-import { genSalt, hash, compare } from 'bcryptjs';
+import { compare, genSalt, hash } from 'bcryptjs';
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ERROR_AUTH } from './constants/auth-error.enum';
@@ -165,16 +165,13 @@ export class AuthService {
     }
   }
 
-  async forgotPassword(accessToken: string, origin: string) {
+  async forgotPassword(email: string, origin: string) {
     try {
-      const decoded = this.jwtService.decode<TokenPayload>(accessToken);
-      const resetToken = await this.jwtService.signAsync({ email: decoded.email });
+      const resetToken = await this.jwtService.signAsync({ email });
       const resetPasswordLink = `${origin}/reset-password?token=${resetToken}`;
-      await this.userModel
-        .findOneAndUpdate({ email: decoded.email }, { $set: { resetPasswordToken: resetToken } })
-        .exec();
+      await this.userModel.findOneAndUpdate({ email }, { $set: { resetPasswordToken: resetToken } }).exec();
       await this.mailerService.sendMail({
-        to: decoded.email,
+        to: email,
         subject: 'Reset your password',
         text: resetPasswordLink,
       });
@@ -183,8 +180,8 @@ export class AuthService {
     }
   }
 
-  async resetPassword(accessToken: string, newPassword: string, resetPasswordToken: string) {
-    const decoded = this.jwtService.decode<TokenPayload>(accessToken);
+  async resetPassword(newPassword: string, resetPasswordToken: string) {
+    const decoded = this.jwtService.decode<{ email: string }>(resetPasswordToken);
     const salt = await genSalt(10);
     const passwordHash = await hash(newPassword, salt);
     const updatedUser = await this.userModel
