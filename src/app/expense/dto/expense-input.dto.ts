@@ -2,7 +2,7 @@ import { IsMongoId, IsOptional, IsPositive, IsString, Length } from 'class-valid
 import { ApiProperty } from '@nestjs/swagger';
 
 // ToDo: categoryId and paymentSourceId add default value
-export class ExpensesInputDto {
+export class ExpenseInputDto {
   @ApiProperty({
     example: '15',
     description: 'Amount of the expense',

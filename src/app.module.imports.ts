@@ -5,10 +5,10 @@ import { getMongoConfigs } from './configs/get-mongo.configs';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { configThrottling } from './configs/config-throttling';
 import { AuthModule } from './app/auth/auth.module';
-import { ExpensesModule } from './app/expenses/expenses.module';
+import { ExpenseModule } from './app/expense/expense.module';
 import { CategoryModule } from './app/category/category.module';
 import { UserModule } from './app/user/user.module';
-import { PaymentSourcesModule } from './app/payment-sources/payment-sources.module';
+import { PaymentSourcesModule } from './app/payment-source/payment-sources.module';
 import { AccessControlModule } from './app/access-control/access-control.module';
 
 export const appModuleImports: ModuleMetadata['imports'] = [
@@ -24,7 +24,7 @@ export const appModuleImports: ModuleMetadata['imports'] = [
     useFactory: configThrottling,
   }),
   AuthModule,
-  ExpensesModule,
+  ExpenseModule,
   CategoryModule,
   PaymentSourcesModule,
   AccessControlModule,

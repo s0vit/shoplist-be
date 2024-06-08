@@ -1,22 +1,24 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
-import { EXPENSES_ERROR } from '../constants/expenses-error.enum';
-import { ExpensesOutputDto } from '../dto/expenses-output.dto';
+import { ExpenseOutputDto } from '../dto/expense-output.dto';
+import { EXPENSE_ERROR } from '../constants/expense-error.enum';
 
-export function GetByExpensesIdSwDec() {
+export function GetSharedSwDec() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Get user Expenses by id',
+      summary: 'Get shared Expenses by id',
       description: `
+      Get all shared expenses by the ID of the user who given access
+
       Requires:
       - token in Cookies
-      - expensesId in Params`,
+      - sharedId in Params`,
     }),
     ApiCookieAuth(),
     ApiParam({
-      name: 'expensesId',
+      name: 'sharedId',
       description: `
-      expensesId: The ID of the user Expenses.`,
+      sharedId: The ID of the user who given access to shared expenses.`,
       type: String,
       required: true,
     }),
@@ -24,17 +26,17 @@ export function GetByExpensesIdSwDec() {
       status: 200,
       description: `
       ok: The user Expenses successfully received.`,
-      type: ExpensesOutputDto,
+      type: ExpenseOutputDto,
     }),
     ApiResponse({
       status: 404,
       description: `
-      Bad Request: ${EXPENSES_ERROR.EXPENSE_NOT_FOUND}`,
+      Bad Request: ${EXPENSE_ERROR.EXPENSE_NOT_FOUND}`,
     }),
     ApiResponse({
       status: 401,
       description: `
-      Unauthorized: ${EXPENSES_ERROR.ACCESS_DENIED}`,
+      Unauthorized: ${EXPENSE_ERROR.ACCESS_DENIED}`,
     }),
   );
 }

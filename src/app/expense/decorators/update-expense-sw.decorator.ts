@@ -1,12 +1,12 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
-import { ExpensesOutputDto } from '../dto/expenses-output.dto';
-import { EXPENSES_ERROR } from '../constants/expenses-error.enum';
+import { ExpenseOutputDto } from '../dto/expense-output.dto';
+import { EXPENSE_ERROR } from '../constants/expense-error.enum';
 
-export function UpdateExpensesSwDec() {
+export function UpdateExpenseSwDec() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Update Expenses by id',
+      summary: 'Update Expense by id',
       description: `
       Requires:
       - token in Cookies
@@ -25,25 +25,25 @@ export function UpdateExpensesSwDec() {
     ApiParam({
       name: 'expensesId',
       description: `
-      expensesId: The ID of the Expenses to update.`,
+      expensesId: The ID of the Expense to update.`,
       type: String,
       required: true,
     }),
     ApiResponse({
       status: 200,
       description: `
-      ok: The user Expenses successfully updated.`,
-      type: ExpensesOutputDto,
+      ok: The user Expense successfully updated.`,
+      type: ExpenseOutputDto,
     }),
     ApiResponse({
       status: 404,
       description: `
-      Bad Request: ${EXPENSES_ERROR.EXPENSE_NOT_FOUND}`,
+      Bad Request: ${EXPENSE_ERROR.EXPENSE_NOT_FOUND}`,
     }),
     ApiResponse({
       status: 401,
       description: `
-      Unauthorized: ${EXPENSES_ERROR.ACCESS_DENIED}`,
+      Unauthorized: ${EXPENSE_ERROR.ACCESS_DENIED}`,
     }),
   );
 }

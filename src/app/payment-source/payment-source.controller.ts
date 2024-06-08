@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { PaymentSourcesService } from './payment-sources.service';
+import { PaymentSourceService } from './payment-source.service';
 import { PaymentSourceInputDto } from './dto/payment-source-input.dto';
 import { AccessJwtGuard } from '../../guards/access-jwt.guard';
 import { CreatePaymentSourceSwDec } from './decorators/create-payment-source-sw.decorator';
@@ -11,35 +11,35 @@ import { UpdatePaymentSourceSwDec } from './decorators/update-payment-source-sw.
 import { PaymentSourceOutputDto } from './dto/payment-source-output.dto';
 import { CustomRequest } from '../../common/interfaces/token.interface';
 
-@ApiTags('Payment sources')
-@Controller('payment-sources')
+@ApiTags('Payment source')
+@Controller('payment-source')
 @UseGuards(AccessJwtGuard)
-export class PaymentSourcesController {
-  constructor(private readonly paymentSourcesService: PaymentSourcesService) {}
+export class PaymentSourceController {
+  constructor(private readonly paymentSourceService: PaymentSourceService) {}
   @CreatePaymentSourceSwDec()
   @Post()
   async create(@Body() inputDTO: PaymentSourceInputDto, @Req() req: CustomRequest): Promise<PaymentSourceOutputDto> {
-    return this.paymentSourcesService.create(req.user.userId, inputDTO);
+    return this.paymentSourceService.create(req.user.userId, inputDTO);
   }
 
   @DeletePaymentSourceSwDec()
   @Delete(':id')
   // ToDo: No id verification
   async delete(@Param('id') id: string, @Req() req: CustomRequest): Promise<PaymentSourceOutputDto> {
-    return this.paymentSourcesService.delete(id, req.user.userId);
+    return this.paymentSourceService.delete(id, req.user.userId);
   }
 
   @GetByIdPaymentSourceSwDec()
   @Get(':id')
   // ToDo: No id verification
   async getOne(@Param('id') id: string, @Req() req: CustomRequest): Promise<PaymentSourceOutputDto> {
-    return this.paymentSourcesService.getOne(id, req.user.userId);
+    return this.paymentSourceService.getOne(id, req.user.userId);
   }
 
   @GetAllPaymentSourceSwDec()
   @Get()
   async getAll(@Req() req: CustomRequest): Promise<PaymentSourceOutputDto[]> {
-    return this.paymentSourcesService.getAll(req.user.userId);
+    return this.paymentSourceService.getAll(req.user.userId);
   }
 
   @UpdatePaymentSourceSwDec()
@@ -50,6 +50,6 @@ export class PaymentSourcesController {
     @Body() inputDTO: PaymentSourceInputDto,
     @Req() req: CustomRequest,
   ): Promise<PaymentSourceOutputDto> {
-    return this.paymentSourcesService.update(id, inputDTO, req.user.userId);
+    return this.paymentSourceService.update(id, inputDTO, req.user.userId);
   }
 }

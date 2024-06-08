@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class ExpensesOutputDto {
+export class ExpenseOutputDto {
   @ApiProperty({
     example: '6616f96da226986482597b6c',
     description: 'Unique identifier of the expense.',
