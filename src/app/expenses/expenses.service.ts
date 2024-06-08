@@ -1,12 +1,18 @@
-import { ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ExpensesInputDto } from './dto/expenses-input.dto';
 import { Model } from 'mongoose';
-import { FindExpenseInputDto } from './dto/find-expense-input.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Expenses, ExpensesDocument } from './models/expenses.model';
 import { EXPENSES_ERROR } from './constants/expenses-error.enum';
-import { JsonWebTokenError } from '@nestjs/jwt';
 import { AccessControlService } from '../access-control/access-control.service';
+import { ExpensesOutputDto } from './dto/expenses-output.dto';
 
 @Injectable()
 export class ExpensesService {
@@ -16,34 +22,38 @@ export class ExpensesService {
     private readonly accessControlService: AccessControlService,
   ) {}
 
-  async create(expense: ExpensesInputDto, userId: string): Promise<ExpensesDocument> {
+  async create(inputDto: ExpensesInputDto, userId: string): Promise<ExpensesOutputDto> {
     try {
       const newExpansesInstance = new this.expensesModel({
-        amount: expense.amount,
-        categoryId: expense.categoryId,
-        paymentSourceId: expense.paymentSourceId,
+        // ToDo: need write amount in cents to avoid rounding problems
         userId: userId,
-        comments: expense.comments,
+        amount: inputDto.amount,
+        categoryId: inputDto.categoryId,
+        paymentSourceId: inputDto.paymentSourceId,
+        comments: inputDto.comments,
       });
       const createdExpanse = await newExpansesInstance.save();
       return createdExpanse.toObject({ versionKey: false });
     } catch (error) {
-      if (error instanceof JsonWebTokenError) {
-        const jwtError = error as JsonWebTokenError;
-        throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
-      }
       throw new HttpException(EXPENSES_ERROR.CREATE_EXPENSE_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  async getById(id: string): Promise<ExpensesDocument> {
-    const foundExpanse = await this.expensesModel.findById(id);
+  async getById(expensesId: string, userId: string): Promise<ExpensesOutputDto> {
+    const foundExpanse = await this.expensesModel.findById(expensesId);
+    if (!foundExpanse) {
+      throw new NotFoundException(EXPENSES_ERROR.EXPENSE_NOT_FOUND);
+    }
+    if (foundExpanse.userId !== userId) {
+      throw new UnauthorizedException(EXPENSES_ERROR.ACCESS_DENIED);
+    }
+    return foundExpanse.toObject({ versionKey: false });
+  }
+  async getOwn(userId: string): Promise<ExpensesOutputDto[]> {
+    const foundExpanse = await this.expensesModel.find({ userId }).select('-__v').lean();
     if (!foundExpanse) {
       throw new NotFoundException(EXPENSES_ERROR.EXPENSE_NOT_FOUND);
     }
     return foundExpanse;
-  }
-  async getOwn(userId: string): Promise<ExpensesDocument[]> {
-    return this.expensesModel.find({ userId }).select('-__v').lean();
   }
   async getSharedExpenses(sharedUserId: string, currentUserId: string): Promise<ExpensesDocument[]> {
     if (currentUserId === sharedUserId) {
@@ -62,30 +72,29 @@ export class ExpensesService {
       throw new HttpException(EXPENSES_ERROR.GET_SHARED_EXPENSES, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  async delete(id: string): Promise<ExpensesDocument> {
-    const expense = await this.expensesModel.findById(id);
-    if (!expense) {
-      throw new NotFoundException(EXPENSES_ERROR.EXPENSE_NOT_FOUND);
-    }
-    return this.expensesModel.findByIdAndDelete(id);
-  }
-  async patch(id: string, expense: ExpensesInputDto): Promise<ExpensesDocument> {
-    const foundExpanse = await this.expensesModel.findById(id);
+  async update(expensesId: string, inputDto: ExpensesInputDto, userId: string): Promise<ExpensesOutputDto> {
+    const foundExpanse = await this.expensesModel.findById(expensesId);
     if (!foundExpanse) {
       throw new NotFoundException(EXPENSES_ERROR.EXPENSE_NOT_FOUND);
     }
-    return this.expensesModel.findByIdAndUpdate(id, expense, { new: true }).lean();
+    if (foundExpanse.userId !== userId) {
+      throw new UnauthorizedException(EXPENSES_ERROR.ACCESS_DENIED);
+    }
+    return this.expensesModel.findByIdAndUpdate(expensesId, inputDto, { new: true }).lean();
   }
-  async find(dto: FindExpenseInputDto): Promise<ExpensesDocument[]> {
-    //check if the dto.createdAt is an array of two Dates or is undefined and throw an error if it is not
-    return this.expensesModel
-      .find({
-        createdAt: { $gte: dto?.createdStartDate, $lte: dto?.createdEndDate },
-        paymentSourceId: dto?.paymentSourceId,
-        expensesTypeId: dto?.expensesTypeId,
-      })
-      .limit(dto.limit)
-      .skip(dto.skip)
-      .lean();
+  async delete(expensesId: string, userId: string): Promise<ExpensesOutputDto> {
+    const expense = await this.expensesModel.findById(expensesId);
+    if (!expense) {
+      throw new NotFoundException(EXPENSES_ERROR.EXPENSE_NOT_FOUND);
+    }
+    if (expense.userId !== userId) {
+      throw new UnauthorizedException(EXPENSES_ERROR.ACCESS_DENIED);
+    }
+    try {
+      await expense.deleteOne();
+      return expense.toObject({ versionKey: false });
+    } catch (error) {
+      throw new HttpException(EXPENSES_ERROR.DELETE_EXPENSES_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

@@ -10,8 +10,7 @@ export function DeleteCategorySwDec() {
       description: `
         Requires:
         - token in Cookies
-        - categoryId in Param
-      `,
+        - categoryId in Param`,
     }),
     ApiCookieAuth(),
     ApiParam({

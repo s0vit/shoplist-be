@@ -1,6 +1,6 @@
 import { IsMongoId, IsOptional, IsPositive, IsString, Length } from 'class-validator';
-import { EXPENSES_ERROR } from '../constants/expenses-error.enum';
 import { ApiProperty } from '@nestjs/swagger';
+
 // ToDo: categoryId and paymentSourceId add default value
 export class ExpensesInputDto {
   @ApiProperty({
@@ -21,16 +21,32 @@ export class ExpensesInputDto {
     example: '6616f96da226986482597b6c',
     description: 'Payment source ID',
   })
-  @IsOptional()
   @IsMongoId()
-  paymentSourceId?: string;
+  paymentSourceId: string;
 
   @ApiProperty({
     example: 'Product purchase',
     description: 'Comments for the expense',
+    required: false,
   })
   @IsOptional()
-  @IsString({ message: EXPENSES_ERROR.COMMENTS_SHOULD_BE_A_STRING })
-  @Length(0, 100, { message: EXPENSES_ERROR.COMMENTS_SHOULD_BE_LESS_THAN_100_CHARACTERS })
+  @IsString()
+  @Length(0, 100)
   comments?: string;
+
+  @ApiProperty({
+    example: '2024-06-08T09:04:50.592Z',
+    description: 'Date created the expense.',
+    required: false,
+  })
+  @IsOptional()
+  createdAt?: Date;
+
+  @ApiProperty({
+    example: '2024-06-08T09:04:50.592Z',
+    description: 'Date updated the expense.',
+    required: false,
+  })
+  @IsOptional()
+  updatedAt?: Date;
 }

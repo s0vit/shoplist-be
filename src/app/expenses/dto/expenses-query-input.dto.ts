@@ -1,6 +1,6 @@
 import { IsDateString, IsMongoId, IsOptional, IsPositive } from 'class-validator';
 
-export class FindExpenseInputDto {
+export class ExpensesQueryInputDto {
   @IsOptional()
   @IsDateString()
   createdStartDate?: string;

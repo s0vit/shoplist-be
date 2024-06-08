@@ -1,18 +1,24 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { CategoryOutputDto } from '../dto/category-output.dto';
 import { CATEGORY_ERROR } from '../constants/category-error.enum';
 
 export function GetByCategoryIdSwDec() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Get user category by id',
+      summary: 'Get user Category by id',
       description: `
       Requires:
       - token in Cookies
       - categoryId in Params`,
     }),
     ApiCookieAuth(),
+    ApiParam({
+      name: 'categoryId',
+      description: '#### The Category source id',
+      type: String,
+      required: true,
+    }),
     ApiResponse({
       status: 200,
       description: `

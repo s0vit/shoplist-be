@@ -1,12 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Types } from 'mongoose';
 
 export class ExpensesOutputDto {
   @ApiProperty({
     example: '6616f96da226986482597b6c',
     description: 'Unique identifier of the expense.',
   })
-  _id: Types.ObjectId;
+  _id: string;
 
   @ApiProperty({
     example: '15',
@@ -39,13 +38,13 @@ export class ExpensesOutputDto {
   comments?: string;
 
   @ApiProperty({
-    example: new Date(),
+    example: '2024-06-08T09:04:50.592Z',
     description: 'Date created the expense.',
   })
   createdAt: Date;
 
   @ApiProperty({
-    example: new Date(),
+    example: '2024-06-08T09:04:50.592Z',
     description: 'Date updated the expense.',
   })
   updatedAt: Date;
