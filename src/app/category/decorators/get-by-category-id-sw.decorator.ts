@@ -10,7 +10,7 @@ export function GetByCategoryIdSwDec() {
       description: `
       Requires:
       - token in Cookies
-      - CategoryId in Params`,
+      - categoryId in Params`,
     }),
     ApiCookieAuth(),
     ApiParam({

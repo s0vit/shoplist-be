@@ -27,7 +27,7 @@ export class FindByEmailOutputDto {
 
   @ApiProperty({
     description: 'Last login date',
-    example: new Date(),
+    example: '2024-06-08T09:04:50.592Z',
   })
   loginDate?: Date;
 }
