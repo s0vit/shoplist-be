@@ -16,55 +16,55 @@ import { UpdateExpenseSwDec } from './decorators/update-expense-sw.decorator';
 import { DeleteExpenseSwDec } from './decorators/delete-expense-sw.decorator';
 
 @UseGuards(AccessJwtGuard)
-@ApiTags('Expenses')
-@Controller('expenses')
+@ApiTags('Expense')
+@Controller('expense')
 export class ExpenseController {
-  constructor(private readonly expensesService: ExpenseService) {}
+  constructor(private readonly expenseService: ExpenseService) {}
 
   @GetExpenseSwDec()
   @Get()
   async getOwn(@Query() queryInputDto: ExpenseQueryInputDto, @Req() req: CustomRequest): Promise<ExpenseOutputDto[]> {
     // ToDo: data from "Query" is not processed
-    return this.expensesService.getOwn(req.user.userId);
+    return this.expenseService.getOwn(req.user.userId);
   }
 
   @GetByExpenseIdSwDec()
-  @Get(':expensesId')
+  @Get(':expenseId')
   async getById(
-    @ValidMongoIdInParamsDec({ param: 'expensesId' }) expensesId: string,
+    @ValidMongoIdInParamsDec({ param: 'expenseId' }) expenseId: string,
     @Req() req: CustomRequest,
   ): Promise<ExpenseOutputDto> {
-    return this.expensesService.getById(expensesId, req.user.userId);
+    return this.expenseService.getById(expenseId, req.user.userId);
   }
 
   @GetSharedSwDec()
   @Get('shared/:sharedId')
   async getShared(@Param() { sharedId }: SharedExpenseDto, @Req() req: CustomRequest) {
-    return this.expensesService.getSharedExpenses(sharedId, req.user.userId);
+    return this.expenseService.getSharedExpenses(sharedId, req.user.userId);
   }
 
   @CreateExpenseSwDec()
   @Post()
   async create(@Body() inputDto: ExpenseInputDto, @Req() req: CustomRequest): Promise<ExpenseOutputDto> {
-    return this.expensesService.create(inputDto, req.user.userId);
+    return this.expenseService.create(inputDto, req.user.userId);
   }
 
   @UpdateExpenseSwDec()
-  @Put(':expensesId')
+  @Put(':expenseId')
   async update(
-    @ValidMongoIdInParamsDec({ param: 'expensesId' }) expensesId: string,
+    @ValidMongoIdInParamsDec({ param: 'expenseId' }) expenseId: string,
     @Body() inputDto: ExpenseInputDto,
     @Req() req: CustomRequest,
   ): Promise<ExpenseOutputDto> {
-    return this.expensesService.update(expensesId, inputDto, req.user.userId);
+    return this.expenseService.update(expenseId, inputDto, req.user.userId);
   }
 
   @DeleteExpenseSwDec()
-  @Delete(':expensesId')
+  @Delete(':expenseId')
   async delete(
-    @ValidMongoIdInParamsDec({ param: 'expensesId' }) expensesId: string,
+    @ValidMongoIdInParamsDec({ param: 'expenseId' }) expenseId: string,
     @Req() req: CustomRequest,
   ): Promise<ExpenseOutputDto> {
-    return this.expensesService.delete(expensesId, req.user.userId);
+    return this.expenseService.delete(expenseId, req.user.userId);
   }
 }
