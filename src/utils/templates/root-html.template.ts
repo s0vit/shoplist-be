@@ -1,4 +1,4 @@
-export const getHtmlTemplate = (host: string, protocol: string): string => `
+export const rootHtmlTemplate = (host: string, protocol: string): string => `
     <!DOCTYPE html>
 <html lang="en">
 <head>

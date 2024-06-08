@@ -4,7 +4,7 @@ import { customValidationPipe } from '../pipes/customValidationPipe';
 import ErrorExceptionFilter from '../utils/exeptionFilters/errorExeptionFilter';
 import * as cookieParser from 'cookie-parser';
 import { setupSwagger } from './swagger.config';
-import { getHtmlTemplate } from '../utils/templates/root-html-template';
+import { rootHtmlTemplate } from '../utils/templates/root-html.template';
 
 export const setupApp = async (app: INestApplication) => {
   const CLIENT_URLS = process.env.CLIENT_URLS;
@@ -12,7 +12,7 @@ export const setupApp = async (app: INestApplication) => {
   app.getHttpAdapter().get('/', (req, res) => {
     const host = req.headers.host;
     const protocol = req.protocol;
-    res.send(getHtmlTemplate(host, protocol));
+    res.send(rootHtmlTemplate(host, protocol));
   });
   app.useGlobalInterceptors(new LoggerInterceptor());
   app.useGlobalPipes(customValidationPipe);

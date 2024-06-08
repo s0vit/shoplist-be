@@ -11,6 +11,8 @@ import { ConfirmOutputDto } from './dto/confirm-output.dto';
 import { LoginOutputDto } from './dto/login-output.dto';
 import { ConfigService } from '@nestjs/config';
 import { TokenPayload } from 'src/common/interfaces/token.interface';
+import { confirmEmailTemplate } from '../../utils/templates/confirm-email.template';
+import { resetPasswordTemplate } from '../../utils/templates/reset-password.template';
 
 @Injectable()
 export class AuthService {
@@ -59,7 +61,7 @@ export class AuthService {
       await this.mailerService.sendMail({
         to: dto.email,
         subject: 'Confirm your registration',
-        text: confirmationUrl,
+        html: confirmEmailTemplate(confirmToken, confirmationUrl),
       });
       await this.createUser(dto);
     } catch (error) {
@@ -155,11 +157,11 @@ export class AuthService {
     try {
       const decoded = this.jwtService.decode<TokenPayload>(accessToken);
       const confirmToken = await this.jwtService.signAsync({ email: decoded.email });
-      const confirmationUrl = `${origin}/confirm?token=${confirmToken}`;
+      const resetLink = `${origin}/confirm?token=${confirmToken}`;
       await this.mailerService.sendMail({
         to: decoded.email,
         subject: 'Confirm your registration',
-        text: confirmationUrl,
+        html: resetPasswordTemplate(resetLink),
       });
     } catch (error) {
       throw new HttpException(ERROR_AUTH.SEND_EMAIL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
