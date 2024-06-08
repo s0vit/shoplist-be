@@ -2,21 +2,35 @@ import { applyDecorators, HttpCode } from '@nestjs/common';
 import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ExpensesInputDto } from '../dto/expenses-input.dto';
 import { ExpensesOutputDto } from '../dto/expenses-output.dto';
+import { EXPENSES_ERROR } from '../constants/expenses-error.enum';
 
 export function CreateExpensesSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Create a new expense.',
-      description:
-        'Requires a token in cookies and a body with amount, categoryId. Optionally, you can add paymentSourceId and comments.',
+      description: `
+       Requires:
+      - token in Cookies
+      - amount in Body
+      - categoryId in Body
+      - paymentSourceId in Body
+
+      Optionally:
+      - comments in Body`,
     }),
-    ApiBody({ type: ExpensesInputDto }),
     ApiCookieAuth(),
+    HttpCode(200),
+    ApiBody({ type: ExpensesInputDto }),
     ApiResponse({
       status: 200,
-      description: 'The Expense successfully created.',
+      description: `
+      ok: The Expense was successfully created.`,
       type: ExpensesOutputDto,
     }),
-    HttpCode(200),
+    ApiResponse({
+      status: 400,
+      description: `
+      Bad Request: ${EXPENSES_ERROR.CREATE_EXPENSE_ERROR}`,
+    }),
   );
 }

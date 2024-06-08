@@ -1,4 +1,4 @@
-import { ConflictException, HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import { NotFoundException, HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Category, CategoryDocument } from './models/category.model';
@@ -26,7 +26,7 @@ export class CategoryService {
   async getOne(categoryId: string, userId: string): Promise<CategoryOutputDto> {
     const category = await this.categoryModel.findById(categoryId);
     if (!category) {
-      throw new ConflictException(CATEGORY_ERROR.CATEGORY_NOT_FOUND);
+      throw new NotFoundException(CATEGORY_ERROR.CATEGORY_NOT_FOUND);
     }
     if (category.userId !== userId) {
       throw new UnauthorizedException(CATEGORY_ERROR.FORBIDDEN);
@@ -38,7 +38,7 @@ export class CategoryService {
     const titleToSearch = this.utilsService.createTitleRegex(inputDTO.title);
     const category = await this.categoryModel.findOne({ title: titleToSearch, userId });
     if (category) {
-      throw new ConflictException(CATEGORY_ERROR.CATEGORY_ALREADY_EXIST);
+      throw new NotFoundException(CATEGORY_ERROR.CATEGORY_ALREADY_EXIST);
     }
     try {
       const newCategoryInstance = new this.categoryModel({
@@ -53,10 +53,10 @@ export class CategoryService {
       throw new HttpException(CATEGORY_ERROR.CREATE_CATEGORY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  async update(categoryId: string, inputDTO: any, userId: string): Promise<CategoryOutputDto> {
+  async update(categoryId: string, inputDTO: CategoryInputDto, userId: string): Promise<CategoryOutputDto> {
     const category = await this.categoryModel.findById(categoryId);
     if (!category) {
-      throw new ConflictException(CATEGORY_ERROR.CATEGORY_NOT_FOUND);
+      throw new NotFoundException(CATEGORY_ERROR.CATEGORY_NOT_FOUND);
     }
     if (category.userId !== userId) {
       throw new UnauthorizedException(CATEGORY_ERROR.FORBIDDEN);
@@ -76,7 +76,7 @@ export class CategoryService {
   async delete(categoryId: string, userId: string): Promise<CategoryOutputDto> {
     const category = await this.categoryModel.findById(categoryId);
     if (!category) {
-      throw new ConflictException(CATEGORY_ERROR.CATEGORY_NOT_FOUND);
+      throw new NotFoundException(CATEGORY_ERROR.CATEGORY_NOT_FOUND);
     }
     if (category.userId !== userId) {
       throw new UnauthorizedException(CATEGORY_ERROR.FORBIDDEN);

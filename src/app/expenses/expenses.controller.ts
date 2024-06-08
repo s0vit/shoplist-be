@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { ExpensesInputDto } from './dto/expenses-input.dto';
-import { FindExpenseInputDto } from './dto/find-expense-input.dto';
+import { ExpensesQueryInputDto } from './dto/expenses-query-input.dto';
 import { ExpensesService } from './expenses.service';
 import { SharedExpenseDto } from './dto/get-shared-input.dto';
 import { AccessJwtGuard } from '../../guards/access-jwt.guard';
@@ -9,6 +9,11 @@ import { GetExpensesSwDec } from './decorators/get-expenses-sw.decorator';
 import { CreateExpensesSwDec } from './decorators/create-expenses-sw.decorator';
 import { ExpensesOutputDto } from './dto/expenses-output.dto';
 import { CustomRequest } from '../../common/interfaces/token.interface';
+import { ValidMongoIdInParamsDec } from '../../common/decorators/valid-mongo-id.decorator';
+import { GetByExpensesIdSwDec } from './decorators/get-by-expenses-id-sw.decorator';
+import { GetSharedSwDec } from './decorators/get-shared-sw.decorator';
+import { UpdateExpensesSwDec } from './decorators/update-expenses-sw.decorator';
+import { DeleteExpensesSwDec } from './decorators/delete-expenses-sw.decorator';
 
 @UseGuards(AccessJwtGuard)
 @ApiTags('Expenses')
@@ -16,40 +21,50 @@ import { CustomRequest } from '../../common/interfaces/token.interface';
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
-  @CreateExpensesSwDec()
-  @Post('create')
-  async create(@Body() dto: ExpensesInputDto, @Req() req: CustomRequest): Promise<ExpensesOutputDto> {
-    return this.expensesService.create(dto, req.user.userId);
-  }
-
-  // Get expenses by _id
-  @Get('by-id/:id')
-  async getById(@Param('id') id: string) {
-    return this.expensesService.getById(id);
-  }
-
-  // Get own expenses
   @GetExpensesSwDec()
   @Get()
-  async getOwn(@Query() dto: FindExpenseInputDto, @Req() req: CustomRequest) {
+  async getOwn(@Query() queryInputDto: ExpensesQueryInputDto, @Req() req: CustomRequest): Promise<ExpensesOutputDto[]> {
     // ToDo: data from "Query" is not processed
     return this.expensesService.getOwn(req.user.userId);
   }
 
-  // Get shared expenses
-  // we need a request/router "is anything for me at all?!"
+  @GetByExpensesIdSwDec()
+  @Get(':expensesId')
+  async getById(
+    @ValidMongoIdInParamsDec({ param: 'expensesId' }) expensesId: string,
+    @Req() req: CustomRequest,
+  ): Promise<ExpensesOutputDto> {
+    return this.expensesService.getById(expensesId, req.user.userId);
+  }
+
+  @GetSharedSwDec()
   @Get('shared/:sharedId')
   async getShared(@Param() { sharedId }: SharedExpenseDto, @Req() req: CustomRequest) {
     return this.expensesService.getSharedExpenses(sharedId, req.user.userId);
   }
 
-  @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return this.expensesService.delete(id);
+  @CreateExpensesSwDec()
+  @Post('create')
+  async create(@Body() inputDto: ExpensesInputDto, @Req() req: CustomRequest): Promise<ExpensesOutputDto> {
+    return this.expensesService.create(inputDto, req.user.userId);
   }
 
-  @Patch(':id')
-  async patch(@Param('id') id: string, @Body() dto: ExpensesInputDto) {
-    return this.expensesService.patch(id, dto);
+  @UpdateExpensesSwDec()
+  @Put(':expensesId')
+  async update(
+    @ValidMongoIdInParamsDec({ param: 'expensesId' }) expensesId: string,
+    @Body() inputDto: ExpensesInputDto,
+    @Req() req: CustomRequest,
+  ): Promise<ExpensesOutputDto> {
+    return this.expensesService.update(expensesId, inputDto, req.user.userId);
+  }
+
+  @DeleteExpensesSwDec()
+  @Delete(':expensesId')
+  async delete(
+    @ValidMongoIdInParamsDec({ param: 'expensesId' }) expensesId: string,
+    @Req() req: CustomRequest,
+  ): Promise<ExpensesOutputDto> {
+    return this.expensesService.delete(expensesId, req.user.userId);
   }
 }

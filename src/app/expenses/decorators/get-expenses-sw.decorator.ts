@@ -1,61 +1,86 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { ExpensesOutputDto } from '../dto/expenses-output.dto';
+import { EXPENSES_ERROR } from '../constants/expenses-error.enum';
 
 export function GetExpensesSwDec() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Get users Expenses',
-      description: 'Requires a token in cookies',
+      summary: 'Get users Expenses by ID from a cookie or by a Query request.',
+      description: `
+      ATTENTION! data from "Query" is not processed!
+      
+        Requires:
+        - token in Cookies
+
+        Optionally:
+        - createdStartDate in Params
+        - createdEndDate in Params
+        - paymentSourceId in Params
+        - expensesTypeId in Params
+        - limit in Params
+        - skip in Params`,
     }),
+    ApiCookieAuth(),
     ApiQuery({
       name: 'createdStartDate',
-      type: 'Date',
+      type: Date,
       required: false,
-      description: 'Start date',
+      description: `
+      createdStartDate: Start date`,
       example: '2024-05-18T08:36:41.000',
     }),
     ApiQuery({
       name: 'createdEndDate',
-      type: 'Date',
+      type: Date,
       required: false,
-      description: 'End date',
+      description: `
+      createdEndDate: End date`,
       example: '2024-06-18T08:36:41.000',
     }),
     ApiQuery({
       name: 'paymentSourceId',
-      type: 'string',
+      type: String,
       required: false,
-      description: 'Category ID',
+      description: `
+      paymentSourceId: Payment source ID`,
       example: '6616f96da226986482597b6c',
     }),
     ApiQuery({
       name: 'expensesTypeId',
-      type: 'string',
+      type: String,
       required: false,
-      description: 'Expenses ID',
+      description: `
+      expensesTypeId: Expenses type ID`,
       example: '6616f96da226986482597b6c',
     }),
     ApiQuery({
       name: 'limit',
-      type: 'number',
+      type: Number,
       required: false,
-      description: 'Count of expenses to show',
+      description: `
+      limit: Count of expenses to receive`,
       example: 100,
     }),
     ApiQuery({
       name: 'skip',
-      type: 'number',
+      type: Number,
       required: false,
-      description: 'Count of expenses to skip',
+      description: `
+      skip: Count of expenses to skip`,
       example: 10,
     }),
-    ApiCookieAuth(),
     ApiResponse({
       status: 200,
-      description: 'The users Expenses successfully received.',
+      description: `
+      ok: The users Expenses successfully received.`,
       type: ExpensesOutputDto,
       isArray: true,
+    }),
+    ApiResponse({
+      status: 404,
+      description: `
+      Bad Request: ${EXPENSES_ERROR.EXPENSE_NOT_FOUND}`,
     }),
   );
 }
