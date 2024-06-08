@@ -1,30 +1,30 @@
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Model } from 'mongoose';
-import { PaymentSource } from './models/payment-source.model';
+import { PaymentSource, PaymentSourceDocument } from './models/payment-source.model';
 import { PaymentSourceInputDto } from './dto/payment-source-input.dto';
-import { PAYMENT_SOURCES_ERROR } from './constants/error.constant';
+import { PAYMENT_SOURCE_ERROR } from './constants/error.constant';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaymentSourceOutputDto } from './dto/payment-source-output.dto';
 import { UtilsService } from '../../common/utils/utils.service';
 
 @Injectable()
-export class PaymentSourcesService {
+export class PaymentSourceService {
   constructor(
     @InjectModel(PaymentSource.name)
-    private readonly paymentSourcesModel: Model<PaymentSource>,
+    private readonly paymentSourceModel: Model<PaymentSourceDocument>,
     private readonly utilsService: UtilsService,
   ) {}
 
   async create(userId: string, inputDTO: PaymentSourceInputDto): Promise<PaymentSourceOutputDto> {
     const titleToSearch = this.utilsService.createTitleRegex(inputDTO.title);
-    const existingPaymentSourceForCurrentUser = await this.paymentSourcesModel.findOne({
+    const existingPaymentSourceForCurrentUser = await this.paymentSourceModel.findOne({
       title: titleToSearch,
       userId,
     });
     if (existingPaymentSourceForCurrentUser) {
-      throw new ConflictException(PAYMENT_SOURCES_ERROR.EXIST);
+      throw new ConflictException(PAYMENT_SOURCE_ERROR.EXIST);
     }
-    const newPaymentSource = new this.paymentSourcesModel({
+    const newPaymentSource = new this.paymentSourceModel({
       title: inputDTO.title,
       userId,
       comments: inputDTO.comments,
@@ -34,24 +34,24 @@ export class PaymentSourcesService {
   }
 
   async delete(id: string, userId: string): Promise<PaymentSourceOutputDto> {
-    const toBeDeletedPaymentSource = await this.paymentSourcesModel.findById(id);
+    const toBeDeletedPaymentSource = await this.paymentSourceModel.findById(id);
     if (!toBeDeletedPaymentSource) {
-      throw new ConflictException(PAYMENT_SOURCES_ERROR.NOT_FOUND);
+      throw new ConflictException(PAYMENT_SOURCE_ERROR.NOT_FOUND);
     }
     if (toBeDeletedPaymentSource.userId !== userId) {
-      throw new UnauthorizedException(PAYMENT_SOURCES_ERROR.UNAUTHORIZED_ACCESS);
+      throw new UnauthorizedException(PAYMENT_SOURCE_ERROR.UNAUTHORIZED_ACCESS);
     }
     await toBeDeletedPaymentSource.deleteOne();
     return toBeDeletedPaymentSource.toObject({ versionKey: false });
   }
 
   async update(id: string, inputDTO: PaymentSourceInputDto, userId: string): Promise<PaymentSourceOutputDto> {
-    const paymentSource = await this.paymentSourcesModel.findById(id);
+    const paymentSource = await this.paymentSourceModel.findById(id);
     if (!paymentSource) {
-      throw new ConflictException(PAYMENT_SOURCES_ERROR.NOT_FOUND);
+      throw new ConflictException(PAYMENT_SOURCE_ERROR.NOT_FOUND);
     }
     if (paymentSource.userId !== userId) {
-      throw new UnauthorizedException(PAYMENT_SOURCES_ERROR.FORBIDDEN);
+      throw new UnauthorizedException(PAYMENT_SOURCE_ERROR.FORBIDDEN);
     }
     paymentSource.set({
       title: inputDTO.title,
@@ -64,17 +64,17 @@ export class PaymentSourcesService {
   }
 
   async getOne(id: string, userId: string): Promise<PaymentSourceOutputDto> {
-    const paymentSource = await this.paymentSourcesModel.findById(id);
+    const paymentSource = await this.paymentSourceModel.findById(id);
     if (!paymentSource) {
-      throw new ConflictException(PAYMENT_SOURCES_ERROR.NOT_FOUND);
+      throw new ConflictException(PAYMENT_SOURCE_ERROR.NOT_FOUND);
     }
     if (paymentSource.userId !== userId) {
-      throw new UnauthorizedException(PAYMENT_SOURCES_ERROR.UNAUTHORIZED_ACCESS);
+      throw new UnauthorizedException(PAYMENT_SOURCE_ERROR.UNAUTHORIZED_ACCESS);
     }
     return paymentSource.toObject({ versionKey: false });
   }
 
   async getAll(userId: string): Promise<PaymentSourceOutputDto[]> {
-    return this.paymentSourcesModel.find({ userId }).select('-__v').lean();
+    return this.paymentSourceModel.find({ userId }).select('-__v').lean();
   }
 }

@@ -19,7 +19,7 @@ export class CategoryService {
     try {
       return await this.categoryModel.find({ userId }).select('-__v').lean();
     } catch (error) {
-      throw new HttpException(CATEGORY_ERROR.GET_CATEGORIES_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(CATEGORY_ERROR.GET_CATEGORY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

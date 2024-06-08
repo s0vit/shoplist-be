@@ -1,10 +1,10 @@
 import { applyDecorators, HttpCode } from '@nestjs/common';
 import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { ExpensesInputDto } from '../dto/expenses-input.dto';
-import { ExpensesOutputDto } from '../dto/expenses-output.dto';
-import { EXPENSES_ERROR } from '../constants/expenses-error.enum';
+import { ExpenseInputDto } from '../dto/expense-input.dto';
+import { ExpenseOutputDto } from '../dto/expense-output.dto';
+import { EXPENSE_ERROR } from '../constants/expense-error.enum';
 
-export function CreateExpensesSwDec() {
+export function CreateExpenseSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Create a new expense.',
@@ -20,17 +20,17 @@ export function CreateExpensesSwDec() {
     }),
     ApiCookieAuth(),
     HttpCode(200),
-    ApiBody({ type: ExpensesInputDto }),
+    ApiBody({ type: ExpenseInputDto }),
     ApiResponse({
       status: 200,
       description: `
       ok: The Expense was successfully created.`,
-      type: ExpensesOutputDto,
+      type: ExpenseOutputDto,
     }),
     ApiResponse({
       status: 400,
       description: `
-      Bad Request: ${EXPENSES_ERROR.CREATE_EXPENSE_ERROR}`,
+      Bad Request: ${EXPENSE_ERROR.CREATE_EXPENSE_ERROR}`,
     }),
   );
 }

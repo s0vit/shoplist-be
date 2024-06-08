@@ -1,9 +1,9 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { ExpensesOutputDto } from '../dto/expenses-output.dto';
-import { EXPENSES_ERROR } from '../constants/expenses-error.enum';
+import { ExpenseOutputDto } from '../dto/expense-output.dto';
+import { EXPENSE_ERROR } from '../constants/expense-error.enum';
 
-export function GetExpensesSwDec() {
+export function GetExpenseSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Get users Expenses by ID from a cookie or by a Query request.',
@@ -74,13 +74,13 @@ export function GetExpensesSwDec() {
       status: 200,
       description: `
       ok: The users Expenses successfully received.`,
-      type: ExpensesOutputDto,
+      type: ExpenseOutputDto,
       isArray: true,
     }),
     ApiResponse({
       status: 404,
       description: `
-      Bad Request: ${EXPENSES_ERROR.EXPENSE_NOT_FOUND}`,
+      Bad Request: ${EXPENSE_ERROR.EXPENSE_NOT_FOUND}`,
     }),
   );
 }

@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Post, Put, Req, UseGuards } from '@nestj
 import { CustomRequest } from '../../common/interfaces/token.interface';
 import { CategoryService } from './category.service';
 import { AccessJwtGuard } from '../../guards/access-jwt.guard';
-import { GetCategoriesSwDec } from './decorators/get-categories-sw.decorator';
+import { GetCategorySwDec } from './decorators/get-category-sw.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { CategoryInputDto } from './dto/category-input.dto';
 import { CreateCategorySwDec } from './decorators/create-category-sw.decorator';
@@ -18,7 +18,7 @@ import { ValidMongoIdInParamsDec } from '../../common/decorators/valid-mongo-id.
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
-  @GetCategoriesSwDec()
+  @GetCategorySwDec()
   @Get()
   async getAll(@Req() req: CustomRequest): Promise<CategoryOutputDto[]> {
     return this.categoryService.getAll(req.user.userId);
@@ -35,7 +35,7 @@ export class CategoryController {
   }
 
   @CreateCategorySwDec()
-  @Post('create')
+  @Post()
   async create(@Body() inputDTO: CategoryInputDto, @Req() req: CustomRequest): Promise<CategoryOutputDto> {
     return this.categoryService.create(inputDTO, req.user.userId);
   }

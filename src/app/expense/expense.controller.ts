@@ -1,39 +1,39 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
-import { ExpensesInputDto } from './dto/expenses-input.dto';
-import { ExpensesQueryInputDto } from './dto/expenses-query-input.dto';
-import { ExpensesService } from './expenses.service';
+import { ExpenseInputDto } from './dto/expense-input.dto';
+import { ExpenseQueryInputDto } from './dto/expense-query-input.dto';
+import { ExpenseService } from './expense.service';
 import { SharedExpenseDto } from './dto/get-shared-input.dto';
 import { AccessJwtGuard } from '../../guards/access-jwt.guard';
 import { ApiTags } from '@nestjs/swagger';
-import { GetExpensesSwDec } from './decorators/get-expenses-sw.decorator';
-import { CreateExpensesSwDec } from './decorators/create-expenses-sw.decorator';
-import { ExpensesOutputDto } from './dto/expenses-output.dto';
+import { GetExpenseSwDec } from './decorators/get-expense-sw.decorator';
+import { CreateExpenseSwDec } from './decorators/create-expense-sw.decorator';
+import { ExpenseOutputDto } from './dto/expense-output.dto';
 import { CustomRequest } from '../../common/interfaces/token.interface';
 import { ValidMongoIdInParamsDec } from '../../common/decorators/valid-mongo-id.decorator';
-import { GetByExpensesIdSwDec } from './decorators/get-by-expenses-id-sw.decorator';
-import { GetSharedSwDec } from './decorators/get-shared-sw.decorator';
-import { UpdateExpensesSwDec } from './decorators/update-expenses-sw.decorator';
-import { DeleteExpensesSwDec } from './decorators/delete-expenses-sw.decorator';
+import { GetByExpenseIdSwDec } from './decorators/get-by-expense-id-sw.decorator';
+import { GetSharedSwDec } from './decorators/get-shared-expense-sw.decorator';
+import { UpdateExpenseSwDec } from './decorators/update-expense-sw.decorator';
+import { DeleteExpenseSwDec } from './decorators/delete-expense-sw.decorator';
 
 @UseGuards(AccessJwtGuard)
 @ApiTags('Expenses')
 @Controller('expenses')
-export class ExpensesController {
-  constructor(private readonly expensesService: ExpensesService) {}
+export class ExpenseController {
+  constructor(private readonly expensesService: ExpenseService) {}
 
-  @GetExpensesSwDec()
+  @GetExpenseSwDec()
   @Get()
-  async getOwn(@Query() queryInputDto: ExpensesQueryInputDto, @Req() req: CustomRequest): Promise<ExpensesOutputDto[]> {
+  async getOwn(@Query() queryInputDto: ExpenseQueryInputDto, @Req() req: CustomRequest): Promise<ExpenseOutputDto[]> {
     // ToDo: data from "Query" is not processed
     return this.expensesService.getOwn(req.user.userId);
   }
 
-  @GetByExpensesIdSwDec()
+  @GetByExpenseIdSwDec()
   @Get(':expensesId')
   async getById(
     @ValidMongoIdInParamsDec({ param: 'expensesId' }) expensesId: string,
     @Req() req: CustomRequest,
-  ): Promise<ExpensesOutputDto> {
+  ): Promise<ExpenseOutputDto> {
     return this.expensesService.getById(expensesId, req.user.userId);
   }
 
@@ -43,28 +43,28 @@ export class ExpensesController {
     return this.expensesService.getSharedExpenses(sharedId, req.user.userId);
   }
 
-  @CreateExpensesSwDec()
-  @Post('create')
-  async create(@Body() inputDto: ExpensesInputDto, @Req() req: CustomRequest): Promise<ExpensesOutputDto> {
+  @CreateExpenseSwDec()
+  @Post()
+  async create(@Body() inputDto: ExpenseInputDto, @Req() req: CustomRequest): Promise<ExpenseOutputDto> {
     return this.expensesService.create(inputDto, req.user.userId);
   }
 
-  @UpdateExpensesSwDec()
+  @UpdateExpenseSwDec()
   @Put(':expensesId')
   async update(
     @ValidMongoIdInParamsDec({ param: 'expensesId' }) expensesId: string,
-    @Body() inputDto: ExpensesInputDto,
+    @Body() inputDto: ExpenseInputDto,
     @Req() req: CustomRequest,
-  ): Promise<ExpensesOutputDto> {
+  ): Promise<ExpenseOutputDto> {
     return this.expensesService.update(expensesId, inputDto, req.user.userId);
   }
 
-  @DeleteExpensesSwDec()
+  @DeleteExpenseSwDec()
   @Delete(':expensesId')
   async delete(
     @ValidMongoIdInParamsDec({ param: 'expensesId' }) expensesId: string,
     @Req() req: CustomRequest,
-  ): Promise<ExpensesOutputDto> {
+  ): Promise<ExpenseOutputDto> {
     return this.expensesService.delete(expensesId, req.user.userId);
   }
 }
