@@ -4,10 +4,11 @@ import { NestInterceptor } from '@nestjs/common/interfaces/features/nest-interce
 
 class LoggerInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    console.log(`Request from ${context.getClass().name}...`);
-    console.log('Before...');
+    console.warn(`Request from ${context.getClass().name}...`);
+    console.warn('Before...');
     const now = Date.now();
-    return next.handle().pipe(tap(() => console.log(`After... ${Date.now() - now}ms`)));
+
+    return next.handle().pipe(tap(() => console.warn(`After... ${Date.now() - now}ms`)));
   }
 }
 export default LoggerInterceptor;

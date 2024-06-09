@@ -10,7 +10,7 @@ import { CreateExpenseSwDec } from './decorators/create-expense-sw.decorator';
 import { ExpenseOutputDto } from './dto/expense-output.dto';
 import { CustomRequest } from '../../common/interfaces/token.interface';
 import { ValidMongoIdInParamsDec } from '../../common/decorators/valid-mongo-id.decorator';
-import { GetByExpenseIdSwDec } from './decorators/get-by-expense-id-sw.decorator';
+import { GetExpenseByIdSwDec } from './decorators/get-expense-by-id-sw.decorator';
 import { GetSharedSwDec } from './decorators/get-shared-expense-sw.decorator';
 import { UpdateExpenseSwDec } from './decorators/update-expense-sw.decorator';
 import { DeleteExpenseSwDec } from './decorators/delete-expense-sw.decorator';
@@ -28,7 +28,7 @@ export class ExpenseController {
     return this.expenseService.getOwn(req.user.userId);
   }
 
-  @GetByExpenseIdSwDec()
+  @GetExpenseByIdSwDec()
   @Get(':expenseId')
   async getById(
     @ValidMongoIdInParamsDec({ param: 'expenseId' }) expenseId: string,

@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { EXPENSE_ERROR } from '../constants/expense-error.enum';
 import { ExpenseOutputDto } from '../dto/expense-output.dto';
 
@@ -9,10 +9,10 @@ export function DeleteExpenseSwDec() {
       summary: 'Delete Expense by id',
       description: `
       Requires:
-      - token in Cookies
+      - token in the header
       - expensesId in Params`,
     }),
-    ApiCookieAuth(),
+    ApiBearerAuth(),
     ApiParam({
       name: 'expensesId',
       description: `

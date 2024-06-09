@@ -20,6 +20,7 @@ export class AccessControlController {
   @Post()
   async create(@Body() dto: AccessControlInputDto, @Req() req: CustomRequest): Promise<AccessControlOutputDto> {
     const { userId } = req.user;
+
     return this.accessControlService.create(userId, dto);
   }
 
@@ -27,6 +28,7 @@ export class AccessControlController {
   @Delete(':id')
   async delete(@Param('id') accessId: string, @Req() req: CustomRequest): Promise<AccessControlOutputDto> {
     const { userId } = req.user;
+
     return this.accessControlService.delete(userId, accessId);
   }
 
@@ -38,6 +40,7 @@ export class AccessControlController {
     @Req() req: CustomRequest,
   ): Promise<AccessControlOutputDto> {
     const { userId } = req.user;
+
     return this.accessControlService.update(userId, accessId, dto);
   }
 
@@ -45,6 +48,7 @@ export class AccessControlController {
   @Get()
   async get(@Req() req: CustomRequest): Promise<AccessControlOutputDto[]> {
     const { userId } = req.user;
+
     return this.accessControlService.getAll(userId);
   }
 }

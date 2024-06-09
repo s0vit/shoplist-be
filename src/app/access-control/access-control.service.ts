@@ -26,9 +26,11 @@ export class AccessControlService {
     if (dto.sharedWith.includes(userId)) {
       throw new ForbiddenException(ACCESS_CONTROL_ERROR.OWN_ACCESS_ERROR);
     }
+
     try {
       const accessControl = new this.accessControlModel({ ownerId: userId, ...dto });
       const result = await accessControl.save();
+
       return result.toObject({ versionKey: false });
     } catch (error) {
       throw new HttpException(ACCESS_CONTROL_ERROR.CREATE_ACCESS_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -39,22 +41,29 @@ export class AccessControlService {
     if (dto.sharedWith?.includes(userId)) {
       throw new ForbiddenException(ACCESS_CONTROL_ERROR.OWN_ACCESS_ERROR);
     }
+
     const result = await this.accessControlModel.findById(accessId);
+
     if (result?.ownerId !== userId) {
       throw new ForbiddenException(ACCESS_CONTROL_ERROR.FORBIDDEN);
     }
+
     if (!result) {
       throw new NotFoundException(ACCESS_CONTROL_ERROR.NOT_FOUND);
     }
+
     result.set({ ...dto, updatedAt: new Date() });
     result.save();
+
     return result.toObject({ versionKey: false });
   }
   async delete(userId: string, accessId: string): Promise<AccessControlOutputDto> {
     const result = await this.accessControlModel.findByIdAndDelete(accessId, { ownerId: userId });
+
     if (!result) {
       throw new NotFoundException(ACCESS_CONTROL_ERROR.DELETE_ACCESS_ERROR);
     }
+
     return result.toObject({ versionKey: false });
   }
 }

@@ -33,6 +33,7 @@ export class ExpenseService {
         comments: inputDto.comments,
       });
       const createdExpanse = await newExpansesInstance.save();
+
       return createdExpanse.toObject({ versionKey: false });
     } catch (error) {
       throw new HttpException(EXPENSE_ERROR.CREATE_EXPENSE_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -40,29 +41,37 @@ export class ExpenseService {
   }
   async getById(expensesId: string, userId: string): Promise<ExpenseOutputDto> {
     const foundExpanse = await this.expensesModel.findById(expensesId);
+
     if (!foundExpanse) {
       throw new NotFoundException(EXPENSE_ERROR.EXPENSE_NOT_FOUND);
     }
+
     if (foundExpanse.userId !== userId) {
       throw new UnauthorizedException(EXPENSE_ERROR.ACCESS_DENIED);
     }
+
     return foundExpanse.toObject({ versionKey: false });
   }
   async getOwn(userId: string): Promise<ExpenseOutputDto[]> {
     const foundExpanse = await this.expensesModel.find({ userId }).select('-__v').lean();
+
     if (!foundExpanse) {
       throw new NotFoundException(EXPENSE_ERROR.EXPENSE_NOT_FOUND);
     }
+
     return foundExpanse;
   }
   async getSharedExpenses(sharedUserId: string, currentUserId: string): Promise<ExpensesDocument[]> {
     if (currentUserId === sharedUserId) {
       throw new ForbiddenException(EXPENSE_ERROR.GET_OWN_EXPENSE);
     }
+
     const accessControlAllowed = await this.accessControlService._getAllowedExpensesId(sharedUserId, currentUserId);
+
     if (!accessControlAllowed) {
       throw new ForbiddenException(EXPENSE_ERROR.ACCESS_DENIED);
     }
+
     try {
       return this.expensesModel
         .find({ _id: { $in: accessControlAllowed } })
@@ -74,24 +83,31 @@ export class ExpenseService {
   }
   async update(expensesId: string, inputDto: ExpenseInputDto, userId: string): Promise<ExpenseOutputDto> {
     const foundExpanse = await this.expensesModel.findById(expensesId);
+
     if (!foundExpanse) {
       throw new NotFoundException(EXPENSE_ERROR.EXPENSE_NOT_FOUND);
     }
+
     if (foundExpanse.userId !== userId) {
       throw new UnauthorizedException(EXPENSE_ERROR.ACCESS_DENIED);
     }
+
     return this.expensesModel.findByIdAndUpdate(expensesId, inputDto, { new: true }).lean();
   }
   async delete(expensesId: string, userId: string): Promise<ExpenseOutputDto> {
     const expense = await this.expensesModel.findById(expensesId);
+
     if (!expense) {
       throw new NotFoundException(EXPENSE_ERROR.EXPENSE_NOT_FOUND);
     }
+
     if (expense.userId !== userId) {
       throw new UnauthorizedException(EXPENSE_ERROR.ACCESS_DENIED);
     }
+
     try {
       await expense.deleteOne();
+
       return expense.toObject({ versionKey: false });
     } catch (error) {
       throw new HttpException(EXPENSE_ERROR.DELETE_EXPENSE_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
