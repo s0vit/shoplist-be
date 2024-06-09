@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CategoryInputDto } from '../dto/category-input.dto';
 import { CategoryOutputDto } from '../dto/category-output.dto';
 import { CATEGORY_ERROR } from '../constants/category-error.enum';
@@ -10,7 +10,7 @@ export function CreateCategorySwDec() {
       summary: 'Create category',
       description: `
       Requires:
-      - token in Cookies
+      - token in header
       - title in Body
       - color in Body
       
@@ -18,7 +18,7 @@ export function CreateCategorySwDec() {
       - comments in Body`,
     }),
     ApiBody({ type: CategoryInputDto }),
-    ApiCookieAuth(),
+    ApiBearerAuth(),
     ApiResponse({
       status: 200,
       description: `

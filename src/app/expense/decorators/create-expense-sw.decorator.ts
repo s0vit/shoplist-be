@@ -1,5 +1,5 @@
 import { applyDecorators, HttpCode } from '@nestjs/common';
-import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ExpenseInputDto } from '../dto/expense-input.dto';
 import { ExpenseOutputDto } from '../dto/expense-output.dto';
 import { EXPENSE_ERROR } from '../constants/expense-error.enum';
@@ -10,7 +10,7 @@ export function CreateExpenseSwDec() {
       summary: 'Create a new expense.',
       description: `
        Requires:
-      - token in Cookies
+      - token in the header
       - amount in Body
       - categoryId in Body
       - paymentSourceId in Body
@@ -18,7 +18,7 @@ export function CreateExpenseSwDec() {
       Optionally:
       - comments in Body`,
     }),
-    ApiCookieAuth(),
+    ApiBearerAuth(),
     HttpCode(200),
     ApiBody({ type: ExpenseInputDto }),
     ApiResponse({

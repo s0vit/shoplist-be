@@ -1,17 +1,17 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiCookieAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { ExpenseOutputDto } from '../dto/expense-output.dto';
 import { EXPENSE_ERROR } from '../constants/expense-error.enum';
 
 export function GetExpenseSwDec() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Get users Expenses by ID from a cookie or by a Query request.',
+      summary: 'Get users Expenses by ID from a header or by a Query request.',
       description: `
       ATTENTION! data from "Query" is not processed!
       
         Requires:
-        - token in Cookies
+        - token in header
 
         Optionally:
         - createdStartDate in Params
@@ -21,7 +21,7 @@ export function GetExpenseSwDec() {
         - limit in Params
         - skip in Params`,
     }),
-    ApiCookieAuth(),
+    ApiBearerAuth(),
     ApiQuery({
       name: 'createdStartDate',
       type: Date,

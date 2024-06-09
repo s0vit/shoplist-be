@@ -1,4 +1,4 @@
-import { ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
 import { AccessControlOutputDto } from '../dto/access-control-output.dto';
 
@@ -6,9 +6,9 @@ export function GetAllAccessControlSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Get all access control',
-      description: 'Requires a token in cookies',
+      description: 'Requires a token in the header',
     }),
-    ApiCookieAuth(),
+    ApiBearerAuth(),
     ApiResponse({
       status: 200,
       description: 'Get all access control response',

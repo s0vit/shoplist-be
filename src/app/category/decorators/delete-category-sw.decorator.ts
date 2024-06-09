@@ -1,4 +1,4 @@
-import { ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
 import { CategoryOutputDto } from '../dto/category-output.dto';
 import { CATEGORY_ERROR } from '../constants/category-error.enum';
@@ -9,10 +9,10 @@ export function DeleteCategorySwDec() {
       summary: 'Delete user category by id',
       description: `
         Requires:
-        - token in Cookies
+        - token in the header,
         - categoryId in Param`,
     }),
-    ApiCookieAuth(),
+    ApiBearerAuth(),
     ApiParam({
       name: 'categoryId',
       type: String,

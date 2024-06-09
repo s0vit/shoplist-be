@@ -1,10 +1,10 @@
-import { ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
 import { PaymentSourceOutputDto } from '../dto/payment-source-output.dto';
 
 export function GetByIdPaymentSourceSwDec() {
   return applyDecorators(
-    ApiCookieAuth(),
+    ApiBearerAuth(),
     ApiParam({
       name: 'id',
       type: 'string',

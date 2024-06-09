@@ -1,8 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-jwt';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { Request } from 'express';
 import { TokenPayload } from '../../../common/interfaces/token.interface';
 import { ERROR_AUTH } from '../constants/auth-error.enum';
 
@@ -10,7 +9,7 @@ import { ERROR_AUTH } from '../constants/auth-error.enum';
 export class AccessJwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly configService: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwtFrom,
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('ACCESS_TOKEN_KEY'),
     });
@@ -22,12 +21,4 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy) {
     }
     return { userId, email };
   }
-}
-
-function ExtractJwtFrom(req: Request) {
-  let token = null;
-  if (req && req.cookies) {
-    token = req.cookies['accessToken'];
-  }
-  return token;
 }

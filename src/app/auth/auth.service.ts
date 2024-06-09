@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { TokenPayload } from 'src/common/interfaces/token.interface';
 import { confirmEmailTemplate } from '../../utils/templates/confirm-email.template';
 import { resetPasswordTemplate } from '../../utils/templates/reset-password.template';
+import { RefreshOutputDto } from './dto/resfresh-output.dto';
 
 @Injectable()
 export class AuthService {
@@ -98,23 +99,8 @@ export class AuthService {
     const updatedUser = await this.userModel.findOneAndUpdate({ email }, { $set: { ...tokens } }, { new: true }).exec();
     return new LoginOutputDto(updatedUser);
   }
-  async loginWithCookies(token: string) {
-    try {
-      const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.accessSecret });
-      const payloadData = { email: result.email, userId: result.userId, isVerified: result.isVerified };
-      const tokens = await this.generateTokens(payloadData);
-      const updatedUser = await this.userModel
-        .findOneAndUpdate({ email: result.email }, { $set: { ...tokens } }, { new: true })
-        .exec();
-      return new LoginOutputDto(updatedUser);
-    } catch (error) {
-      if (error instanceof JsonWebTokenError) {
-        const jwtError = error as JsonWebTokenError;
-        throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
-      }
-    }
-  }
-  async validateToken(token: string) {
+
+  async validateToken(token: string): Promise<LoginOutputDto> {
     try {
       const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.refreshSecret });
       const payloadData = { email: result.email, userId: result.userId, isVerified: result.isVerified };
@@ -125,7 +111,7 @@ export class AuthService {
       if (!foundUser) {
         throw new Error();
       }
-      return foundUser;
+      return new LoginOutputDto(foundUser);
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         const jwtError = error as JsonWebTokenError;
