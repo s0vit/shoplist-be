@@ -8,6 +8,7 @@ import { UtilsService } from '../../common/utils/utils.service';
 import { PaymentSource, PaymentSourceSchema } from '../payment-source/models/payment-source.model';
 import { ConfigModule } from '@nestjs/config';
 import { ExpansesSchema, Expense } from '../expense/models/expense.model';
+import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { ExpansesSchema, Expense } from '../expense/models/expense.model';
     MongooseModule.forFeature([{ name: Expense.name, schema: ExpansesSchema, collection: 'Expenses' }]),
     ConfigModule,
   ],
-  providers: [UserService, UtilsService],
+  providers: [UserService, UtilsService, AccessJwtStrategy],
   controllers: [UserController],
 })
 export class UserModule {}

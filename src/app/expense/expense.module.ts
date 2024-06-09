@@ -7,6 +7,7 @@ import { AccessControlService } from '../access-control/access-control.service';
 import { ExpansesSchema, Expense } from './models/expense.model';
 import { User, UserSchema } from '../auth/models/user.model';
 import { AccessControlModule } from '../access-control/access-control.module';
+import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { AccessControlModule } from '../access-control/access-control.module';
     AccessControlModule,
   ],
   controllers: [ExpenseController],
-  providers: [ExpenseService, AccessControlService],
+  providers: [ExpenseService, AccessControlService, AccessJwtStrategy],
 })
 export class ExpenseModule {}
