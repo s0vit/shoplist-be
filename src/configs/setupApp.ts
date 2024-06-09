@@ -18,7 +18,17 @@ export const setupApp = async (app: INestApplication) => {
   app.useGlobalPipes(customValidationPipe);
   app.useGlobalFilters(new ErrorExceptionFilter());
   app.enableCors({
-    origin: JSON.parse(CLIENT_URLS),
+    origin: (origin, callback) => {
+      const knownOrigins = JSON.parse(CLIENT_URLS);
+      // if no origin - allow, for example, curl requests or postman
+      if (!origin) return callback(null, true);
+
+      if (knownOrigins.includes(origin) || origin.includes('.vercel.app')) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   });
   app.use(cookieParser());
