@@ -15,6 +15,7 @@ export const customValidationPipe = new ValidationPipe({
         customErrors['unknown']
           ? customErrors['unknown'].push(e.property)
           : (customErrors['unknown'] = ['unknown error']);
+
         return;
       }
 

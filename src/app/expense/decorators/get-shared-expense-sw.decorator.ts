@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { ExpenseOutputDto } from '../dto/expense-output.dto';
 import { EXPENSE_ERROR } from '../constants/expense-error.enum';
 
@@ -11,10 +11,10 @@ export function GetSharedSwDec() {
       Get all shared expenses by the ID of the user who given access
 
       Requires:
-      - token in Cookies
+      - token in the header,
       - sharedId in Params`,
     }),
-    ApiCookieAuth(),
+    ApiBearerAuth(),
     ApiParam({
       name: 'sharedId',
       description: `

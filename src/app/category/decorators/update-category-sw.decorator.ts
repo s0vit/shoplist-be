@@ -1,4 +1,4 @@
-import { ApiBody, ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
 import { CategoryInputDto } from '../dto/category-input.dto';
 import { CategoryOutputDto } from '../dto/category-output.dto';
@@ -10,7 +10,7 @@ export function UpdateCategorySwDec() {
       summary: 'Update a category source',
       description: `
         Requires:
-        - token in Cookies
+        - token in the header,
         - categoryId in Param
         - title in Body
         - color in Body
@@ -19,7 +19,7 @@ export function UpdateCategorySwDec() {
         - comments in Body
       `,
     }),
-    ApiCookieAuth(),
+    ApiBearerAuth(),
     ApiParam({
       name: 'categoryId',
       type: String,

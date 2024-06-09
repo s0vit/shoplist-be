@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { ExpenseOutputDto } from '../dto/expense-output.dto';
 import { EXPENSE_ERROR } from '../constants/expense-error.enum';
 
@@ -9,7 +9,7 @@ export function UpdateExpenseSwDec() {
       summary: 'Update Expense by id',
       description: `
       Requires:
-      - token in Cookies
+      - token in the header
       - expensesId in Params
       - amount in Body
       - categoryId in Body
@@ -21,7 +21,7 @@ export function UpdateExpenseSwDec() {
       - updatedAt in Body
       `,
     }),
-    ApiCookieAuth(),
+    ApiBearerAuth(),
     ApiParam({
       name: 'expensesId',
       description: `

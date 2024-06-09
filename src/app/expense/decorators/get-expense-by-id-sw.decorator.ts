@@ -1,18 +1,18 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { EXPENSE_ERROR } from '../constants/expense-error.enum';
 import { ExpenseOutputDto } from '../dto/expense-output.dto';
 
-export function GetByExpenseIdSwDec() {
+export function GetExpenseByIdSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Get user Expense by id',
       description: `
       Requires:
-      - token in Cookies
-      - expensesId in Params`,
+      - token in the header,
+      - expenseId in Params`,
     }),
-    ApiCookieAuth(),
+    ApiBearerAuth(),
     ApiParam({
       name: 'expenseId',
       description: `

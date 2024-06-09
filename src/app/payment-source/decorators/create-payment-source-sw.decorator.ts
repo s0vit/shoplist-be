@@ -1,11 +1,11 @@
-import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
 import { PaymentSourceOutputDto } from '../dto/payment-source-output.dto';
 import { PaymentSourceInputDto } from '../dto/payment-source-input.dto';
 
 export function CreatePaymentSourceSwDec() {
   return applyDecorators(
-    ApiCookieAuth(),
+    ApiBearerAuth(),
     ApiOperation({
       summary: 'Create a new payment source',
       description: 'The payment source has been successfully created.',

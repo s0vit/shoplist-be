@@ -34,6 +34,7 @@ export class AuthService {
     const refreshSecret = this.refreshSecret;
     const accessToken = await this.jwtService.signAsync(payload, { secret: accessSecret, expiresIn: '2h' });
     const refreshToken = await this.jwtService.signAsync(payload, { secret: refreshSecret, expiresIn: '7d' });
+
     return { accessToken, refreshToken };
   }
   private async findUser(email: string): Promise<UserDocument> {
@@ -52,9 +53,11 @@ export class AuthService {
 
   async register(dto: AuthInputDto, origin: string) {
     const oldUser = await this.findUser(dto.email);
+
     if (oldUser) {
       throw new BadRequestException(ERROR_AUTH.USER_ALREADY_EXISTS);
     }
+
     try {
       const confirmToken = await this.jwtService.signAsync({ email: dto.email });
       const confirmationUrl = `${origin}/confirm?token=${confirmToken}`;
@@ -75,46 +78,38 @@ export class AuthService {
       const updatedUser = await this.userModel
         .findOneAndUpdate({ email: result.email }, { $set: { isVerified: true } }, { new: true })
         .exec();
+
       return new ConfirmOutputDto(updatedUser);
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         const jwtError = error as JsonWebTokenError;
         throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
       }
+
       throw new HttpException(ERROR_AUTH.CONFIRM_REGISTRATION_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
   async login(email: string, password: string): Promise<LoginOutputDto> {
     const foundUser = await this.findUser(email);
+
     if (!foundUser) {
       throw new BadRequestException(ERROR_AUTH.UNAUTHORIZED);
     }
+
     const validPassword = await compare(password, foundUser.passwordHash);
+
     if (!validPassword) {
       throw new BadRequestException(ERROR_AUTH.UNAUTHORIZED);
     }
+
     const payloadData = { email, userId: foundUser._id, isVerified: foundUser.isVerified };
     const tokens = await this.generateTokens(payloadData);
     const updatedUser = await this.userModel.findOneAndUpdate({ email }, { $set: { ...tokens } }, { new: true }).exec();
+
     return new LoginOutputDto(updatedUser);
   }
-  async loginWithCookies(token: string) {
-    try {
-      const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.accessSecret });
-      const payloadData = { email: result.email, userId: result.userId, isVerified: result.isVerified };
-      const tokens = await this.generateTokens(payloadData);
-      const updatedUser = await this.userModel
-        .findOneAndUpdate({ email: result.email }, { $set: { ...tokens } }, { new: true })
-        .exec();
-      return new LoginOutputDto(updatedUser);
-    } catch (error) {
-      if (error instanceof JsonWebTokenError) {
-        const jwtError = error as JsonWebTokenError;
-        throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
-      }
-    }
-  }
-  async validateToken(token: string) {
+
+  async validateToken(token: string): Promise<LoginOutputDto> {
     try {
       const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.refreshSecret });
       const payloadData = { email: result.email, userId: result.userId, isVerified: result.isVerified };
@@ -122,10 +117,12 @@ export class AuthService {
       const foundUser = await this.userModel
         .findOneAndUpdate({ email: result.email }, { $set: { ...newTokens } }, { new: true })
         .exec();
+
       if (!foundUser) {
         throw new Error();
       }
-      return foundUser;
+
+      return new LoginOutputDto(foundUser);
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         const jwtError = error as JsonWebTokenError;
@@ -146,6 +143,7 @@ export class AuthService {
         const jwtError = error as JsonWebTokenError;
         throw new HttpException(jwtError.message, HttpStatus.BAD_REQUEST);
       }
+
       throw new HttpException(ERROR_AUTH.LOGOUT_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -154,6 +152,7 @@ export class AuthService {
     if (!accessToken) {
       throw new BadRequestException(ERROR_AUTH.AUTH_ERROR_NO_TOKEN);
     }
+
     try {
       const decoded = this.jwtService.decode<TokenPayload>(accessToken);
       const confirmToken = await this.jwtService.signAsync({ email: decoded.email });
@@ -193,6 +192,7 @@ export class AuthService {
         { $set: { passwordHash, resetPasswordToken: null } },
       )
       .lean();
+
     if (!updatedUser) {
       throw new NotFoundException(ERROR_AUTH.NOT_FOUND_USER);
     }
