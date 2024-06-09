@@ -3,7 +3,6 @@ import { CategoryController } from './category.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Category, CategorySchema } from './models/category.model';
 import { CategoryService } from './category.service';
-import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
 import { ConfigModule } from '@nestjs/config';
 import { UtilsService } from '../../common/utils/utils.service';
 
@@ -13,6 +12,6 @@ import { UtilsService } from '../../common/utils/utils.service';
     ConfigModule,
   ],
   controllers: [CategoryController],
-  providers: [CategoryService, AccessJwtStrategy, UtilsService],
+  providers: [CategoryService, UtilsService],
 })
 export class CategoryModule {}
