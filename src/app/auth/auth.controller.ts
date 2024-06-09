@@ -28,6 +28,7 @@ export class AuthController {
   @Post('register')
   async register(@Body() dto: AuthInputDto, @Req() req: Request): Promise<void> {
     const origin = req.headers['origin'];
+
     return this.authService.register(dto, origin);
   }
 
@@ -43,6 +44,7 @@ export class AuthController {
     const accessToken = req.headers['authorization']?.split(' ')?.[1];
     if (!accessToken) throw new BadRequestException(ERROR_AUTH.AUTH_ERROR_NO_TOKEN);
     const origin = req.headers['origin'];
+
     return await this.authService.requestConfirm(accessToken, origin);
   }
 
@@ -51,6 +53,7 @@ export class AuthController {
   async forgotPassword(@Body() dto: ForgotPasswordDto, @Req() req: Request): Promise<void> {
     const origin = req.headers['origin'];
     const email = dto.email;
+
     return await this.authService.forgotPassword(email, origin);
   }
 

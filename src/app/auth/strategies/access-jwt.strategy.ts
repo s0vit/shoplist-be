@@ -19,6 +19,7 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy) {
     if (!isVerified) {
       throw new UnauthorizedException(ERROR_AUTH.VERIFIED_USER_ERROR);
     }
+
     return { userId, email };
   }
 }

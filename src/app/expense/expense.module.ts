@@ -1,11 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { jwtConfig } from '../../configs/jwt.config';
+import { ConfigModule } from '@nestjs/config';
 import { ExpenseController } from './expense.controller';
-import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
 import { ExpenseService } from './expense.service';
 import { AccessControlService } from '../access-control/access-control.service';
 import { ExpansesSchema, Expense } from './models/expense.model';
@@ -16,16 +12,10 @@ import { AccessControlModule } from '../access-control/access-control.module';
   imports: [
     MongooseModule.forFeature([{ name: Expense.name, schema: ExpansesSchema, collection: 'Expenses' }]),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema, collection: 'User' }]),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: jwtConfig,
-    }),
     ConfigModule,
     AccessControlModule,
-    PassportModule,
   ],
   controllers: [ExpenseController],
-  providers: [ExpenseService, AccessControlService, AccessJwtStrategy],
+  providers: [ExpenseService, AccessControlService],
 })
 export class ExpenseModule {}

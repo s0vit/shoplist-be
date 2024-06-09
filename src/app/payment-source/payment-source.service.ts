@@ -21,38 +21,48 @@ export class PaymentSourceService {
       title: titleToSearch,
       userId,
     });
+
     if (existingPaymentSourceForCurrentUser) {
       throw new ConflictException(PAYMENT_SOURCE_ERROR.EXIST);
     }
+
     const newPaymentSource = new this.paymentSourceModel({
       title: inputDTO.title,
       userId,
       comments: inputDTO.comments,
       color: inputDTO.color,
     });
+
     return (await newPaymentSource.save()).toObject({ versionKey: false });
   }
 
   async delete(id: string, userId: string): Promise<PaymentSourceOutputDto> {
     const toBeDeletedPaymentSource = await this.paymentSourceModel.findById(id);
+
     if (!toBeDeletedPaymentSource) {
       throw new ConflictException(PAYMENT_SOURCE_ERROR.NOT_FOUND);
     }
+
     if (toBeDeletedPaymentSource.userId !== userId) {
       throw new UnauthorizedException(PAYMENT_SOURCE_ERROR.UNAUTHORIZED_ACCESS);
     }
+
     await toBeDeletedPaymentSource.deleteOne();
+
     return toBeDeletedPaymentSource.toObject({ versionKey: false });
   }
 
   async update(id: string, inputDTO: PaymentSourceInputDto, userId: string): Promise<PaymentSourceOutputDto> {
     const paymentSource = await this.paymentSourceModel.findById(id);
+
     if (!paymentSource) {
       throw new ConflictException(PAYMENT_SOURCE_ERROR.NOT_FOUND);
     }
+
     if (paymentSource.userId !== userId) {
       throw new UnauthorizedException(PAYMENT_SOURCE_ERROR.FORBIDDEN);
     }
+
     paymentSource.set({
       title: inputDTO.title,
       comments: inputDTO.comments,
@@ -60,17 +70,21 @@ export class PaymentSourceService {
       updatedAt: Date.now(),
     });
     await paymentSource.save();
+
     return paymentSource.toObject({ versionKey: false });
   }
 
   async getOne(id: string, userId: string): Promise<PaymentSourceOutputDto> {
     const paymentSource = await this.paymentSourceModel.findById(id);
+
     if (!paymentSource) {
       throw new ConflictException(PAYMENT_SOURCE_ERROR.NOT_FOUND);
     }
+
     if (paymentSource.userId !== userId) {
       throw new UnauthorizedException(PAYMENT_SOURCE_ERROR.UNAUTHORIZED_ACCESS);
     }
+
     return paymentSource.toObject({ versionKey: false });
   }
 

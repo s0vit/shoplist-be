@@ -10,6 +10,7 @@ export class UserService {
 
   async findByEmail(email: string): Promise<FindByEmailOutputDto[]> {
     const emailRegex = new RegExp(email, 'i');
+
     return this.userModel
       .find({ email: emailRegex })
       .select(['email', '_id', 'login', 'isVerified', 'loginDate'])

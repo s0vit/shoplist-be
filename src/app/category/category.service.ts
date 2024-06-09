@@ -25,21 +25,26 @@ export class CategoryService {
 
   async getOne(categoryId: string, userId: string): Promise<CategoryOutputDto> {
     const category = await this.categoryModel.findById(categoryId);
+
     if (!category) {
       throw new NotFoundException(CATEGORY_ERROR.CATEGORY_NOT_FOUND);
     }
+
     if (category.userId !== userId) {
       throw new UnauthorizedException(CATEGORY_ERROR.FORBIDDEN);
     }
+
     return category.toObject({ versionKey: false });
   }
 
   async create(inputDTO: CategoryInputDto, userId: string): Promise<CategoryOutputDto> {
     const titleToSearch = this.utilsService.createTitleRegex(inputDTO.title);
     const category = await this.categoryModel.findOne({ title: titleToSearch, userId });
+
     if (category) {
       throw new NotFoundException(CATEGORY_ERROR.CATEGORY_ALREADY_EXIST);
     }
+
     try {
       const newCategoryInstance = new this.categoryModel({
         userId,
@@ -48,6 +53,7 @@ export class CategoryService {
         color: inputDTO.color,
       });
       const createdCategory = await newCategoryInstance.save();
+
       return createdCategory.toObject({ versionKey: false });
     } catch (error) {
       throw new HttpException(CATEGORY_ERROR.CREATE_CATEGORY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -55,12 +61,15 @@ export class CategoryService {
   }
   async update(categoryId: string, inputDTO: CategoryInputDto, userId: string): Promise<CategoryOutputDto> {
     const category = await this.categoryModel.findById(categoryId);
+
     if (!category) {
       throw new NotFoundException(CATEGORY_ERROR.CATEGORY_NOT_FOUND);
     }
+
     if (category.userId !== userId) {
       throw new UnauthorizedException(CATEGORY_ERROR.FORBIDDEN);
     }
+
     try {
       category.set({
         title: inputDTO.title,
@@ -68,6 +77,7 @@ export class CategoryService {
         color: inputDTO.color,
       });
       await category.save();
+
       return category.toObject({ versionKey: false });
     } catch (error) {
       throw new HttpException(CATEGORY_ERROR.UPDATE_CATEGORY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -75,14 +85,18 @@ export class CategoryService {
   }
   async delete(categoryId: string, userId: string): Promise<CategoryOutputDto> {
     const category = await this.categoryModel.findById(categoryId);
+
     if (!category) {
       throw new NotFoundException(CATEGORY_ERROR.CATEGORY_NOT_FOUND);
     }
+
     if (category.userId !== userId) {
       throw new UnauthorizedException(CATEGORY_ERROR.FORBIDDEN);
     }
+
     try {
       await category.deleteOne();
+
       return category.toObject({ versionKey: false });
     } catch (error) {
       throw new HttpException(CATEGORY_ERROR.DELETE_CATEGORY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
