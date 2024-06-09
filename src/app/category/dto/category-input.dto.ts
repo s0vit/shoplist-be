@@ -9,7 +9,7 @@ export class CategoryInputDto {
     required: true,
   })
   @IsString()
-  @Length(0, 15)
+  @Length(1, 30)
   title: string;
 
   @ApiProperty({

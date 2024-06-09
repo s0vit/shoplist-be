@@ -22,7 +22,6 @@ export class CategoryService {
       throw new HttpException(CATEGORY_ERROR.GET_CATEGORY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
   async getOne(categoryId: string, userId: string): Promise<CategoryOutputDto> {
     const category = await this.categoryModel.findById(categoryId);
     if (!category) {
@@ -33,7 +32,6 @@ export class CategoryService {
     }
     return category.toObject({ versionKey: false });
   }
-
   async create(inputDTO: CategoryInputDto, userId: string): Promise<CategoryOutputDto> {
     const titleToSearch = this.utilsService.createTitleRegex(inputDTO.title);
     const category = await this.categoryModel.findOne({ title: titleToSearch, userId });

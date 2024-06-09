@@ -6,7 +6,7 @@ import { ExpenseOutputDto } from '../dto/expense-output.dto';
 export function GetByExpenseIdSwDec() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Get user Expenses by id',
+      summary: 'Get user Expense by id',
       description: `
       Requires:
       - token in Cookies
@@ -14,9 +14,9 @@ export function GetByExpenseIdSwDec() {
     }),
     ApiCookieAuth(),
     ApiParam({
-      name: 'expensesId',
+      name: 'expenseId',
       description: `
-      expensesId: The ID of the user Expense.`,
+      expenseId: The ID of the user Expense.`,
       type: String,
       required: true,
     }),
