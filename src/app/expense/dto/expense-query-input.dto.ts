@@ -10,12 +10,20 @@ export class ExpenseQueryInputDto {
   createdEndDate?: string;
 
   @IsOptional()
+  @IsPositive()
+  amountStart?: number;
+
+  @IsOptional()
+  @IsPositive()
+  amountEnd?: number;
+
+  @IsOptional()
   @IsMongoId()
   paymentSourceId?: string;
 
   @IsOptional()
   @IsMongoId()
-  expensesTypeId?: string;
+  categoryId?: string;
 
   @IsOptional()
   @IsPositive()

@@ -24,8 +24,7 @@ export class ExpenseController {
   @GetExpenseSwDec()
   @Get()
   async getOwn(@Query() queryInputDto: ExpenseQueryInputDto, @Req() req: CustomRequest): Promise<ExpenseOutputDto[]> {
-    // ToDo: data from "Query" is not processed
-    return this.expenseService.getOwn(req.user.userId);
+    return this.expenseService.getOwn(req.user.userId, queryInputDto);
   }
 
   @GetExpenseByIdSwDec()
