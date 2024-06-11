@@ -16,8 +16,10 @@ export function GetExpenseSwDec() {
         Optionally:
         - createdStartDate in Params
         - createdEndDate in Params
+        - amountStart in Params
+        - amountEnd in Params
         - paymentSourceId in Params
-        - expensesTypeId in Params
+        - categoryId in Params
         - limit in Params
         - skip in Params`,
     }),
@@ -39,6 +41,22 @@ export function GetExpenseSwDec() {
       example: '2024-06-18T08:36:41.000',
     }),
     ApiQuery({
+      name: 'amountStart',
+      type: Number,
+      required: false,
+      description: `
+      amountStart: Start amount`,
+      example: 100,
+    }),
+    ApiQuery({
+      name: 'amountEnd',
+      type: Number,
+      required: false,
+      description: `
+      amountEnd: End amount`,
+      example: 1000,
+    }),
+    ApiQuery({
       name: 'paymentSourceId',
       type: String,
       required: false,
@@ -47,11 +65,11 @@ export function GetExpenseSwDec() {
       example: '6616f96da226986482597b6c',
     }),
     ApiQuery({
-      name: 'expensesTypeId',
+      name: 'categoryId',
       type: String,
       required: false,
       description: `
-      expensesTypeId: Expenses type ID`,
+      categoryId: Category ID`,
       example: '6616f96da226986482597b6c',
     }),
     ApiQuery({

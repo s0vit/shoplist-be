@@ -13,6 +13,7 @@ import { Expense, ExpensesDocument } from './models/expense.model';
 import { EXPENSE_ERROR } from './constants/expense-error.enum';
 import { AccessControlService } from '../access-control/access-control.service';
 import { ExpenseOutputDto } from './dto/expense-output.dto';
+import { ExpenseQueryInputDto } from './dto/expense-query-input.dto';
 
 @Injectable()
 export class ExpenseService {
@@ -52,8 +53,29 @@ export class ExpenseService {
 
     return foundExpanse.toObject({ versionKey: false });
   }
-  async getOwn(userId: string): Promise<ExpenseOutputDto[]> {
-    const foundExpanse = await this.expensesModel.find({ userId }).select('-__v').lean();
+  async getOwn(userId: string, queryInputDto?: ExpenseQueryInputDto): Promise<ExpenseOutputDto[]> {
+    const query = { userId };
+    if (queryInputDto?.paymentSourceId) query['paymentSourceId'] = queryInputDto.paymentSourceId;
+    if (queryInputDto?.categoryId) query['categoryId'] = queryInputDto.categoryId;
+
+    if (queryInputDto?.createdStartDate || queryInputDto?.createdEndDate) {
+      query['createdAt'] = {};
+      if (queryInputDto?.createdStartDate) query['createdAt'].$gte = queryInputDto.createdStartDate;
+      if (queryInputDto?.createdEndDate) query['createdAt'].$lte = queryInputDto.createdEndDate;
+    }
+
+    if (queryInputDto?.amountStart || queryInputDto?.amountEnd) {
+      query['amount'] = {};
+      if (queryInputDto?.amountStart) query['amount'].$gte = queryInputDto.amountStart;
+      if (queryInputDto?.amountEnd) query['amount'].$lte = queryInputDto.amountEnd;
+    }
+
+    const foundExpanse = await this.expensesModel
+      .find(query)
+      .skip(queryInputDto?.skip || 0)
+      .limit(queryInputDto?.limit || 100)
+      .select('-__v')
+      .lean();
 
     if (!foundExpanse) {
       throw new NotFoundException(EXPENSE_ERROR.EXPENSE_NOT_FOUND);
