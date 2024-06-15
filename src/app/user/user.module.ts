@@ -6,9 +6,11 @@ import { User, UserSchema } from '../auth/models/user.model';
 import { Category, CategorySchema } from '../category/models/category.model';
 import { UtilsService } from '../../common/utils/utils.service';
 import { PaymentSource, PaymentSourceSchema } from '../payment-source/models/payment-source.model';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ExpansesSchema, Expense } from '../expense/models/expense.model';
 import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConfig } from '../../configs/jwt.config';
 
 @Module({
   imports: [
@@ -17,6 +19,11 @@ import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
     MongooseModule.forFeature([{ name: PaymentSource.name, schema: PaymentSourceSchema, collection: 'PaymentSource' }]),
     MongooseModule.forFeature([{ name: Expense.name, schema: ExpansesSchema, collection: 'Expenses' }]),
     ConfigModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: jwtConfig,
+    }),
   ],
   providers: [UserService, UtilsService, AccessJwtStrategy],
   controllers: [UserController],
