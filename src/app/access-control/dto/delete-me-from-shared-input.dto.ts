@@ -17,7 +17,7 @@ export class DeleteMeFromSharedInputDto {
     type: [String],
   })
   @IsOptionalMongoidArrayDec()
-  expenseIds: string[];
+  expenseIds?: string[];
 
   @ApiProperty({
     example: ['5f6a0c8b3e0b8f001f8e7e7c', '5f6a0c8b3e0b8f001f8e7e7d'],
@@ -25,7 +25,7 @@ export class DeleteMeFromSharedInputDto {
     type: [String],
   })
   @IsOptionalMongoidArrayDec()
-  categoryIds: string[];
+  categoryIds?: string[];
 
   @ApiProperty({
     example: ['5f6a0c8b3e0b8f001f8e7e7c', '5f6a0c8b3e0b8f001f8e7e7d'],
@@ -33,5 +33,5 @@ export class DeleteMeFromSharedInputDto {
     type: [String],
   })
   @IsOptionalMongoidArrayDec()
-  paymentSourceIds: string[];
+  paymentSourceIds?: string[];
 }

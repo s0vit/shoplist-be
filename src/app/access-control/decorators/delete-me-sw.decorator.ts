@@ -7,11 +7,15 @@ export function DeleteMeSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Delete me from shared',
-      description: `Requires: 
-        - accessId: string,
-        - expenseIds: string[],
-        - categoryIds: string[],
-        - paymentSourceIds: string[]
+      description: `
+        Requires: 
+          - accessId in body,
+          - token in header,
+          
+        Optionally in body:
+          - expenseIds?: string[],
+          - categoryIds?: string[],
+          - paymentSourceIds?: string[]
       `,
     }),
     ApiBearerAuth(),
