@@ -16,11 +16,11 @@ export class AccessControlOutputDto {
   ownerId: string;
 
   @ApiProperty({
-    example: ['5f6a0c8b3e0b8f001f8e7e7c'],
+    example: '5f6a0c8b3e0b8f001f8e7e7c',
     description: 'User id',
-    type: [String],
+    type: String,
   })
-  sharedWith: string[];
+  sharedWith: string;
 
   @ApiProperty({
     example: ['5f6a0c8b3e0b8f001f8e7e7c'],

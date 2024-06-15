@@ -11,7 +11,7 @@ export class AccessControl {
   ownerId: string;
 
   @Prop({ required: true })
-  sharedWith: string[];
+  sharedWith: string;
 
   @Prop()
   expenseIds: string[];
