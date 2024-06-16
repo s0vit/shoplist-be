@@ -178,7 +178,7 @@ export class AuthService {
     try {
       const decoded = this.jwtService.decode<TokenPayload>(accessToken);
       const now = new Date();
-      const oneHourAgo = new Date(now.getTime() - 3600000);
+      const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
 
       const user = await this.userModel
         .findOneAndUpdate(
