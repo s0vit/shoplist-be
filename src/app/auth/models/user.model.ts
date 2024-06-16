@@ -20,6 +20,9 @@ export class User {
   isVerified?: boolean;
 
   @Prop({ default: null })
+  lastVerificationRequest?: Date;
+
+  @Prop({ default: null })
   accessToken?: string | null;
 
   @Prop({ default: null })
