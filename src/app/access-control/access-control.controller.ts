@@ -9,6 +9,8 @@ import { CreateAccessControlSwDec } from './decorators/create-access-control-sw.
 import { UpdateAccessControlSwDec } from './decorators/update-access-control-sw.decorator';
 import { DeleteAccessControlSwDec } from './decorators/delete-access-control-sw.decorator';
 import { GetAllAccessControlSwDec } from './decorators/get-all-access-control-sw.decorator';
+import { DeleteMeFromSharedInputDto } from './dto/delete-me-from-shared-input.dto';
+import { DeleteMeSwDec } from './decorators/delete-me-sw.decorator';
 
 @UseGuards(AccessJwtGuard)
 @ApiTags('Access control')
@@ -19,17 +21,7 @@ export class AccessControlController {
   @CreateAccessControlSwDec()
   @Post()
   async create(@Body() dto: AccessControlInputDto, @Req() req: CustomRequest): Promise<AccessControlOutputDto> {
-    const { userId } = req.user;
-
-    return this.accessControlService.create(userId, dto);
-  }
-
-  @DeleteAccessControlSwDec()
-  @Delete(':id')
-  async delete(@Param('id') accessId: string, @Req() req: CustomRequest): Promise<AccessControlOutputDto> {
-    const { userId } = req.user;
-
-    return this.accessControlService.delete(userId, accessId);
+    return this.accessControlService.create(req.user.userId, dto);
   }
 
   @UpdateAccessControlSwDec()
@@ -39,16 +31,27 @@ export class AccessControlController {
     @Body() dto: AccessControlInputDto,
     @Req() req: CustomRequest,
   ): Promise<AccessControlOutputDto> {
-    const { userId } = req.user;
-
-    return this.accessControlService.update(userId, accessId, dto);
+    return this.accessControlService.update(req.user.userId, accessId, dto);
   }
 
   @GetAllAccessControlSwDec()
   @Get()
   async get(@Req() req: CustomRequest): Promise<AccessControlOutputDto[]> {
-    const { userId } = req.user;
+    return this.accessControlService.getAll(req.user.userId);
+  }
 
-    return this.accessControlService.getAll(userId);
+  @DeleteMeSwDec()
+  @Delete('me')
+  async deleteMeFromShared(
+    @Body() dto: DeleteMeFromSharedInputDto,
+    @Req() req: CustomRequest,
+  ): Promise<AccessControlOutputDto> {
+    return this.accessControlService.deleteMeFromShared(req.user.userId, dto);
+  }
+
+  @DeleteAccessControlSwDec()
+  @Delete(':id')
+  async delete(@Param('id') accessId: string, @Req() req: CustomRequest): Promise<AccessControlOutputDto> {
+    return this.accessControlService.delete(req.user.userId, accessId);
   }
 }

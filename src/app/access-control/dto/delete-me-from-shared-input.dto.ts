@@ -1,37 +1,37 @@
-import { IsOptionalMongoidArrayDec } from '../decorators/is-optional-mongoid-array.decorator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsOptionalMongoidArrayDec } from '../decorators/is-optional-mongoid-array.decorator';
 import { IsMongoId } from 'class-validator';
 
-export class AccessControlInputDto {
+export class DeleteMeFromSharedInputDto {
   @ApiProperty({
     example: '5f6a0c8b3e0b8f001f8e7e7c',
-    description: 'User id',
+    description: 'Access id',
     type: String,
   })
   @IsMongoId()
-  sharedWith: string;
+  accessId: string;
 
   @ApiProperty({
     example: ['5f6a0c8b3e0b8f001f8e7e7c', '5f6a0c8b3e0b8f001f8e7e7d'],
-    description: 'Expense ids',
+    description: 'Expense that shared with me',
     type: [String],
   })
   @IsOptionalMongoidArrayDec()
-  expenseIds: string[];
+  expenseIds?: string[];
 
   @ApiProperty({
     example: ['5f6a0c8b3e0b8f001f8e7e7c', '5f6a0c8b3e0b8f001f8e7e7d'],
-    description: 'Category ids',
+    description: 'Categories that shared with me',
     type: [String],
   })
   @IsOptionalMongoidArrayDec()
-  categoryIds: string[];
+  categoryIds?: string[];
 
   @ApiProperty({
     example: ['5f6a0c8b3e0b8f001f8e7e7c', '5f6a0c8b3e0b8f001f8e7e7d'],
-    description: 'Payment source ids',
+    description: 'Payment sources that shared with me',
     type: [String],
   })
   @IsOptionalMongoidArrayDec()
-  paymentSourceIds: string[];
+  paymentSourceIds?: string[];
 }

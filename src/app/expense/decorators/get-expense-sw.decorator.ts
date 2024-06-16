@@ -7,9 +7,7 @@ export function GetExpenseSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Get users Expenses by ID from a header or by a Query request.',
-      description: `
-      ATTENTION! data from "Query" is not processed!
-      
+      description: `      
         Requires:
         - token in header
 
