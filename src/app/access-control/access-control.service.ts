@@ -1,10 +1,18 @@
-import { ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Model } from 'mongoose';
 import { AccessControl } from './models/access-control.model';
 import { AccessControlInputDto } from './dto/access-control-input.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { ACCESS_CONTROL_ERROR } from './constants/access-control-error.enum';
 import { AccessControlOutputDto } from './dto/access-control-output.dto';
+import { DeleteMeFromSharedInputDto } from './dto/delete-me-from-shared-input.dto';
 
 @Injectable()
 export class AccessControlService {
@@ -23,7 +31,7 @@ export class AccessControlService {
   }
 
   async create(userId: string, dto: AccessControlInputDto): Promise<AccessControlOutputDto> {
-    if (dto.sharedWith.includes(userId)) {
+    if (dto.sharedWith === userId) {
       throw new ForbiddenException(ACCESS_CONTROL_ERROR.OWN_ACCESS_ERROR);
     }
 
@@ -38,7 +46,7 @@ export class AccessControlService {
   }
 
   async update(userId: string, accessId: string, dto: AccessControlInputDto): Promise<AccessControlOutputDto> {
-    if (dto.sharedWith?.includes(userId)) {
+    if (dto.sharedWith === userId) {
       throw new ForbiddenException(ACCESS_CONTROL_ERROR.OWN_ACCESS_ERROR);
     }
 
@@ -57,6 +65,7 @@ export class AccessControlService {
 
     return result.toObject({ versionKey: false });
   }
+
   async delete(userId: string, accessId: string): Promise<AccessControlOutputDto> {
     const result = await this.accessControlModel.findByIdAndDelete(accessId, { ownerId: userId });
 
@@ -65,5 +74,39 @@ export class AccessControlService {
     }
 
     return result.toObject({ versionKey: false });
+  }
+
+  async deleteMeFromShared(userId: string, dto: DeleteMeFromSharedInputDto): Promise<AccessControlOutputDto> {
+    const { accessId, expenseIds, paymentSourceIds, categoryIds } = dto;
+    let accessControl: AccessControl;
+
+    try {
+      accessControl = await this.accessControlModel.findById(accessId);
+    } catch (error) {
+      throw new NotFoundException(ACCESS_CONTROL_ERROR.NOT_FOUND);
+    }
+
+    if (!accessControl || accessControl.sharedWith !== userId) {
+      throw new NotFoundException(ACCESS_CONTROL_ERROR.NOT_FOUND);
+    }
+
+    accessControl.expenseIds = accessControl.expenseIds.filter((id) => !expenseIds.includes(id));
+    accessControl.categoryIds = accessControl.categoryIds.filter((id) => !categoryIds.includes(id));
+    accessControl.paymentSourceIds = accessControl.paymentSourceIds.filter((id) => !paymentSourceIds.includes(id));
+
+    try {
+      await this.accessControlModel.findByIdAndUpdate(accessId, accessControl);
+    } catch (error) {
+      throw new InternalServerErrorException(ACCESS_CONTROL_ERROR.DELETE_ME_ERROR);
+    }
+
+    return {
+      _id: accessId,
+      ownerId: accessControl.ownerId,
+      sharedWith: accessControl.sharedWith,
+      expenseIds: accessControl.expenseIds,
+      categoryIds: accessControl.categoryIds,
+      paymentSourceIds: accessControl.paymentSourceIds,
+    };
   }
 }

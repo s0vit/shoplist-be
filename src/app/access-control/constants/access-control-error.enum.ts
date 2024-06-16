@@ -4,4 +4,5 @@ export enum ACCESS_CONTROL_ERROR {
   OWN_ACCESS_ERROR = 'You cannot share with yourself',
   NOT_FOUND = 'Access control not found',
   FORBIDDEN = 'Forbidden, you do not have access to this resource',
+  DELETE_ME_ERROR = 'Error delete me from shared',
 }
