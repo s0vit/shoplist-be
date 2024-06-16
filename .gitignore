@@ -12,6 +12,5 @@ node_modules
 .vercel
 .env*.local
 
-
 # others
 .notes
