@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { FindByEmailOutputDto } from './dto/find-by-email-output.dto';
 import { GetUserByEmailSw } from './decorators/get-user-by-email-sw.decorator';
@@ -9,6 +9,8 @@ import { QuantityInputDto } from './dto/quantity-input.dto';
 import { AccessJwtGuard } from '../../guards/access-jwt.guard';
 import { CreateRandomCategorySwDec } from './decorators/create-random-category-sw.decorator';
 import { CreateRandomExpensesSwDec } from './decorators/create-random-expenses-sw.decorator';
+import { DeleteMeSwDec } from './decorators/delete-me-sw.decorator';
+import { Request } from 'express';
 
 @ApiTags('User')
 @Controller('user')
@@ -29,6 +31,13 @@ export class UserController {
     @Req() req: CustomRequest,
   ): Promise<void> {
     return this.userService.createCategoryAndPaymentSource(createDataInputDto, req.user.userId);
+  }
+
+  @UseGuards(AccessJwtGuard)
+  @DeleteMeSwDec()
+  @Delete('delete-me')
+  async deleteMe(@Req() req: Request): Promise<string> {
+    return this.userService.deleteMe(req.headers.authorization.split(' ')[1]);
   }
 
   @UseGuards(AccessJwtGuard)

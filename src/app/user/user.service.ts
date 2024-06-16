@@ -1,4 +1,11 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { User, UserDocument } from '../auth/models/user.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -12,6 +19,8 @@ import { PaymentSource, PaymentSourceDocument } from '../payment-source/models/p
 import { ConfigService } from '@nestjs/config';
 import { USER_ERROR } from './constants/user-error.enum';
 import { Expense } from '../expense/models/expense.model';
+import { JwtService } from '@nestjs/jwt';
+import { TokenPayload } from '../../common/interfaces/token.interface';
 
 @Injectable()
 export class UserService {
@@ -23,6 +32,7 @@ export class UserService {
     @InjectModel(Expense.name) private readonly expensesModel: Model<Expense>,
     private readonly utilsService: UtilsService,
     private readonly configService: ConfigService,
+    private readonly jwtService: JwtService,
   ) {
     this.arrayAllowedUsers = this.configService.get<string[]>('ALLOWED_USERS');
   }
@@ -36,23 +46,50 @@ export class UserService {
       .lean();
   }
 
+  async deleteMe(token: string): Promise<string> {
+    const { userId } = this.jwtService.decode<TokenPayload>(token);
+    let tokenFromDb: string;
+
+    try {
+      const dbUser = await this.userModel.findById(userId);
+      tokenFromDb = dbUser.accessToken;
+    } catch (error) {
+      throw new NotFoundException(USER_ERROR.FIND_USER_ERROR);
+    }
+
+    if (tokenFromDb !== token) throw new UnauthorizedException(USER_ERROR.TOKENS_MISMATCH);
+
+    try {
+      await this.userModel.findByIdAndDelete(userId);
+    } catch (error) {
+      throw new InternalServerErrorException(USER_ERROR.DELETE_USER_ERROR);
+    }
+
+    return 'User deleted';
+  }
+
+  //TODO remove in case of not using
   private getRandomColor() {
     const letters = '0123456789ABCDEF';
     let color = '#';
+
     for (let i = 0; i < 6; i++) {
       color += letters[Math.floor(Math.random() * 16)];
     }
+
     return color;
   }
   private getDateMinusDays(days: number): Date {
     const today = new Date();
     const pastDate = new Date(today);
     pastDate.setDate(today.getDate() - days);
+
     return pastDate;
   }
   private createRandomCategoryOrPaymentSource(usersId: string, names: string[]): CategoryOutputDto[] {
     const pastDate = this.getDateMinusDays(32);
     const result = [];
+
     for (let i = 0; i < names.length; i++) {
       result.push({
         title: names[i],
@@ -63,12 +100,14 @@ export class UserService {
         updatedAt: pastDate,
       });
     }
+
     return result;
   }
   private getRandomDate(startDate: Date) {
     const start = new Date(startDate);
     const randomDays = Math.floor(Math.random() * 31);
     start.setDate(start.getDate() + randomDays);
+
     return start;
   }
   private getRandomNumber() {
@@ -97,6 +136,7 @@ export class UserService {
         updatedAt: randomDate,
       });
     }
+
     return result;
   }
 
@@ -107,9 +147,11 @@ export class UserService {
     const paymentSrcTitleToSearch = this.utilsService.createTitleRegex(paymentSourceData[0].title);
     const category = await this.categoryModel.findOne({ title: categoryTitleToSearch, userId });
     const paymentSource = await this.categoryModel.findOne({ title: paymentSrcTitleToSearch, userId });
+
     if (category || paymentSource) {
       throw new NotFoundException(USER_ERROR.CATEGORY_OR_PAYMENT_SOURCE_ALREADY_EXIST);
     }
+
     try {
       await this.categoryModel.insertMany(categoryData);
       await this.paymentSourceModel.insertMany(paymentSourceData);
@@ -121,8 +163,10 @@ export class UserService {
     if (!this.arrayAllowedUsers.includes(userId)) {
       throw new NotFoundException(USER_ERROR.FORBIDDEN);
     }
+
     try {
       const expensesData = await this.makeRandomExpenses(userId, inputDataDto.quantity);
+
       return await this.expensesModel.insertMany(expensesData);
     } catch (error) {
       throw new HttpException(USER_ERROR.CREATE_EXPENSES_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
