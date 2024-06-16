@@ -1,4 +1,11 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './models/user.model';
@@ -18,6 +25,7 @@ import { resetPasswordTemplate } from '../../utils/templates/reset-password.temp
 export class AuthService {
   private readonly accessSecret: string;
   private readonly refreshSecret: string;
+
   constructor(
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
@@ -37,9 +45,11 @@ export class AuthService {
 
     return { accessToken, refreshToken };
   }
+
   private async findUser(email: string): Promise<UserDocument> {
     return this.userModel.findOne({ email }).exec();
   }
+
   private async createUser(dto: AuthInputDto) {
     const salt = await genSalt(10);
     const passwordHash = await hash(dto.password, salt);
@@ -52,9 +62,9 @@ export class AuthService {
   }
 
   async register(dto: AuthInputDto, origin: string) {
-    const oldUser = await this.findUser(dto.email);
+    const foundUser = await this.findUser(dto.email);
 
-    if (oldUser) {
+    if (foundUser) {
       throw new BadRequestException(ERROR_AUTH.USER_ALREADY_EXISTS);
     }
 
@@ -71,12 +81,22 @@ export class AuthService {
       throw new HttpException(ERROR_AUTH.SEND_EMAIL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
   async confirmRegistration(confirmToken: string): Promise<ConfirmOutputDto> {
-    // ToDo: Test on production
     try {
-      const result = await this.jwtService.verifyAsync<{ email: string }>(confirmToken);
+      const verifiedToken = await this.jwtService.verifyAsync<{ email: string }>(confirmToken);
+      const foundUser = await this.findUser(verifiedToken.email);
+
+      if (!foundUser || verifiedToken.email !== foundUser.email) {
+        throw new ConflictException(ERROR_AUTH.CONFIRM_REGISTRATION_CONFLICT);
+      }
+
       const updatedUser = await this.userModel
-        .findOneAndUpdate({ email: result.email }, { $set: { isVerified: true } }, { new: true })
+        .findOneAndUpdate(
+          { email: verifiedToken.email },
+          { $set: { isVerified: true, lastVerificationRequest: null } },
+          { new: true },
+        )
         .exec();
 
       return new ConfirmOutputDto(updatedUser);
@@ -89,6 +109,7 @@ export class AuthService {
       throw new HttpException(ERROR_AUTH.CONFIRM_REGISTRATION_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
   async login(email: string, password: string): Promise<LoginOutputDto> {
     const foundUser = await this.findUser(email);
 
@@ -132,6 +153,7 @@ export class AuthService {
       }
     }
   }
+
   async logout(accessToken: string) {
     try {
       const decoded = this.jwtService.decode<TokenPayload>(accessToken);
@@ -155,10 +177,26 @@ export class AuthService {
 
     try {
       const decoded = this.jwtService.decode<TokenPayload>(accessToken);
-      const confirmToken = await this.jwtService.signAsync({ email: decoded.email });
+      const now = new Date();
+      const oneHourAgo = new Date(now.getTime() - 3600000);
+
+      const user = await this.userModel
+        .findOneAndUpdate(
+          // lastVerificationRequest update only if the previous request was more than an hour ago
+          { email: decoded.email, lastVerificationRequest: { $lt: oneHourAgo } },
+          { $set: { lastVerificationRequest: now } },
+          { new: true, runValidators: true },
+        )
+        .exec();
+
+      if (!user) {
+        throw new HttpException(ERROR_AUTH.TOO_MANY_REQUESTS, HttpStatus.TOO_MANY_REQUESTS);
+      }
+
+      const confirmToken = await this.jwtService.signAsync({ email: user.email });
       const resetLink = `${origin}/confirm?token=${confirmToken}`;
       await this.mailerService.sendMail({
-        to: decoded.email,
+        to: user.email,
         subject: 'Confirm your registration',
         html: resetPasswordTemplate(resetLink),
       });

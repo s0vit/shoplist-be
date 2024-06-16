@@ -42,7 +42,6 @@ export class AuthController {
   @Post('request-confirm')
   async reRequestVerification(@Req() req: Request): Promise<void> {
     const accessToken = req.headers['authorization']?.split(' ')?.[1];
-    if (!accessToken) throw new BadRequestException(ERROR_AUTH.AUTH_ERROR_NO_TOKEN);
     const origin = req.headers['origin'];
 
     return await this.authService.requestConfirm(accessToken, origin);

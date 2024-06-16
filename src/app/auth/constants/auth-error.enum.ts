@@ -10,4 +10,6 @@ export enum ERROR_AUTH {
   INVALID_AUTHENTICATION_CREDENTIALS = 'Invalid authentication credentials',
   VERIFIED_USER_ERROR = 'User is not verified',
   NOT_FOUND_USER = 'User not found',
+  CONFIRM_REGISTRATION_CONFLICT = 'User not found or incorrect email',
+  TOO_MANY_REQUESTS = 'Too Many Requests',
 }

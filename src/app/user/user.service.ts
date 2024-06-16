@@ -25,6 +25,7 @@ import { TokenPayload } from '../../common/interfaces/token.interface';
 @Injectable()
 export class UserService {
   private readonly arrayAllowedUsers: string[];
+
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Category.name) private readonly categoryModel: Model<CategoryDocument>,
@@ -79,6 +80,7 @@ export class UserService {
 
     return color;
   }
+
   private getDateMinusDays(days: number): Date {
     const today = new Date();
     const pastDate = new Date(today);
@@ -86,6 +88,7 @@ export class UserService {
 
     return pastDate;
   }
+
   private createRandomCategoryOrPaymentSource(usersId: string, names: string[]): CategoryOutputDto[] {
     const pastDate = this.getDateMinusDays(32);
     const result = [];
@@ -103,6 +106,7 @@ export class UserService {
 
     return result;
   }
+
   private getRandomDate(startDate: Date) {
     const start = new Date(startDate);
     const randomDays = Math.floor(Math.random() * 31);
@@ -110,12 +114,15 @@ export class UserService {
 
     return start;
   }
+
   private getRandomNumber() {
     return Math.floor(Math.random() * 100) + 1;
   }
+
   private getRandomElement(arr: any[]) {
     return arr[Math.floor(Math.random() * arr.length)];
   }
+
   private async makeRandomExpenses(usersId: string, count: number) {
     const result = [];
     const foundCategories = await this.categoryModel.find({ userId: usersId });
@@ -159,6 +166,7 @@ export class UserService {
       throw new HttpException(USER_ERROR.CREATE_CATEGORY_AND_PAYMENT_SOURCE_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
   async createRandomExpenses(inputDataDto: QuantityInputDto, userId: string) {
     if (!this.arrayAllowedUsers.includes(userId)) {
       throw new NotFoundException(USER_ERROR.FORBIDDEN);
