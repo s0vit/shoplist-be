@@ -14,5 +14,6 @@ import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
   ],
   controllers: [CategoryController],
   providers: [CategoryService, UtilsService, AccessJwtStrategy],
+  exports: [CategoryService],
 })
 export class CategoryModule {}

@@ -15,7 +15,7 @@ import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema, collection: 'User' }]),
     ConfigModule,
   ],
-  exports: [UtilsService],
   providers: [PaymentSourceService, UtilsService, AccessJwtStrategy],
+  exports: [UtilsService, PaymentSourceService],
 })
 export class PaymentSourcesModule {}

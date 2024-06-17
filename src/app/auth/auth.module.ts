@@ -8,6 +8,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from '../../configs/jwt.config';
 import { getMailerConfig } from '../../configs/get-mailer.config';
+import { PaymentSourcesModule } from '../payment-source/payment-sources.module';
+import { CategoryModule } from '../category/category.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { getMailerConfig } from '../../configs/get-mailer.config';
       useFactory: getMailerConfig,
     }),
     ConfigModule,
+    PaymentSourcesModule,
+    CategoryModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

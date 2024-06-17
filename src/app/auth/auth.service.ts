@@ -20,6 +20,8 @@ import { ConfigService } from '@nestjs/config';
 import { TokenPayload } from 'src/common/interfaces/token.interface';
 import { confirmEmailTemplate } from '../../utils/templates/confirm-email.template';
 import { resetPasswordTemplate } from '../../utils/templates/reset-password.template';
+import { CategoryService } from '../category/category.service';
+import { PaymentSourceService } from '../payment-source/payment-source.service';
 
 @Injectable()
 export class AuthService {
@@ -32,6 +34,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
+    private readonly categoryService: CategoryService,
+    private readonly paymentSourceService: PaymentSourceService,
   ) {
     this.accessSecret = this.configService.get<string>('ACCESS_TOKEN_KEY');
     this.refreshSecret = this.configService.get<string>('REFRESH_TOKEN_KEY');
@@ -59,6 +63,8 @@ export class AuthService {
       passwordHash,
     });
     await newUser.save();
+
+    return newUser;
   }
 
   async register(dto: AuthInputDto, origin: string) {
@@ -69,6 +75,14 @@ export class AuthService {
     }
 
     try {
+      const newUser = await this.createUser(dto);
+      await this.categoryService.createDefaultCategories(newUser._id);
+      await this.paymentSourceService.createDefaultPaymentSources(newUser._id);
+    } catch (error) {
+      throw new HttpException(ERROR_AUTH.CREATE_USER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    try {
       const confirmToken = await this.jwtService.signAsync({ email: dto.email });
       const confirmationUrl = `${origin}/confirm?token=${confirmToken}`;
       await this.mailerService.sendMail({
@@ -76,7 +90,6 @@ export class AuthService {
         subject: 'Confirm your registration',
         html: confirmEmailTemplate(confirmToken, confirmationUrl),
       });
-      await this.createUser(dto);
     } catch (error) {
       throw new HttpException(ERROR_AUTH.SEND_EMAIL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
