@@ -183,7 +183,10 @@ export class AuthService {
       const user = await this.userModel
         .findOneAndUpdate(
           // lastVerificationRequest update only if the previous request was more than an hour ago
-          { email: decoded.email, lastVerificationRequest: { $lt: oneHourAgo } },
+          {
+            email: decoded.email,
+            $or: [{ lastVerificationRequest: { $eq: null } }, { lastVerificationRequest: { $lt: oneHourAgo } }],
+          },
           { $set: { lastVerificationRequest: now } },
           { new: true, runValidators: true },
         )
