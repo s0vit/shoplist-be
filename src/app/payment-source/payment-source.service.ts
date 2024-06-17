@@ -91,4 +91,29 @@ export class PaymentSourceService {
   async getAll(userId: string): Promise<PaymentSourceOutputDto[]> {
     return this.paymentSourceModel.find({ userId }).select('-__v').lean();
   }
+
+  async createDefaultPaymentSources(userId: string): Promise<void> {
+    const defaultPaymentSources = [
+      { title: 'Cash', color: '#000000' },
+      { title: 'Credit Card', color: '#0000FF' },
+      { title: 'Debit Card', color: '#008000' },
+    ];
+
+    for (const paymentSource of defaultPaymentSources) {
+      const titleToSearch = this.utilsService.createTitleRegex(paymentSource.title);
+      const existingPaymentSourceForCurrentUser = await this.paymentSourceModel.findOne({
+        title: titleToSearch,
+        userId,
+      });
+
+      if (existingPaymentSourceForCurrentUser) continue;
+      const newPaymentSource = new this.paymentSourceModel({
+        title: paymentSource.title,
+        userId,
+        color: paymentSource.color,
+      });
+
+      await newPaymentSource.save();
+    }
+  }
 }

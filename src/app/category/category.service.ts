@@ -1,4 +1,4 @@
-import { NotFoundException, HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Category, CategoryDocument } from './models/category.model';
@@ -98,6 +98,29 @@ export class CategoryService {
       return category.toObject({ versionKey: false });
     } catch (error) {
       throw new HttpException(CATEGORY_ERROR.DELETE_CATEGORY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async createDefaultCategories(userId: string): Promise<void> {
+    const defaultCategories = [
+      { title: 'Food', color: '#4faa4f' },
+      { title: 'Transport', color: '#568180' },
+      { title: 'Entertainment', color: '#8400ff' },
+      { title: 'Rent', color: '#ff0062' },
+      { title: 'Other', color: '#373737' },
+    ];
+
+    for (const category of defaultCategories) {
+      const titleToSearch = this.utilsService.createTitleRegex(category.title);
+      const existingCategory = await this.categoryModel.findOne({ title: titleToSearch, userId });
+
+      if (existingCategory) continue;
+      const newCategory = new this.categoryModel({
+        userId,
+        title: category.title,
+        color: category.color,
+      });
+      await newCategory.save();
     }
   }
 }
