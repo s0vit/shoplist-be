@@ -15,6 +15,12 @@ export class LoginOutputDto {
   login: string;
 
   @ApiProperty({
+    example: 'https://example.com/avatar.png',
+    description: 'User avatar link',
+  })
+  avatar?: string;
+
+  @ApiProperty({
     example: 'true',
     description: 'Is the user verified or not',
   })
@@ -40,5 +46,6 @@ export class LoginOutputDto {
     this.isVerified = user.isVerified;
     this.accessToken = user.accessToken;
     this.refreshToken = user.refreshToken;
+    this.avatar = user.avatar;
   }
 }

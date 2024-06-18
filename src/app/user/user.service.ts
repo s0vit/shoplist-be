@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -21,6 +22,7 @@ import { USER_ERROR } from './constants/user-error.enum';
 import { Expense } from '../expense/models/expense.model';
 import { JwtService } from '@nestjs/jwt';
 import { TokenPayload } from '../../common/interfaces/token.interface';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class UserService {
@@ -34,6 +36,7 @@ export class UserService {
     private readonly utilsService: UtilsService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private cloudinaryService: CloudinaryService,
   ) {
     this.arrayAllowedUsers = this.configService.get<string[]>('ALLOWED_USERS');
   }
@@ -178,6 +181,25 @@ export class UserService {
       return await this.expensesModel.insertMany(expensesData);
     } catch (error) {
       throw new HttpException(USER_ERROR.CREATE_EXPENSES_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async uploadAvatar(userId: string, file: Express.Multer.File): Promise<void> {
+    if (!file) throw new BadRequestException(USER_ERROR.NO_FILE);
+    if (!file.mimetype.includes('image')) throw new BadRequestException(USER_ERROR.NOT_IMAGE);
+    let compressedImageBuffer: Buffer;
+
+    try {
+      compressedImageBuffer = await this.utilsService.convertToWebP(file.buffer);
+    } catch (error) {
+      throw new InternalServerErrorException(USER_ERROR.COMPRESS_IMAGE_ERROR);
+    }
+
+    try {
+      const uploadRes = await this.cloudinaryService.uploadImage(compressedImageBuffer);
+      this.userModel.findByIdAndUpdate(userId, { avatar: uploadRes.secure_url });
+    } catch (error) {
+      throw new HttpException(USER_ERROR.UPLOAD_AVATAR_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

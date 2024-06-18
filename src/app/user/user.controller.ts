@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { FindByEmailOutputDto } from './dto/find-by-email-output.dto';
 import { GetUserByEmailSw } from './decorators/get-user-by-email-sw.decorator';
@@ -11,6 +23,8 @@ import { CreateRandomCategorySwDec } from './decorators/create-random-category-s
 import { CreateRandomExpensesSwDec } from './decorators/create-random-expenses-sw.decorator';
 import { DeleteMeSwDec } from './decorators/delete-me-sw.decorator';
 import { Request } from 'express';
+import { UploadAvatarSwDec } from './decorators/upload-avatar-sw.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('User')
 @Controller('user')
@@ -45,5 +59,14 @@ export class UserController {
   @Post('create-random-expenses')
   async createRandomExpenses(@Body() quantity: QuantityInputDto, @Req() req: CustomRequest) {
     return this.userService.createRandomExpenses(quantity, req.user.userId);
+  }
+
+  @UseGuards(AccessJwtGuard)
+  @UploadAvatarSwDec()
+  @HttpCode(200)
+  @UseInterceptors(FileInterceptor('file'))
+  @Post('upload-avatar')
+  async uploadAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: CustomRequest): Promise<void> {
+    return this.userService.uploadAvatar(req.user.userId, file);
   }
 }
