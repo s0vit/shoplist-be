@@ -25,6 +25,7 @@ import { DeleteMeSwDec } from './decorators/delete-me-sw.decorator';
 import { Request } from 'express';
 import { UploadAvatarSwDec } from './decorators/upload-avatar-sw.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UserDocument } from '../auth/models/user.model';
 
 @ApiTags('User')
 @Controller('user')
@@ -66,7 +67,7 @@ export class UserController {
   @HttpCode(200)
   @UseInterceptors(FileInterceptor('file'))
   @Post('upload-avatar')
-  async uploadAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: CustomRequest): Promise<void> {
+  async uploadAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: CustomRequest): Promise<UserDocument> {
     return this.userService.uploadAvatar(req.user.userId, file);
   }
 }

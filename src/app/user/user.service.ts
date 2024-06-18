@@ -184,7 +184,7 @@ export class UserService {
     }
   }
 
-  async uploadAvatar(userId: string, file: Express.Multer.File): Promise<void> {
+  async uploadAvatar(userId: string, file: Express.Multer.File): Promise<UserDocument> {
     if (!file) throw new BadRequestException(USER_ERROR.NO_FILE);
     if (!file.mimetype.includes('image')) throw new BadRequestException(USER_ERROR.NOT_IMAGE);
     let compressedImageBuffer: Buffer;
@@ -197,7 +197,8 @@ export class UserService {
 
     try {
       const uploadRes = await this.cloudinaryService.uploadImage(compressedImageBuffer);
-      this.userModel.findByIdAndUpdate(userId, { avatar: uploadRes.secure_url });
+
+      return await this.userModel.findByIdAndUpdate(userId, { avatar: uploadRes.secure_url }, { new: true });
     } catch (error) {
       throw new HttpException(USER_ERROR.UPLOAD_AVATAR_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
