@@ -7,7 +7,7 @@ export class CloudinaryService {
   async uploadImage(fileBuffer: Buffer): Promise<UploadApiResponse | UploadApiErrorResponse> {
     return new Promise((resolve, reject) => {
       v2.uploader
-        .upload_stream({ resource_type: 'auto' }, (error, result) => {
+        .upload_stream({ resource_type: 'auto', folder: 'shoplist' }, (error, result) => {
           if (error) {
             reject(error);
           }
