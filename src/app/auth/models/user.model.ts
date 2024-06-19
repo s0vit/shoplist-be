@@ -36,6 +36,9 @@ export class User {
 
   @Prop()
   resetPasswordToken?: string;
+
+  @Prop()
+  avatar?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

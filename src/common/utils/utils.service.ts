@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import * as sharp from 'sharp';
 
 @Injectable()
 export class UtilsService {
@@ -10,5 +11,31 @@ export class UtilsService {
    */
   createTitleRegex(title: string): RegExp {
     return new RegExp(`^${title}$`, 'i');
+  }
+
+  async convertToWebP(buffer: Buffer): Promise<Buffer> {
+    let convertedBuffer = buffer;
+
+    try {
+      const { width } = await sharp(buffer).metadata();
+
+      if (width > 200) {
+        convertedBuffer = await sharp(buffer).resize({ width: 200 }).webp().toBuffer();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    try {
+      const { height } = await sharp(buffer).metadata();
+
+      if (height > 200) {
+        convertedBuffer = await sharp(buffer).resize({ height: 200 }).webp().toBuffer();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    return sharp(convertedBuffer).webp().toBuffer();
   }
 }

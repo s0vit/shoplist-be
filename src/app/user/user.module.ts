@@ -11,6 +11,7 @@ import { ExpansesSchema, Expense } from '../expense/models/expense.model';
 import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from '../../configs/jwt.config';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { jwtConfig } from '../../configs/jwt.config';
       inject: [ConfigService],
       useFactory: jwtConfig,
     }),
+    CloudinaryModule,
   ],
   providers: [UserService, UtilsService, AccessJwtStrategy],
   controllers: [UserController],

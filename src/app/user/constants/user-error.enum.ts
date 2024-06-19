@@ -6,4 +6,8 @@ export enum USER_ERROR {
   DELETE_USER_ERROR = 'Error delete user',
   FIND_USER_ERROR = 'Error find user',
   TOKENS_MISMATCH = 'Tokens do not match',
+  NO_FILE = 'No file provided',
+  NOT_IMAGE = 'Provided file is not an image',
+  UPLOAD_AVATAR_ERROR = 'Error upload avatar',
+  COMPRESS_IMAGE_ERROR = 'Error compress image',
 }
