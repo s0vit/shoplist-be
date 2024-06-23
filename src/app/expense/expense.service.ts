@@ -32,6 +32,7 @@ export class ExpenseService {
         categoryId: inputDto.categoryId,
         paymentSourceId: inputDto.paymentSourceId,
         comments: inputDto.comments,
+        createdAt: inputDto.createdAt,
       });
       const createdExpanse = await newExpansesInstance.save();
 
