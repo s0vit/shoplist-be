@@ -46,7 +46,7 @@ export class UserService {
 
     return this.userModel
       .find({ email: emailRegex })
-      .select(['email', '_id', 'login', 'isVerified', 'loginDate'])
+      .select(['email', '_id', 'login', 'isVerified', 'loginDate', 'avatar'])
       .lean();
   }
 
