@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Model } from 'mongoose';
-import { AccessControl } from './models/access-control.model';
+import { AccessControl, AccessControlDocument } from './models/access-control.model';
 import { AccessControlInputDto } from './dto/access-control-input.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { ACCESS_CONTROL_ERROR } from './constants/access-control-error.enum';
@@ -18,7 +18,7 @@ import { DeleteMeFromSharedInputDto } from './dto/delete-me-from-shared-input.dt
 export class AccessControlService {
   constructor(
     @InjectModel(AccessControl.name)
-    private readonly accessControlModel: Model<AccessControl>,
+    private readonly accessControlModel: Model<AccessControlDocument>,
   ) {}
 
   async getAll(userId: string): Promise<AccessControlOutputDto[]> {
