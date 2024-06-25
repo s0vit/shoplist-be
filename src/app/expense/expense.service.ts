@@ -75,6 +75,7 @@ export class ExpenseService {
       .find(query)
       .skip(queryInputDto?.skip || 0)
       .limit(queryInputDto?.limit || 100)
+      .sort({ createdAt: -1 })
       .select('-__v')
       .lean();
 
