@@ -7,7 +7,10 @@ export function UpdateAccessControlSwDec() {
   return applyDecorators(
     ApiOperation({
       summary: 'Update access control',
-      description: 'Requires a token in the header and id',
+      description: `
+        Requires:
+        - a token in the header
+        - id in the params`,
     }),
     ApiBearerAuth(),
     ApiParam({
@@ -16,13 +19,21 @@ export function UpdateAccessControlSwDec() {
       type: String,
     }),
     ApiBody({
-      description: 'Update access control body',
+      description: 'DTO with access control data',
       type: AccessControlInputDto,
     }),
     ApiResponse({
       status: 200,
-      description: 'Update access control response',
+      description: 'Update access control success',
       type: AccessControlOutputDto,
+    }),
+    ApiResponse({
+      status: 401,
+      description: 'Unauthorized',
+    }),
+    ApiResponse({
+      status: 500,
+      description: 'Internal server error',
     }),
   );
 }

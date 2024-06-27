@@ -11,6 +11,7 @@ import { DeleteAccessControlSwDec } from './decorators/delete-access-control-sw.
 import { GetAllAccessControlSwDec } from './decorators/get-all-access-control-sw.decorator';
 import { DeleteMeFromSharedInputDto } from './dto/delete-me-from-shared-input.dto';
 import { DeleteMeSwDec } from './decorators/delete-me-sw.decorator';
+import { GetSharedWithMeAccessControlSwDec } from './decorators/get-shared-with-me-access-control-sw.decorator';
 
 @UseGuards(AccessJwtGuard)
 @ApiTags('Access control')
@@ -36,8 +37,14 @@ export class AccessControlController {
 
   @GetAllAccessControlSwDec()
   @Get()
-  async get(@Req() req: CustomRequest): Promise<AccessControlOutputDto[]> {
+  async getOwn(@Req() req: CustomRequest): Promise<AccessControlOutputDto[]> {
     return this.accessControlService.getAll(req.user.userId);
+  }
+
+  @GetSharedWithMeAccessControlSwDec()
+  @Get('me')
+  async getSharedWithMe(@Req() req: CustomRequest): Promise<AccessControlOutputDto[]> {
+    return this.accessControlService.getSharedWithMe(req.user.userId);
   }
 
   @DeleteMeSwDec()
