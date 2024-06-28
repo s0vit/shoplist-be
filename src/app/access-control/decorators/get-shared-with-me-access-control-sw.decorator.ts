@@ -1,23 +1,20 @@
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
+import { AccessControlOutputDto } from '../dto/access-control-output.dto';
 
-export function DeleteAccessControlSwDec() {
+export function GetSharedWithMeAccessControlSwDec() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Delete access control',
+      summary: 'Get shared with me access control',
       description: `
         Requires:
         - a token in the header`,
     }),
     ApiBearerAuth(),
-    ApiParam({
-      name: 'id',
-      description: 'Access control id',
-      type: String,
-    }),
     ApiResponse({
       status: 200,
-      description: 'Delete access control success',
+      description: 'Get shared with me access control response',
+      type: [AccessControlOutputDto],
     }),
     ApiResponse({
       status: 401,

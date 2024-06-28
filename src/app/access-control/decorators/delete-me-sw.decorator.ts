@@ -29,12 +29,20 @@ export function DeleteMeSwDec() {
       type: DeleteMeFromSharedInputDto,
     }),
     ApiResponse({
+      status: 401,
+      description: 'Unauthorized',
+    }),
+    ApiResponse({
       status: 404,
       description: `${ACCESS_CONTROL_ERROR.NOT_FOUND}`,
     }),
     ApiResponse({
       status: 403,
       description: `${ACCESS_CONTROL_ERROR.DELETE_ME_ERROR}`,
+    }),
+    ApiResponse({
+      status: 500,
+      description: 'Internal server error',
     }),
   );
 }

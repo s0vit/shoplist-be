@@ -36,6 +36,26 @@ export class AccessControlService {
     }
 
     try {
+      // check if the owner has already shared access with the user
+      const existingAccessControl = await this.accessControlModel.findOne({
+        ownerId: userId,
+        sharedWith: dto.sharedWith,
+      });
+
+      if (existingAccessControl) {
+        // if the owner has already shared access with the user, update the access
+        existingAccessControl.set({
+          ownerId: userId,
+          sharedWith: dto.sharedWith,
+          expenseIds: [...existingAccessControl.expenseIds, ...dto.expenseIds],
+          categoryIds: [...existingAccessControl.categoryIds, ...dto.categoryIds],
+          paymentSourceIds: [...existingAccessControl.paymentSourceIds, ...dto.paymentSourceIds],
+          updatedAt: new Date(),
+        });
+
+        return (await existingAccessControl.save()).toObject({ versionKey: false });
+      }
+
       const accessControl = new this.accessControlModel({ ownerId: userId, ...dto });
       const result = await accessControl.save();
 
@@ -108,5 +128,9 @@ export class AccessControlService {
       categoryIds: accessControl.categoryIds,
       paymentSourceIds: accessControl.paymentSourceIds,
     };
+  }
+
+  async getSharedWithMe(userId: string): Promise<AccessControlOutputDto[]> {
+    return this.accessControlModel.find({ sharedWith: userId }).select('-__v').lean();
   }
 }

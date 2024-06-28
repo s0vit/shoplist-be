@@ -41,6 +41,7 @@ export class ExpenseService {
       throw new HttpException(EXPENSE_ERROR.CREATE_EXPENSE_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
   async getById(expensesId: string, userId: string): Promise<ExpenseOutputDto> {
     const foundExpanse = await this.expensesModel.findById(expensesId);
 
@@ -54,6 +55,66 @@ export class ExpenseService {
 
     return foundExpanse.toObject({ versionKey: false });
   }
+
+  async getBulk(expenseIds: string[], userId: string): Promise<ExpenseOutputDto[]> {
+    const foundExpanse = await this.expensesModel
+      .find({ _id: { $in: expenseIds } })
+      .select('-__v')
+      .lean();
+
+    const sharedWithMeAccessControls = await this.accessControlService.getSharedWithMe(userId);
+    // check if getting own or shared expense
+    foundExpanse.forEach((expense) => {
+      const isShared = sharedWithMeAccessControls.some((accessControl) =>
+        accessControl.expenseIds.includes(expense._id),
+      );
+      const isOwner = expense.userId === userId;
+
+      if (!isShared && !isOwner) {
+        throw new UnauthorizedException(EXPENSE_ERROR.ACCESS_DENIED);
+      }
+    });
+
+    return foundExpanse;
+  }
+
+  async getByCategory(categoryId: string, userId: string): Promise<ExpenseOutputDto[]> {
+    const foundExpenses = await this.expensesModel.find({ categoryId }).select('-__v').lean();
+    console.log('foundExpenses', foundExpenses);
+    const sharedWithMeAccessControls = await this.accessControlService.getSharedWithMe(userId);
+
+    foundExpenses.forEach((expense) => {
+      const isShared = sharedWithMeAccessControls.some((accessControl) =>
+        accessControl.categoryIds.includes(categoryId),
+      );
+      const isOwner = expense.userId === userId;
+
+      if (!isShared && !isOwner) {
+        throw new UnauthorizedException(EXPENSE_ERROR.ACCESS_DENIED);
+      }
+    });
+
+    return foundExpenses;
+  }
+
+  async getByPaymentSource(paymentSourceId: string, userId: string): Promise<ExpenseOutputDto[]> {
+    const foundExpenses = await this.expensesModel.find({ paymentSourceId }).select('-__v').lean();
+    const sharedWithMeAccessControls = await this.accessControlService.getSharedWithMe(userId);
+
+    foundExpenses.forEach((expense) => {
+      const isShared = sharedWithMeAccessControls.some((accessControl) =>
+        accessControl.paymentSourceIds.includes(paymentSourceId),
+      );
+      const isOwner = expense.userId === userId;
+
+      if (!isShared && !isOwner) {
+        throw new UnauthorizedException(EXPENSE_ERROR.ACCESS_DENIED);
+      }
+    });
+
+    return foundExpenses;
+  }
+
   async getOwn(userId: string, queryInputDto?: ExpenseQueryInputDto): Promise<ExpenseOutputDto[]> {
     const query = { userId };
     if (queryInputDto?.paymentSourceId) query['paymentSourceId'] = queryInputDto.paymentSourceId;
@@ -85,6 +146,7 @@ export class ExpenseService {
 
     return foundExpanse;
   }
+
   async getSharedExpenses(sharedUserId: string, currentUserId: string): Promise<ExpensesDocument[]> {
     if (currentUserId === sharedUserId) {
       throw new ForbiddenException(EXPENSE_ERROR.GET_OWN_EXPENSE);
@@ -105,6 +167,7 @@ export class ExpenseService {
       throw new HttpException(EXPENSE_ERROR.GET_SHARED_EXPENSE, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
   async update(expensesId: string, inputDto: ExpenseInputDto, userId: string): Promise<ExpenseOutputDto> {
     const foundExpanse = await this.expensesModel.findById(expensesId);
 
@@ -118,6 +181,7 @@ export class ExpenseService {
 
     return this.expensesModel.findByIdAndUpdate(expensesId, inputDto, { new: true }).lean();
   }
+
   async delete(expensesId: string, userId: string): Promise<ExpenseOutputDto> {
     const expense = await this.expensesModel.findById(expensesId);
 

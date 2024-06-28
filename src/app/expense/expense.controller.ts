@@ -14,6 +14,9 @@ import { GetExpenseByIdSwDec } from './decorators/get-expense-by-id-sw.decorator
 import { GetSharedSwDec } from './decorators/get-shared-expense-sw.decorator';
 import { UpdateExpenseSwDec } from './decorators/update-expense-sw.decorator';
 import { DeleteExpenseSwDec } from './decorators/delete-expense-sw.decorator';
+import { GetExpenseByIdsSwDec } from './decorators/get-expense-by-ids-sw.decorator';
+import { GetByCategorySwDec } from './decorators/get-expense-by-category-sw.decorator';
+import { GetByPaymentSourceSwDec } from './decorators/get-expense-by-ps-sw.decorator';
 
 @UseGuards(AccessJwtGuard)
 @ApiTags('Expense')
@@ -34,6 +37,27 @@ export class ExpenseController {
     @Req() req: CustomRequest,
   ): Promise<ExpenseOutputDto> {
     return this.expenseService.getById(expenseId, req.user.userId);
+  }
+
+  @GetExpenseByIdsSwDec()
+  @Post('bulk')
+  async getBulk(@Body() expenseIds: string[], @Req() req: CustomRequest): Promise<ExpenseOutputDto[]> {
+    return this.expenseService.getBulk(expenseIds, req.user.userId);
+  }
+
+  @GetByCategorySwDec()
+  @Get('category/:categoryId')
+  async getByCategory(@Param('categoryId') categoryId: string, @Req() req: CustomRequest): Promise<ExpenseOutputDto[]> {
+    return this.expenseService.getByCategory(categoryId, req.user.userId);
+  }
+
+  @GetByPaymentSourceSwDec()
+  @Get('payment-source/:paymentSourceId')
+  async getByPaymentSource(
+    @Param('paymentSourceId') paymentSourceId: string,
+    @Req() req: CustomRequest,
+  ): Promise<ExpenseOutputDto[]> {
+    return this.expenseService.getByPaymentSource(paymentSourceId, req.user.userId);
   }
 
   @GetSharedSwDec()
