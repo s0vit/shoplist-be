@@ -80,7 +80,6 @@ export class ExpenseService {
 
   async getByCategory(categoryId: string, userId: string): Promise<ExpenseOutputDto[]> {
     const foundExpenses = await this.expensesModel.find({ categoryId }).select('-__v').lean();
-    console.log('foundExpenses', foundExpenses);
     const sharedWithMeAccessControls = await this.accessControlService.getSharedWithMe(userId);
 
     foundExpenses.forEach((expense) => {
