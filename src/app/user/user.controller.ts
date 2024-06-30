@@ -12,8 +12,8 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { FindByEmailOutputDto } from './dto/find-by-email-output.dto';
-import { GetUserByEmailSw } from './decorators/get-user-by-email-sw.decorator';
+import { FindByOutputDto } from './dto/find-by-output.dto';
+import { GetUserByEmailSwDec } from './decorators/get-user-by-email-sw.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateDataInputDto } from './dto/create-data-input.dto';
 import { CustomRequest } from '../../common/interfaces/token.interface';
@@ -26,16 +26,23 @@ import { Request } from 'express';
 import { UploadAvatarSwDec } from './decorators/upload-avatar-sw.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserDocument } from '../auth/models/user.model';
+import { GetUserByIdSwDeC } from './decorators/get-user-by-id-sw.decorator';
 
 @ApiTags('User')
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @GetUserByEmailSw()
+  @GetUserByEmailSwDec()
   @Get(':email')
-  async get(@Param('email') email: string): Promise<FindByEmailOutputDto[]> {
+  async getByEmail(@Param('email') email: string): Promise<FindByOutputDto[]> {
     return this.userService.findByEmail(email);
+  }
+
+  @GetUserByIdSwDeC()
+  @Get('id/:id')
+  async getById(@Param('id') id: string): Promise<UserDocument> {
+    return this.userService.findById(id);
   }
 
   @UseGuards(AccessJwtGuard)

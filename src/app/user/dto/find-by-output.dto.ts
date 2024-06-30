@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class FindByEmailOutputDto {
+export class FindByOutputDto {
   @ApiProperty({
     description: 'User id',
     example: '60d4b5a2c1f5f83b2c0b7c0b',

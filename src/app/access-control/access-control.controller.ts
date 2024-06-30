@@ -25,16 +25,6 @@ export class AccessControlController {
     return this.accessControlService.create(req.user.userId, dto);
   }
 
-  @UpdateAccessControlSwDec()
-  @Put(':id')
-  async update(
-    @Param('id') accessId: string,
-    @Body() dto: AccessControlInputDto,
-    @Req() req: CustomRequest,
-  ): Promise<AccessControlOutputDto> {
-    return this.accessControlService.update(req.user.userId, accessId, dto);
-  }
-
   @GetAllAccessControlSwDec()
   @Get()
   async getOwn(@Req() req: CustomRequest): Promise<AccessControlOutputDto[]> {
@@ -48,7 +38,7 @@ export class AccessControlController {
   }
 
   @DeleteMeSwDec()
-  @Delete('me')
+  @Put('delete-me')
   async deleteMeFromShared(
     @Body() dto: DeleteMeFromSharedInputDto,
     @Req() req: CustomRequest,
@@ -60,5 +50,15 @@ export class AccessControlController {
   @Delete(':id')
   async delete(@Param('id') accessId: string, @Req() req: CustomRequest): Promise<AccessControlOutputDto> {
     return this.accessControlService.delete(req.user.userId, accessId);
+  }
+
+  @UpdateAccessControlSwDec()
+  @Put(':id')
+  async update(
+    @Param('id') accessId: string,
+    @Body() dto: AccessControlInputDto,
+    @Req() req: CustomRequest,
+  ): Promise<AccessControlOutputDto> {
+    return this.accessControlService.update(req.user.userId, accessId, dto);
   }
 }

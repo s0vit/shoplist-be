@@ -10,7 +10,7 @@ import {
 import { User, UserDocument } from '../auth/models/user.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { FindByEmailOutputDto } from './dto/find-by-email-output.dto';
+import { FindByOutputDto } from './dto/find-by-output.dto';
 import { CreateDataInputDto } from './dto/create-data-input.dto';
 import { QuantityInputDto } from './dto/quantity-input.dto';
 import { Category, CategoryDocument } from '../category/models/category.model';
@@ -41,13 +41,17 @@ export class UserService {
     this.arrayAllowedUsers = this.configService.get<string[]>('ALLOWED_USERS');
   }
 
-  async findByEmail(email: string): Promise<FindByEmailOutputDto[]> {
+  async findByEmail(email: string): Promise<FindByOutputDto[]> {
     const emailRegex = new RegExp(email, 'i');
 
     return this.userModel
       .find({ email: emailRegex })
       .select(['email', '_id', 'login', 'isVerified', 'loginDate', 'avatar'])
       .lean();
+  }
+
+  async findById(id: string): Promise<UserDocument> {
+    return this.userModel.findById(id).select(['email', '_id', 'login', 'isVerified', 'loginDate', 'avatar']).lean();
   }
 
   async deleteMe(token: string): Promise<string> {
