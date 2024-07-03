@@ -97,6 +97,7 @@ jobs:
   remove-previous-deployments:
     runs-on: ubuntu-latest
     needs: test-build-and-cache
+    if: github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v4
 
