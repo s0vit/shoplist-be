@@ -111,16 +111,19 @@ jobs:
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Check and Remove Previous Deployments
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           sanitized_ref_name=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9-]//g' | cut -c1-60)
           echo "Sanitized ref name: $sanitized_ref_name"
-          deployments=$(vercel list --token=${{ secrets.VERCEL_TOKEN }} | grep $sanitized_ref_name | awk '{print $1}')
+          deployments=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v6/deployments?projectId=$VERCEL_PROJECT_ID&meta-gitBranch=$sanitized_ref_name" | jq -r '.deployments[] | .uid')
           echo "Deployments to be removed: $deployments"
           if [ -n "$deployments" ]; then
             echo "Removing previous deployments for branch: $sanitized_ref_name"
             for deployment in $deployments; do
               echo "Removing deployment: $deployment"
-              vercel rm $deployment --yes --token=${{ secrets.VERCEL_TOKEN }}
+              curl -X DELETE "https://api.vercel.com/v12/deployments/$deployment" -H "Authorization: Bearer $VERCEL_TOKEN" -H "Content-Type: application/json"
             done
           else
             echo "No deployments found for branch: $sanitized_ref_name"
