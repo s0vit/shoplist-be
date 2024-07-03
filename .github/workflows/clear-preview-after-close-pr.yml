@@ -19,22 +19,23 @@ jobs:
   delete-deployments:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Extract branch name
-        shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-        id: extract_branch
-
-      - name: Hash branch name
-        uses: pplanel/hash-calculator-action@v1.3.1
-        id: hash_branch
+      - uses: pnpm/action-setup@v4
         with:
-          input: ${{ steps.extract_branch.outputs.branch }}
-          method: MD5
+          version: 9
 
-      - name: Call the delete-deployment-preview.sh script
+      - name: Install Vercel CLI
+        run: pnpm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Check and Remove Previous Deployments
         env:
-          META_TAG: ${{ steps.hash_branch.outputs.digest }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
+          sanitized_ref_name=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9-]//g' | cut -c1-60)
+          META_TAG=$(echo -n $sanitized_ref_name | md5sum | awk '{print $1}')
           bash ./scripts/delete-deployment-preview.sh
