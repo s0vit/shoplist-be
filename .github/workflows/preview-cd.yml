@@ -113,12 +113,17 @@ jobs:
       - name: Check and Remove Previous Deployments
         run: |
           sanitized_ref_name=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9-]//g' | cut -c1-60)
+          echo "Sanitized ref name: $sanitized_ref_name"
           deployments=$(vercel list --token=${{ secrets.VERCEL_TOKEN }} | grep $sanitized_ref_name | awk '{print $1}')
+          echo "Deployments to be removed: $deployments"
           if [ -n "$deployments" ]; then
             echo "Removing previous deployments for branch: $sanitized_ref_name"
             for deployment in $deployments; do
+              echo "Removing deployment: $deployment"
               vercel rm $deployment --yes --token=${{ secrets.VERCEL_TOKEN }}
             done
+          else
+            echo "No deployments found for branch: $sanitized_ref_name"
           fi
 
   deploy:
