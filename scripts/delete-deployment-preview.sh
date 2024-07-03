@@ -19,6 +19,7 @@ IFS=',' read -ra values <<<"$filtered_deployments"
 echo "META_TAG ${META_TAG}"
 echo "Filtered deployments ${filtered_deployments}"
 
+
 # Iterate over the filtered deployments list.
 for uid in "${values[@]}"; do
     echo "Deleting ${uid}"
