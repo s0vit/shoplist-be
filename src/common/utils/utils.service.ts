@@ -13,6 +13,12 @@ export class UtilsService {
     return new RegExp(`^${title}$`, 'i');
   }
 
+  /**
+   * Converts an image buffer to WebP format.
+   * If the image is larger than 200px in width or height, it will be resized to fit within those dimensions.
+   * @param buffer - The image buffer to convert.
+   * @returns A promise that resolves to the converted image buffer.
+   */
   async convertToWebP(buffer: Buffer): Promise<Buffer> {
     let convertedBuffer = buffer;
 
@@ -37,5 +43,14 @@ export class UtilsService {
     }
 
     return sharp(convertedBuffer).webp().toBuffer();
+  }
+
+  /**
+   * Normalizes a date to the format 'YYYY-MM-DD'.
+   * @param date - The date to normalize.
+   * @returns The date in 'YYYY-MM-DD' format.
+   */
+  normalizeDate(date: Date): string {
+    return date.toISOString().split('T')[0]; // Получаем строку в формате YYYY-MM-DD
   }
 }

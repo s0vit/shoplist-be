@@ -38,6 +38,22 @@ export class ExpenseOutputDto {
   comments?: string;
 
   @ApiProperty({
+    example: 'USD',
+    description: 'Currency of the expense.',
+  })
+  currency: string;
+
+  @ApiProperty({
+    example: {
+      USD: 1,
+      EUR: 0.82,
+      GBP: 0.72,
+    },
+    description: 'Exchange rates for the currency.',
+  })
+  exchangeRates: Record<string, number>;
+
+  @ApiProperty({
     example: '2024-06-08T09:04:50.592Z',
     description: 'Date created the expense.',
   })

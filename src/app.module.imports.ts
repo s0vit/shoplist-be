@@ -11,6 +11,7 @@ import { UserModule } from './app/user/user.module';
 import { PaymentSourcesModule } from './app/payment-source/payment-sources.module';
 import { AccessControlModule } from './app/access-control/access-control.module';
 import { CloudinaryModule } from './app/cloudinary/cloudinary.module';
+import { CurrencyModule } from './app/currency/currency.module';
 
 export const appModuleImports: ModuleMetadata['imports'] = [
   ConfigModule.forRoot(),
@@ -31,4 +32,5 @@ export const appModuleImports: ModuleMetadata['imports'] = [
   AccessControlModule,
   UserModule,
   CloudinaryModule,
+  CurrencyModule,
 ];

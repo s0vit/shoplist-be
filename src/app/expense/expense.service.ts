@@ -14,6 +14,7 @@ import { EXPENSE_ERROR } from './constants/expense-error.enum';
 import { AccessControlService } from '../access-control/access-control.service';
 import { ExpenseOutputDto } from './dto/expense-output.dto';
 import { ExpenseQueryInputDto } from './dto/expense-query-input.dto';
+import { CurrencyService } from '../currency/currency.service'; // Добавлено
 
 @Injectable()
 export class ExpenseService {
@@ -21,18 +22,23 @@ export class ExpenseService {
     @InjectModel(Expense.name)
     private readonly expensesModel: Model<Expense>,
     private readonly accessControlService: AccessControlService,
+    private readonly currencyService: CurrencyService,
   ) {}
 
   async create(inputDto: ExpenseInputDto, userId: string): Promise<ExpenseOutputDto> {
     try {
+      // get current exchange rates
+      const currentRates = await this.currencyService.getRatesByDate(new Date(inputDto.createdAt));
+
       const newExpansesInstance = new this.expensesModel({
-        // ToDo: need write amount in cents to avoid rounding problems
         userId: userId,
         amount: inputDto.amount,
         categoryId: inputDto.categoryId,
         paymentSourceId: inputDto.paymentSourceId,
         comments: inputDto.comments,
         createdAt: inputDto.createdAt,
+        currency: inputDto.currency,
+        exchangeRates: currentRates.rates,
       });
       const createdExpanse = await newExpansesInstance.save();
 
@@ -178,7 +184,14 @@ export class ExpenseService {
       throw new UnauthorizedException(EXPENSE_ERROR.ACCESS_DENIED);
     }
 
-    return this.expensesModel.findByIdAndUpdate(expensesId, inputDto, { new: true }).lean();
+    //if expense create date is changed, we need to update exchange rates
+    let exchangeRates = foundExpanse.exchangeRates;
+
+    if (inputDto.createdAt && inputDto.createdAt !== foundExpanse.createdAt) {
+      exchangeRates = (await this.currencyService.getRatesByDate(new Date(inputDto.createdAt))).rates;
+    }
+
+    return this.expensesModel.findByIdAndUpdate(expensesId, { ...inputDto, exchangeRates }, { new: true }).lean();
   }
 
   async delete(expensesId: string, userId: string): Promise<ExpenseOutputDto> {
