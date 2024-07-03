@@ -36,10 +36,6 @@ jobs:
           ISSUE_HTML_URL=$(echo "$ISSUE_DATA" | jq -r .html_url)
           EXPECTED_URL="https://github.com/${{ github.repository }}/issues/$ISSUE_NUMBER"
           
-          echo "Issue number: $ISSUE_NUMBER"
-          echo "Issue HTML URL: $ISSUE_HTML_URL"
-          echo "Expected URL: $EXPECTED_URL"
-          
           if [ "$ISSUE_HTML_URL" != "$EXPECTED_URL" ]; then
             echo ":name_badge: The issue linked in the pull request description does not belong to this repository." >> $GITHUB_STEP_SUMMARY
             echo "Error: The issue linked in the pull request description does not belong to this repository." >&2
@@ -98,9 +94,34 @@ jobs:
             !**/.git/**
             !**/.github/**
 
-  deploy:
-    needs: test-build-and-cache
+  remove-previous-deployments:
     runs-on: ubuntu-latest
+    needs: test-build-and-cache
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install Vercel CLI
+        run: pnpm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Check and Remove Previous Deployments
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          sanitized_ref_name=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9-]//g' | cut -c1-60)
+          META_TAG=$(echo -n $sanitized_ref_name | md5sum | awk '{print $1}')
+          bash ./scripts/delete-deployment-preview.sh
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [test-build-and-cache, remove-previous-deployments]
     if: github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v4
@@ -125,11 +146,14 @@ jobs:
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel and set custom alias
+        env:
+          META_TAG: ${{ github.sha }}-${{ github.run_number }}
         run: |
           sanitized_ref_name=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9-]//g' | cut -c1-60)
-          vercel deploy --prebuilt --name=${sanitized_ref_name} --token=${{ secrets.VERCEL_TOKEN }} >> vercel_output.txt 2>&1
+          vercel deploy --prebuilt --name=${sanitized_ref_name} --token=${{ secrets.VERCEL_TOKEN }} --meta base_hash=${{ env.META_TAG }} >> vercel_output.txt 2>&1
           alias="${sanitized_ref_name}.${PROJECTS_ROOT}.vercel.app"
-          vercel alias set $(cat vercel_output.txt | grep -oP 'Preview: \K(https://[^\s]+)') $alias --token=${{ secrets.VERCEL_TOKEN }}
+          vercel alias set $(grep -oP 'Preview: \K(https://[^\s]+)' vercel_output.txt) $alias --token=${{ secrets.VERCEL_TOKEN }}
+
       - name: Extract URLs and add to summary
         run: |
           DEPLOY_NAME=${GITHUB_REF#refs/heads/}
