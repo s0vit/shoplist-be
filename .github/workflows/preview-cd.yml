@@ -116,18 +116,8 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           sanitized_ref_name=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9-]//g' | cut -c1-60)
-          echo "Sanitized ref name: $sanitized_ref_name"
-          deployments=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v6/deployments?projectId=$VERCEL_PROJECT_ID&meta-gitBranch=$sanitized_ref_name" | jq -r '.deployments[] | .uid')
-          echo "Deployments to be removed: $deployments"
-          if [ -n "$deployments" ]; then
-            echo "Removing previous deployments for branch: $sanitized_ref_name"
-            for deployment in $deployments; do
-              echo "Removing deployment: $deployment"
-              curl -X DELETE "https://api.vercel.com/v12/deployments/$deployment" -H "Authorization: Bearer $VERCEL_TOKEN" -H "Content-Type: application/json"
-            done
-          else
-            echo "No deployments found for branch: $sanitized_ref_name"
-          fi
+          META_TAG=$(echo -n $sanitized_ref_name | md5sum | awk '{print $1}')
+          bash ./scripts/delete-deployment-preview.sh
 
   deploy:
     runs-on: ubuntu-latest
@@ -156,9 +146,11 @@ jobs:
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel and set custom alias
+        env:
+          META_TAG: ${{ github.sha }}-${{ github.run_number }}
         run: |
           sanitized_ref_name=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9-]//g' | cut -c1-60)
-          vercel deploy --prebuilt --name=${sanitized_ref_name} --token=${{ secrets.VERCEL_TOKEN }} >> vercel_output.txt 2>&1
+          vercel deploy --prebuilt --name=${sanitized_ref_name} --token=${{ secrets.VERCEL_TOKEN }} --meta base_hash=${{ env.META_TAG }} >> vercel_output.txt 2>&1
           alias="${sanitized_ref_name}.${PROJECTS_ROOT}.vercel.app"
           vercel alias set $(grep -oP 'Preview: \K(https://[^\s]+)' vercel_output.txt) $alias --token=${{ secrets.VERCEL_TOKEN }}
 
