@@ -8,6 +8,7 @@ import { ExpansesSchema, Expense } from './models/expense.model';
 import { User, UserSchema } from '../auth/models/user.model';
 import { AccessControlModule } from '../access-control/access-control.module';
 import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
+import { CurrencyModule } from '../currency/currency.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema, collection: 'User' }]),
     ConfigModule,
     AccessControlModule,
+    CurrencyModule,
   ],
   controllers: [ExpenseController],
   providers: [ExpenseService, AccessControlService, AccessJwtStrategy],

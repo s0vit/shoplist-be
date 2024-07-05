@@ -1,7 +1,7 @@
 import { IsMongoId, IsOptional, IsPositive, IsString, Length } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { CURRENCIES } from '../../currency/constants/currencies.enum';
 
-// ToDo: categoryId and paymentSourceId add default value
 export class ExpenseInputDto {
   @ApiProperty({
     example: '15',
@@ -33,6 +33,14 @@ export class ExpenseInputDto {
   @IsString()
   @Length(0, 100)
   comments?: string;
+
+  @ApiProperty({
+    example: 'USD',
+    description: 'Currency of the expense',
+  })
+  @IsString()
+  @Length(3, 3)
+  currency: CURRENCIES;
 
   @ApiProperty({
     example: '2024-06-08T09:04:50.592Z',

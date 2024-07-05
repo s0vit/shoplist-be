@@ -14,11 +14,11 @@ export function UpdateExpenseSwDec() {
       - amount in Body
       - categoryId in Body
       - paymentSourceId in Body
+      - currency in Body
 
       Optionally:
       - comments in Body
       - createdAt in Body
-      - updatedAt in Body
       `,
     }),
     ApiBearerAuth(),

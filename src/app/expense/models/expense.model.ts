@@ -22,6 +22,15 @@ export class Expense {
   @Prop()
   comments?: string;
 
+  @Prop({ required: true })
+  currency: string;
+
+  @Prop({
+    required: true,
+    type: Object,
+  })
+  exchangeRates: Record<string, number>;
+
   @Prop({ default: Date.now })
   createdAt: Date;
 
