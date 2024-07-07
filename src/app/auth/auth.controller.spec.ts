@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import * as bodyParser from 'body-parser';
 import * as request from 'supertest';
 import { createAndSetupApp } from '../../app';
 import { AuthInputDto } from './dto/auth-input.dto';
@@ -16,6 +17,7 @@ describe('AuthController', () => {
 
   beforeAll(async () => {
     app = await createAndSetupApp();
+    app.use(bodyParser.json());
     await app.init();
   });
 
