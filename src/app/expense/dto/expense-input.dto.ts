@@ -1,6 +1,6 @@
-import { IsMongoId, IsOptional, IsPositive, IsString, Length } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { CURRENCIES } from '../../currency/constants/currencies.enum';
+import { IsMongoId, IsOptional, IsPositive, IsString, Length } from 'class-validator';
+import { CURRENCIES } from '../../../common/interfaces/currencies.enum';
 
 export class ExpenseInputDto {
   @ApiProperty({

@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { CURRENCIES } from 'src/common/interfaces/currencies.enum';
 
 export type ExpensesDocument = HydratedDocument<Expense>;
 
@@ -29,7 +30,7 @@ export class Expense {
     required: true,
     type: Object,
   })
-  exchangeRates: Record<string, number>;
+  exchangeRates: Record<CURRENCIES, number>;
 
   @Prop({ default: Date.now })
   createdAt: Date;
