@@ -1,3 +1,4 @@
+import { MailerService } from '@nestjs-modules/mailer';
 import {
   BadRequestException,
   ConflictException,
@@ -6,22 +7,21 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User, UserDocument } from './models/user.model';
-import { AuthInputDto } from './dto/auth-input.dto';
-import { compare, genSalt, hash } from 'bcryptjs';
-import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
-import { MailerService } from '@nestjs-modules/mailer';
-import { ERROR_AUTH } from './constants/auth-error.enum';
-import { ConfirmOutputDto } from './dto/confirm-output.dto';
-import { LoginOutputDto } from './dto/login-output.dto';
 import { ConfigService } from '@nestjs/config';
+import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
+import { InjectModel } from '@nestjs/mongoose';
+import { compare, genSalt, hash } from 'bcryptjs';
+import { Model } from 'mongoose';
 import { TokenPayload } from 'src/common/interfaces/token.interface';
 import { confirmEmailTemplate } from '../../utils/templates/confirm-email.template';
 import { resetPasswordTemplate } from '../../utils/templates/reset-password.template';
 import { CategoryService } from '../category/category.service';
 import { PaymentSourceService } from '../payment-source/payment-source.service';
+import { ERROR_AUTH } from './constants/auth-error.enum';
+import { AuthInputDto } from './dto/auth-input.dto';
+import { ConfirmOutputDto } from './dto/confirm-output.dto';
+import { LoginOutputDto } from './dto/login-output.dto';
+import { User, UserDocument } from './models/user.model';
 
 @Injectable()
 export class AuthService {
@@ -67,7 +67,7 @@ export class AuthService {
     return newUser;
   }
 
-  async register(dto: AuthInputDto, origin: string) {
+  async register(dto: AuthInputDto, origin: string): Promise<string> {
     const foundUser = await this.findUser(dto.email);
 
     if (foundUser) {
@@ -90,6 +90,8 @@ export class AuthService {
         subject: 'Confirm your registration',
         html: confirmEmailTemplate(confirmToken, confirmationUrl),
       });
+
+      return confirmToken;
     } catch (error) {
       throw new HttpException(ERROR_AUTH.SEND_EMAIL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
