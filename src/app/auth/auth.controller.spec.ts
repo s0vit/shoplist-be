@@ -27,7 +27,7 @@ describe('AuthController', () => {
     it('should register a user', async () => {
       const registerDto: AuthInputDto = user;
 
-      const response = await request(app.getHttpServer()).post('/api/auth/register').send(JSON.stringify(registerDto));
+      const response = await request(app.getHttpServer()).post('/api/auth/register').send(registerDto);
 
       console.log(response.request);
       console.log(response.body);
@@ -39,19 +39,19 @@ describe('AuthController', () => {
     it('should not register a user with the same email', async () => {
       const registerDto: AuthInputDto = user;
 
-      await request(app.getHttpServer()).post('/api/auth/register').send(JSON.stringify(registerDto)).expect(400);
+      await request(app.getHttpServer()).post('/api/auth/register').send(registerDto).expect(400);
     });
 
     it('should not register a user with invalid email', async () => {
       const registerDto: AuthInputDto = { email: 'invalid-email', password: 'Password123' };
 
-      await request(app.getHttpServer()).post('/api/auth/register').send(JSON.stringify(registerDto)).expect(400);
+      await request(app.getHttpServer()).post('/api/auth/register').send(registerDto).expect(400);
     });
 
     it('should not register a user with invalid password', async () => {
       const registerDto: AuthInputDto = { email: user.email, password: 'short' };
 
-      await request(app.getHttpServer()).post('/api/auth/register').send(JSON.stringify(registerDto)).expect(400);
+      await request(app.getHttpServer()).post('/api/auth/register').send(registerDto).expect(400);
     });
   });
 
@@ -59,16 +59,13 @@ describe('AuthController', () => {
     it('should not login a user with invalid credentials', async () => {
       const loginDto: LoginInputDto = { email: user.email, password: 'invalid-password' };
 
-      await request(app.getHttpServer()).post('/api/auth/login').send(JSON.stringify(loginDto)).expect(400);
+      await request(app.getHttpServer()).post('/api/auth/login').send(loginDto).expect(400);
     });
 
     it('should login a user', async () => {
       const loginDto: LoginInputDto = user;
 
-      const response = await request(app.getHttpServer())
-        .post('/api/auth/login')
-        .send(JSON.stringify(loginDto))
-        .expect(200);
+      const response = await request(app.getHttpServer()).post('/api/auth/login').send(loginDto).expect(200);
 
       expect(response.body).toEqual(
         expect.objectContaining({
@@ -84,16 +81,13 @@ describe('AuthController', () => {
 
   describe('POST /auth/refresh', () => {
     it('should not refresh tokens with invalid refresh token', async () => {
-      await request(app.getHttpServer())
-        .post('/api/auth/refresh')
-        .send(JSON.stringify({ refreshToken: 'invalid-token' }))
-        .expect(400);
+      await request(app.getHttpServer()).post('/api/auth/refresh').send({ refreshToken: 'invalid-token' }).expect(400);
     });
 
     it('should refresh tokens', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/auth/refresh')
-        .send(JSON.stringify({ refreshToken: authTokens.refreshToken }))
+        .send({ refreshToken: authTokens.refreshToken })
         .expect(201);
 
       expect(response.body).toEqual(
@@ -137,10 +131,7 @@ describe('AuthController', () => {
     it('should login and observe user is verified', async () => {
       const loginDto: LoginInputDto = user;
 
-      const response = await request(app.getHttpServer())
-        .post('/api/auth/login')
-        .send(JSON.stringify(loginDto))
-        .expect(200);
+      const response = await request(app.getHttpServer()).post('/api/auth/login').send(loginDto).expect(200);
 
       expect(response.body).toEqual(
         expect.objectContaining({
