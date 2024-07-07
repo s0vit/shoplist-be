@@ -29,6 +29,8 @@ describe('AuthController', () => {
 
       const response = await request(app.getHttpServer()).post('/api/auth/register').send(registerDto);
 
+      console.log(response.text);
+      console.log(response.body);
       expect(response.status).toBe(201);
       expect(response.text).toMatch(/.+\..+\..+/); // JWT token
       verificationToken = response.text;
