@@ -29,7 +29,7 @@ describe('AuthController', () => {
 
       const response = await request(app.getHttpServer()).post('/api/auth/register').send(JSON.stringify(registerDto));
 
-      console.log(response.text);
+      console.log((await response.request).body);
       console.log(response.body);
       expect(response.status).toBe(201);
       expect(response.text).toMatch(/.+\..+\..+/); // JWT token
