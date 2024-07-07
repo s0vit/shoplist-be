@@ -27,15 +27,8 @@ describe('AuthController', () => {
     it('should register a user', async () => {
       const registerDto: AuthInputDto = user;
 
-      // const response = await request(app.getHttpServer()).post('/api/auth/register').send(registerDto);
-      const response = await request(app.getHttpServer())
-        .post('/api/auth/register')
-        .set('Content-Type', 'application/json')
-        .send(registerDto);
+      const response = await request(app.getHttpServer()).post('/api/auth/register').send(registerDto);
 
-      console.log('Response Headers:', response.headers);
-      console.log('Response Body:', response.body);
-      console.log('Response Text:', response.text);
       expect(response.status).toBe(201);
       expect(response.text).toMatch(/.+\..+\..+/); // JWT token
       verificationToken = response.text;
