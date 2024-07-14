@@ -1,13 +1,13 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { CurrencyRate, CurrencyRateDocument } from './models/currency-rate.model';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CURRENCIES } from './constants/currencies.enum';
-import { CURRENCY_ERROR } from './constants/currency-error.enum';
+import { InjectModel } from '@nestjs/mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Model } from 'mongoose';
+import { firstValueFrom } from 'rxjs';
+import { CURRENCIES } from '../../common/interfaces/currencies.enum';
+import { CURRENCY_ERROR } from './constants/currency-error.enum';
+import { CurrencyRate, CurrencyRateDocument } from './models/currency-rate.model';
 
 @Injectable()
 export class CurrencyService {
