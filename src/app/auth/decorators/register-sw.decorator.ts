@@ -1,5 +1,10 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiInternalServerErrorResponse,
+  ApiOperation,
+} from '@nestjs/swagger';
 import { ERROR_AUTH } from '../constants/auth-error.enum';
 
 export function RegisterSwDec() {
@@ -12,8 +17,10 @@ export function RegisterSwDec() {
         - password: string
         `,
     }),
-    ApiResponse({ status: 201, description: 'The user has been successfully created.' }),
-    ApiResponse({ status: 400, description: ERROR_AUTH.USER_ALREADY_EXISTS }),
-    ApiResponse({ status: 500, description: `${ERROR_AUTH.CREATE_USER_ERROR} or ${ERROR_AUTH.SEND_EMAIL_ERROR} ` }),
+    ApiCreatedResponse({ description: 'The user has been successfully created.', type: String }),
+    ApiBadRequestResponse({ description: ERROR_AUTH.USER_ALREADY_EXISTS }),
+    ApiInternalServerErrorResponse({
+      description: `${ERROR_AUTH.CREATE_USER_ERROR} or ${ERROR_AUTH.SEND_EMAIL_ERROR} `,
+    }),
   );
 }

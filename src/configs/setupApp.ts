@@ -1,10 +1,10 @@
 import { INestApplication } from '@nestjs/common';
-import LoggerInterceptor from '../utils/interceptors/loggerInterceptor';
+import * as cookieParser from 'cookie-parser';
 import { customValidationPipe } from '../pipes/customValidationPipe';
 import ErrorExceptionFilter from '../utils/exeptionFilters/errorExeptionFilter';
-import * as cookieParser from 'cookie-parser';
-import { setupSwagger } from './swagger.config';
+import LoggerInterceptor from '../utils/interceptors/loggerInterceptor';
 import { rootHtmlTemplate } from '../utils/templates/root-html.template';
+import { setupSwagger } from './swagger.config';
 
 export const setupApp = async (app: INestApplication) => {
   const CLIENT_URLS = process.env.CLIENT_URLS;
@@ -14,7 +14,11 @@ export const setupApp = async (app: INestApplication) => {
     const protocol = req.protocol;
     res.send(rootHtmlTemplate(host, protocol));
   });
-  app.useGlobalInterceptors(new LoggerInterceptor());
+
+  if (process.env.NODE_ENV !== 'test') {
+    app.useGlobalInterceptors(new LoggerInterceptor());
+  }
+
   app.useGlobalPipes(customValidationPipe);
   app.useGlobalFilters(new ErrorExceptionFilter());
   app.enableCors({

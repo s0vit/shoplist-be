@@ -1,23 +1,23 @@
 import { BadRequestException, Body, Controller, Delete, Get, Post, Query, Req } from '@nestjs/common';
-import { AuthInputDto } from './dto/auth-input.dto';
-import { AuthService } from './auth.service';
-import { Request } from 'express';
-import { LoginInputDto } from './dto/login-input.dto';
-import { RefreshInputDto } from './dto/refresh-input.dto';
-import { ERROR_AUTH } from './constants/auth-error.enum';
 import { ApiTags } from '@nestjs/swagger';
-import { RegisterSwDec } from './decorators/register-sw.decorator';
+import { Request } from 'express';
+import { AuthService } from './auth.service';
+import { ERROR_AUTH } from './constants/auth-error.enum';
 import { ConfirmEmailSwDec } from './decorators/confirm-email-sw.decorator';
-import { LoginSwDec } from './decorators/login-sw.decorator';
-import { RefreshTokenSwDec } from './decorators/refresh-token-sw.decorator';
-import { LogoutSwDec } from './decorators/logout-sw.decorator';
-import { LoginOutputDto } from './dto/login-output.dto';
-import { ConfirmOutputDto } from './dto/confirm-output.dto';
-import { ReRequestVerificationTokenSwDec } from './decorators/re-request-validate-token-sw.decorator';
 import { ForgotPasswordSwDec } from './decorators/forgot-password-sw.decorator';
+import { LoginSwDec } from './decorators/login-sw.decorator';
+import { LogoutSwDec } from './decorators/logout-sw.decorator';
+import { ReRequestVerificationTokenSwDec } from './decorators/re-request-validate-token-sw.decorator';
+import { RefreshTokenSwDec } from './decorators/refresh-token-sw.decorator';
+import { RegisterSwDec } from './decorators/register-sw.decorator';
 import { ResetPasswordSwDec } from './decorators/reset-password-sw.decorator';
-import { ResetPasswordDto } from './dto/reset-password.dto';
+import { AuthInputDto } from './dto/auth-input.dto';
+import { ConfirmOutputDto } from './dto/confirm-output.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { LoginInputDto } from './dto/login-input.dto';
+import { LoginOutputDto } from './dto/login-output.dto';
+import { RefreshInputDto } from './dto/refresh-input.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -26,7 +26,7 @@ export class AuthController {
 
   @RegisterSwDec()
   @Post('register')
-  async register(@Body() dto: AuthInputDto, @Req() req: Request): Promise<void> {
+  async register(@Body() dto: AuthInputDto, @Req() req: Request): Promise<string> {
     const origin = req.headers['origin'];
 
     return this.authService.register(dto, origin);
