@@ -1,15 +1,15 @@
-import { Module } from '@nestjs/common';
-import { AuthController } from './auth.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './models/user.model';
-import { AuthService } from './auth.service';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConfig } from '../../configs/jwt.config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { getMailerConfig } from '../../configs/get-mailer.config';
-import { PaymentSourcesModule } from '../payment-source/payment-sources.module';
+import { jwtConfig } from '../../configs/jwt.config';
 import { CategoryModule } from '../category/category.module';
+import { PaymentSourcesModule } from '../payment-source/payment-sources.module';
+import { User, UserSchema } from '../user/models/user.model';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 
 @Module({
   imports: [

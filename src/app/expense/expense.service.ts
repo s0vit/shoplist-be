@@ -6,15 +6,16 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ExpenseInputDto } from './dto/expense-input.dto';
-import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Expense, ExpensesDocument } from './models/expense.model';
-import { EXPENSE_ERROR } from './constants/expense-error.enum';
+import { Model } from 'mongoose';
 import { AccessControlService } from '../access-control/access-control.service';
+import { CurrencyService } from '../currency/currency.service'; // Добавлено
+import { FamilyBudgetService } from '../family-budget/family-budget.service';
+import { EXPENSE_ERROR } from './constants/expense-error.enum';
+import { ExpenseInputDto } from './dto/expense-input.dto';
 import { ExpenseOutputDto } from './dto/expense-output.dto';
 import { ExpenseQueryInputDto } from './dto/expense-query-input.dto';
-import { CurrencyService } from '../currency/currency.service'; // Добавлено
+import { Expense, ExpensesDocument } from './models/expense.model';
 
 @Injectable()
 export class ExpenseService {
@@ -23,6 +24,7 @@ export class ExpenseService {
     private readonly expensesModel: Model<Expense>,
     private readonly accessControlService: AccessControlService,
     private readonly currencyService: CurrencyService,
+    private readonly familyBudgetService: FamilyBudgetService,
   ) {}
 
   async create(inputDto: ExpenseInputDto, userId: string): Promise<ExpenseOutputDto> {
@@ -212,5 +214,15 @@ export class ExpenseService {
     } catch (error) {
       throw new HttpException(EXPENSE_ERROR.DELETE_EXPENSE_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  async getExpensesByFamilyBudgetId(familyBudgetId: string, userId: string): Promise<ExpenseOutputDto[]> {
+    const familyBudget = await this.familyBudgetService.findOne(familyBudgetId, userId);
+
+    if (!familyBudget) {
+      throw new NotFoundException(EXPENSE_ERROR.FAMILY_BUDGET_NOT_FOUND);
+    }
+
+    return this.expensesModel.find({ familyBudgetId }).select('-__v').lean();
   }
 }

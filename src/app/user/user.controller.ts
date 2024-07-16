@@ -11,22 +11,22 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { FindByOutputDto } from './dto/find-by-output.dto';
-import { GetUserByEmailSwDec } from './decorators/get-user-by-email-sw.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateDataInputDto } from './dto/create-data-input.dto';
+import { Request } from 'express';
 import { CustomRequest } from '../../common/interfaces/token.interface';
-import { QuantityInputDto } from './dto/quantity-input.dto';
 import { AccessJwtGuard } from '../../guards/access-jwt.guard';
 import { CreateRandomCategorySwDec } from './decorators/create-random-category-sw.decorator';
 import { CreateRandomExpensesSwDec } from './decorators/create-random-expenses-sw.decorator';
 import { DeleteMeSwDec } from './decorators/delete-me-sw.decorator';
-import { Request } from 'express';
-import { UploadAvatarSwDec } from './decorators/upload-avatar-sw.decorator';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { UserDocument } from '../auth/models/user.model';
+import { GetUserByEmailSwDec } from './decorators/get-user-by-email-sw.decorator';
 import { GetUserByIdSwDeC } from './decorators/get-user-by-id-sw.decorator';
+import { UploadAvatarSwDec } from './decorators/upload-avatar-sw.decorator';
+import { CreateDataInputDto } from './dto/create-data-input.dto';
+import { FindByOutputDto } from './dto/find-by-output.dto';
+import { QuantityInputDto } from './dto/quantity-input.dto';
+import { UserDocument } from './models/user.model';
+import { UserService } from './user.service';
 
 @ApiTags('User')
 @Controller('user')

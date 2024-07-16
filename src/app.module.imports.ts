@@ -8,6 +8,7 @@ import { CategoryModule } from './app/category/category.module';
 import { CloudinaryModule } from './app/cloudinary/cloudinary.module';
 import { CurrencyModule } from './app/currency/currency.module';
 import { ExpenseModule } from './app/expense/expense.module';
+import { FamilyBudgetModule } from './app/family-budget/family-budget.module';
 import { PaymentSourcesModule } from './app/payment-source/payment-sources.module';
 import { UserConfigModule } from './app/user-config/user-config.module';
 import { UserModule } from './app/user/user.module';
@@ -35,4 +36,5 @@ export const appModuleImports: ModuleMetadata['imports'] = [
   CloudinaryModule,
   CurrencyModule,
   UserConfigModule,
+  FamilyBudgetModule,
 ];

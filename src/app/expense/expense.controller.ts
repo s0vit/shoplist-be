@@ -17,6 +17,7 @@ import { DeleteExpenseSwDec } from './decorators/delete-expense-sw.decorator';
 import { GetExpenseByIdsSwDec } from './decorators/get-expense-by-ids-sw.decorator';
 import { GetByCategorySwDec } from './decorators/get-expense-by-category-sw.decorator';
 import { GetByPaymentSourceSwDec } from './decorators/get-expense-by-ps-sw.decorator';
+import { GetExpenseByFamilyBudgetSwDec } from './decorators/get-expense-by-family-budget-id-se.decorator';
 
 @UseGuards(AccessJwtGuard)
 @ApiTags('Expense')
@@ -89,5 +90,14 @@ export class ExpenseController {
     @Req() req: CustomRequest,
   ): Promise<ExpenseOutputDto> {
     return this.expenseService.delete(expenseId, req.user.userId);
+  }
+
+  @GetExpenseByFamilyBudgetSwDec()
+  @Get('family-budget/:familyBudgetId')
+  async getByFamilyBudget(
+    @Param('familyBudgetId') familyBudgetId: string,
+    @Req() req: CustomRequest,
+  ): Promise<ExpenseOutputDto[]> {
+    return this.expenseService.getExpensesByFamilyBudgetId(familyBudgetId, req.user.userId);
   }
 }

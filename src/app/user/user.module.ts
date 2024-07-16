@@ -1,17 +1,17 @@
 import { Module } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from '../auth/models/user.model';
-import { Category, CategorySchema } from '../category/models/category.model';
-import { UtilsService } from '../../common/utils/utils.service';
-import { PaymentSource, PaymentSourceSchema } from '../payment-source/models/payment-source.model';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ExpansesSchema, Expense } from '../expense/models/expense.model';
-import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
+import { MongooseModule } from '@nestjs/mongoose';
+import { UtilsService } from '../../common/utils/utils.service';
 import { jwtConfig } from '../../configs/jwt.config';
+import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
+import { Category, CategorySchema } from '../category/models/category.model';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { ExpansesSchema, Expense } from '../expense/models/expense.model';
+import { PaymentSource, PaymentSourceSchema } from '../payment-source/models/payment-source.model';
+import { User, UserSchema } from './models/user.model';
+import { UserController } from './user.controller';
+import { UserService } from './user.service';
 
 @Module({
   imports: [
