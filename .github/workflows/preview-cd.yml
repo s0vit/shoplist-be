@@ -116,9 +116,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y sshpass
-          npm install -g pm2
-          sshpass -p "${SSH_PASSWORD}" scp -o StrictHostKeyChecking=no -r ./* ${SSH_USER}@${SSH_HOST}:/var/www/shoplist-be
-          sshpass -p "${SSH_PASSWORD}" ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "pm2 stop all || true && pm2 start /var/www/shoplist-be/dist/main.js --name shoplist-be -- -p 5555"
+          sshpass -p "${SSH_PASSWORD}" rsync -avz --exclude 'node_modules/' --exclude '.git/' --exclude '.github/' -e "ssh -o StrictHostKeyChecking=no" ./ ${SSH_USER}@${SSH_HOST}:/var/www/shoplist-be
+          sshpass -p "${SSH_PASSWORD}" ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} << 'EOF'
+            cd /var/www/shoplist-be
+            pnpm install --production
+            pm2 stop shoplist-be || true
+            pm2 start dist/main.js --name shoplist-be -- -p 5555
+            EOF
 
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
