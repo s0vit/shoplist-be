@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CustomRequest } from 'src/common/interfaces/token.interface';
 import { AccessJwtGuard } from '../../guards/access-jwt.guard';
 import { CreateFamilyBudgetSwDec } from './decorators/create-family-budget-sw.decorator';
+import { DeleteFamilyBudgetSwDec } from './decorators/delete-family-budget-sw.decorator';
+import { GetFamilyBudgetSwDec } from './decorators/get-all-family-budget-sw.decorator';
 import { GetFamilyBudgetByIdSwDec } from './decorators/get-family-budget-sw.decorator';
 import { UpdateFamilyBudgetSwDec } from './decorators/update-family-budget-sw.decorator';
 import { CreateFamilyBudgetDto } from './dto/family-budget-input.dto';
@@ -21,6 +23,12 @@ export class FamilyBudgetController {
     return this.familyBudgetService.create(createFamilyBudgetDto, req.user.userId);
   }
 
+  @GetFamilyBudgetSwDec()
+  @Get()
+  async findAll(@Req() req: CustomRequest) {
+    return this.familyBudgetService.findAll(req.user.userId);
+  }
+
   @GetFamilyBudgetByIdSwDec()
   @Get(':id')
   async findOne(@Param('id') id: string, @Req() req: CustomRequest) {
@@ -35,5 +43,11 @@ export class FamilyBudgetController {
     @Req() req: CustomRequest,
   ) {
     return this.familyBudgetService.update(id, updateFamilyBudgetDto, req.user.userId);
+  }
+
+  @DeleteFamilyBudgetSwDec()
+  @Delete(':id')
+  async remove(@Param('id') id: string, @Req() req: CustomRequest) {
+    return this.familyBudgetService.remove(id, req.user.userId);
   }
 }

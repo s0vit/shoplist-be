@@ -21,6 +21,10 @@ export class FamilyBudgetService {
     return createdFamilyBudget.save();
   }
 
+  async findAll(userId: string): Promise<FamilyBudget[]> {
+    return this.familyBudgetModel.find({ $or: [{ ownerId: userId }, { members: userId }] }).exec();
+  }
+
   async findOne(id: string, userId: string): Promise<FamilyBudget> {
     const familyBudget = await this.familyBudgetModel
       .findOne({ _id: id, $or: [{ ownerId: userId }, { members: userId }] })
@@ -43,5 +47,15 @@ export class FamilyBudgetService {
     }
 
     return updatedFamilyBudget;
+  }
+
+  async remove(id: string, userId: string): Promise<FamilyBudget> {
+    const deletedFamilyBudget = await this.familyBudgetModel.findOneAndDelete({ _id: id, ownerId: userId }).exec();
+
+    if (!deletedFamilyBudget) {
+      throw new NotFoundException(`FamilyBudget with id ${id} not found`);
+    }
+
+    return deletedFamilyBudget;
   }
 }
