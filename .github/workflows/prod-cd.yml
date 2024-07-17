@@ -19,21 +19,16 @@ jobs:
 
       - name: Install Vercel CLI
         run: pnpm install --global vercel@latest
+
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
       - name: Build Local Artefacts
         run: pnpm install && pnpm build
-      - name: Copy Build Artefacts to VPS
-        env:
-          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y sshpass
-          sshpass -p "${SSH_PASSWORD}" scp -o StrictHostKeyChecking=no -r ./dist/* ${SSH_USER}@${SSH_HOST}:/var/www/shoplist-be
+
       - name: Build Project Artifacts
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
       - name: Deploy Project Artifacts to Vercel and get Preview URL
         id: deploy
         run: |
