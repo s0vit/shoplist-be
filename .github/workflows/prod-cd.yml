@@ -26,6 +26,50 @@ jobs:
       - name: Build Local Artefacts
         run: pnpm install && pnpm build
 
+      - name: Generate env file
+        run: |
+          echo "DB_ADMIN_NAME=${DB_ADMIN_NAME}" >> .env
+          echo "DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}" >> .env
+          echo "SECRET_KEY=${SECRET_KEY}" >> .env
+          echo "DB_NAME=${DB_NAME}" >> .env
+          echo "TEST_DB_NAME=${TEST_DB_NAME}" >> .env
+          echo "EMAIL_LOGIN=${EMAIL_LOGIN}" >> .env
+          echo "EMAIL_PASS=${EMAIL_PASS}" >> .env
+          echo "SMTP_HOST=${SMTP_HOST}" >> .env
+          echo "SMTP_PORT=${SMTP_PORT}" >> .env
+          echo "SMTP_USER=${SMTP_USER}" >> .env
+          echo "SMTP_PASSWORD=${SMTP_PASSWORD}" >> .env
+          echo "MAIL_FROM=${MAIL_FROM}" >> .env
+          echo "REGISTER_TOKEN_KEY=${REGISTER_TOKEN_KEY}" >> .env
+          echo "ACCESS_TOKEN_KEY=${ACCESS_TOKEN_KEY}" >> .env
+          echo "REFRESH_TOKEN_KEY=${REFRESH_TOKEN_KEY}" >> .env
+          echo "CLIENT_URLS=${CLIENT_URLS}" >> .env
+
+      - name: Copy Build Artefacts and .env to VPS
+        env:
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+          sshpass -p "${SSH_PASSWORD}" rsync -avz --exclude 'node_modules/' --exclude '.git/' --exclude '.github/' -e "ssh -o StrictHostKeyChecking=no" ./ ${SSH_USER}@${SSH_HOST}:/var/www/shoplist-be
+
+      - name: Restart Application
+        env:
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          sshpass -p "${SSH_PASSWORD}" ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
+          export PATH=$PATH:/root/.nvm/versions/node/v20.15.1/bin &&
+          cd /var/www/shoplist-be &&
+          pnpm install --production &&
+          pm2 delete shoplist-be || true &&
+          pm2 stop shoplist-be || true &&
+          pm2 start /var/www/shoplist-be/main.js --name shoplist-be -- -p 5555 &&
+          pm2 save"
+
       - name: Build Project Artifacts
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
