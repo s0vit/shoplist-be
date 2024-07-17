@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateFamilyBudgetDto } from './dto/family-budget-input.dto';
@@ -13,16 +13,21 @@ export class FamilyBudgetService {
     const existingFamilyBudget = await this.familyBudgetModel.findOne({ name: createFamilyBudgetDto.name }).exec();
 
     if (existingFamilyBudget) {
-      throw new NotFoundException(`FamilyBudget with name ${createFamilyBudgetDto.name} already exists`);
+      throw new BadRequestException(`FamilyBudget with name ${createFamilyBudgetDto.name} already exists`);
     }
 
-    const createdFamilyBudget = new this.familyBudgetModel({ ...createFamilyBudgetDto, userId });
+    const createdFamilyBudget = new this.familyBudgetModel({ ...createFamilyBudgetDto, ownerId: userId });
 
-    return createdFamilyBudget.save();
+    const savedFamilyBudget = await createdFamilyBudget.save();
+
+    return savedFamilyBudget.toObject({ versionKey: false });
   }
 
   async findAll(userId: string): Promise<FamilyBudget[]> {
-    return this.familyBudgetModel.find({ $or: [{ ownerId: userId }, { members: userId }] }).exec();
+    return this.familyBudgetModel
+      .find({ $or: [{ ownerId: userId }, { members: userId }] })
+      .select('-__v')
+      .exec();
   }
 
   async findOne(id: string, userId: string): Promise<FamilyBudget> {

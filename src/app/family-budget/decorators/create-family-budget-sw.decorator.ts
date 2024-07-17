@@ -1,7 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOperation } from '@nestjs/swagger';
-import { FamilyBudget } from '../models/family-budget.model';
 import { CreateFamilyBudgetDto } from '../dto/family-budget-input.dto';
+import { FamilyBudget } from '../models/family-budget.model';
 
 export function CreateFamilyBudgetSwDec() {
   return applyDecorators(
@@ -22,6 +22,10 @@ export function CreateFamilyBudgetSwDec() {
       description: `
       Created: The family budget has been successfully created.`,
       type: FamilyBudget,
+    }),
+    ApiBadRequestResponse({
+      description: `
+        FamilyBudget with name already exists.`,
     }),
     ApiBadRequestResponse({
       description: `
