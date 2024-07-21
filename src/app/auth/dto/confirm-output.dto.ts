@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserDocument } from '../models/user.model';
+import { UserDocument } from '../../user/models/user.model';
 
 export class ConfirmOutputDto {
   @ApiProperty({

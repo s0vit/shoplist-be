@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsMongoId, IsOptional, IsPositive, IsString, Length } from 'class-validator';
 import { CURRENCIES } from '../../../common/interfaces/currencies.enum';
+import { Types } from 'mongoose';
 
 export class ExpenseInputDto {
   @ApiProperty({
@@ -57,4 +58,13 @@ export class ExpenseInputDto {
   })
   @IsOptional()
   updatedAt?: Date;
+
+  @ApiProperty({
+    example: '60c72b2f9b1e8e1f88f4e1f4',
+    description: 'Family budget ID',
+    required: false,
+  })
+  @IsOptional()
+  @IsMongoId()
+  familyBudgetId?: Types.ObjectId;
 }

@@ -5,4 +5,5 @@ export enum EXPENSE_ERROR {
   GET_OWN_EXPENSE = 'You are trying to get own expenses',
   GET_SHARED_EXPENSE = 'Error shared expenses...',
   DELETE_EXPENSE_ERROR = 'Error during deleting expenses...',
+  FAMILY_BUDGET_NOT_FOUND = 'Family budget with such id not found',
 }

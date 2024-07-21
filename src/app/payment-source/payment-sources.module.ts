@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { PaymentSourceController } from './payment-source.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { PaymentSource, PaymentSourceSchema } from './models/payment-source.model';
-import { PaymentSourceService } from './payment-source.service';
-import { User, UserSchema } from '../auth/models/user.model';
-import { UtilsService } from '../../common/utils/utils.service';
 import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { UtilsService } from '../../common/utils/utils.service';
 import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
+import { User, UserSchema } from '../user/models/user.model';
+import { PaymentSource, PaymentSourceSchema } from './models/payment-source.model';
+import { PaymentSourceController } from './payment-source.controller';
+import { PaymentSourceService } from './payment-source.service';
 
 @Module({
   controllers: [PaymentSourceController],

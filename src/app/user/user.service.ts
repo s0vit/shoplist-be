@@ -7,22 +7,22 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { User, UserDocument } from '../auth/models/user.model';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { FindByOutputDto } from './dto/find-by-output.dto';
-import { CreateDataInputDto } from './dto/create-data-input.dto';
-import { QuantityInputDto } from './dto/quantity-input.dto';
-import { Category, CategoryDocument } from '../category/models/category.model';
-import { CategoryOutputDto } from '../category/dto/category-output.dto';
-import { UtilsService } from '../../common/utils/utils.service';
-import { PaymentSource, PaymentSourceDocument } from '../payment-source/models/payment-source.model';
-import { ConfigService } from '@nestjs/config';
-import { USER_ERROR } from './constants/user-error.enum';
-import { Expense } from '../expense/models/expense.model';
-import { JwtService } from '@nestjs/jwt';
 import { TokenPayload } from '../../common/interfaces/token.interface';
+import { UtilsService } from '../../common/utils/utils.service';
+import { CategoryOutputDto } from '../category/dto/category-output.dto';
+import { Category, CategoryDocument } from '../category/models/category.model';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { Expense } from '../expense/models/expense.model';
+import { PaymentSource, PaymentSourceDocument } from '../payment-source/models/payment-source.model';
+import { USER_ERROR } from './constants/user-error.enum';
+import { CreateDataInputDto } from './dto/create-data-input.dto';
+import { FindByOutputDto } from './dto/find-by-output.dto';
+import { QuantityInputDto } from './dto/quantity-input.dto';
+import { User, UserDocument } from './models/user.model';
 
 @Injectable()
 export class UserService {

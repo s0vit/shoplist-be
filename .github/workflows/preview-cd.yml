@@ -4,6 +4,23 @@ env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
   PROJECTS_ROOT: 'itbalis-projects'
+  DB_ADMIN_NAME: ${{ secrets.DB_ADMIN_NAME }}
+  DB_ADMIN_PASSWORD: ${{ secrets.DB_ADMIN_PASSWORD }}
+  SECRET_KEY: ${{ secrets.SECRET_KEY }}
+  DB_NAME: ${{ secrets.DB_NAME }}
+  TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
+  EMAIL_LOGIN: ${{ secrets.EMAIL_LOGIN }}
+  EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+  SMTP_HOST: ${{ secrets.SMTP_HOST }}
+  SMTP_PORT: ${{ secrets.SMTP_PORT }}
+  SMTP_USER: ${{ secrets.SMTP_USER }}
+  SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+  MAIL_FROM: ${{ secrets.MAIL_FROM }}
+  REGISTER_TOKEN_KEY: ${{ secrets.REGISTER_TOKEN_KEY }}
+  ACCESS_TOKEN_KEY: ${{ secrets.ACCESS_TOKEN_KEY }}
+  REFRESH_TOKEN_KEY: ${{ secrets.REFRESH_TOKEN_KEY }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  CLIENT_URLS: ${{ secrets.CLIENT_URLS }}
 
 on:
   pull_request:
@@ -82,24 +99,6 @@ jobs:
         run: pnpm format
 
       - name: Test project
-        env:
-          DB_ADMIN_NAME: ${{ secrets.DB_ADMIN_NAME }}
-          DB_ADMIN_PASSWORD: ${{ secrets.DB_ADMIN_PASSWORD }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
-          EMAIL_LOGIN: ${{ secrets.EMAIL_LOGIN }}
-          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          MAIL_FROM: ${{ secrets.MAIL_FROM }}
-          REGISTER_TOKEN_KEY: ${{ secrets.REGISTER_TOKEN_KEY }}
-          ACCESS_TOKEN_KEY: ${{ secrets.ACCESS_TOKEN_KEY }}
-          REFRESH_TOKEN_KEY: ${{ secrets.REFRESH_TOKEN_KEY }}
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          CLIENT_URLS: ${{ secrets.CLIENT_URLS }}
         run: pnpm test
 
       - name: Build project

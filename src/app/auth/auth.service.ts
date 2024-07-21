@@ -17,11 +17,11 @@ import { confirmEmailTemplate } from '../../utils/templates/confirm-email.templa
 import { resetPasswordTemplate } from '../../utils/templates/reset-password.template';
 import { CategoryService } from '../category/category.service';
 import { PaymentSourceService } from '../payment-source/payment-source.service';
+import { User, UserDocument } from '../user/models/user.model';
 import { ERROR_AUTH } from './constants/auth-error.enum';
 import { AuthInputDto } from './dto/auth-input.dto';
 import { ConfirmOutputDto } from './dto/confirm-output.dto';
 import { LoginOutputDto } from './dto/login-output.dto';
-import { User, UserDocument } from './models/user.model';
 
 @Injectable()
 export class AuthService {
