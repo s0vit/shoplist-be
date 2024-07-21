@@ -6,13 +6,13 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Model } from 'mongoose';
-import { AccessControl, AccessControlDocument } from './models/access-control.model';
-import { AccessControlInputDto } from './dto/access-control-input.dto';
 import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { ACCESS_CONTROL_ERROR } from './constants/access-control-error.enum';
+import { AccessControlInputDto } from './dto/access-control-input.dto';
 import { AccessControlOutputDto } from './dto/access-control-output.dto';
 import { DeleteMeFromSharedInputDto } from './dto/delete-me-from-shared-input.dto';
+import { AccessControl, AccessControlDocument } from './models/access-control.model';
 
 @Injectable()
 export class AccessControlService {
@@ -43,13 +43,50 @@ export class AccessControlService {
       });
 
       if (existingAccessControl) {
+        if (
+          existingAccessControl.expenseIds &&
+          dto.expenseIds &&
+          dto.expenseIds.some((id) => existingAccessControl.expenseIds.includes(id))
+        ) {
+          throw new ForbiddenException(ACCESS_CONTROL_ERROR.DUPLICATE_EXPENSES);
+        }
+
+        if (
+          existingAccessControl.categoryIds &&
+          dto.categoryIds &&
+          dto.categoryIds.some((id) => existingAccessControl.categoryIds.includes(id))
+        ) {
+          throw new ForbiddenException(ACCESS_CONTROL_ERROR.DUPLICATE_CATEGORIES);
+        }
+
+        if (
+          existingAccessControl.paymentSourceIds &&
+          dto.paymentSourceIds &&
+          dto.paymentSourceIds.some((id) => existingAccessControl.paymentSourceIds.includes(id))
+        ) {
+          throw new ForbiddenException(ACCESS_CONTROL_ERROR.DUPLICATE_PAYMENT_SOURCES);
+        }
+
         // if the owner has already shared access with the user, update the access
+        // TODO Simplify this code
         existingAccessControl.set({
           ownerId: userId,
           sharedWith: dto.sharedWith,
-          expenseIds: [...existingAccessControl.expenseIds, ...dto.expenseIds],
-          categoryIds: [...existingAccessControl.categoryIds, ...dto.categoryIds],
-          paymentSourceIds: [...existingAccessControl.paymentSourceIds, ...dto.paymentSourceIds],
+          expenseIds: dto.expenseIds
+            ? existingAccessControl.expenseIds
+              ? [...existingAccessControl.expenseIds, ...dto.expenseIds]
+              : dto.expenseIds
+            : existingAccessControl.expenseIds,
+          categoryIds: dto.categoryIds
+            ? existingAccessControl.categoryIds
+              ? [...existingAccessControl.categoryIds, ...dto.categoryIds]
+              : dto.categoryIds
+            : existingAccessControl.categoryIds,
+          paymentSourceIds: dto.paymentSourceIds
+            ? existingAccessControl.paymentSourceIds
+              ? [...existingAccessControl.paymentSourceIds, ...dto.paymentSourceIds]
+              : dto.paymentSourceIds
+            : existingAccessControl.paymentSourceIds,
           updatedAt: new Date(),
         });
 
