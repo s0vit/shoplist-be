@@ -1,5 +1,14 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiForbiddenResponse,
+  ApiInternalServerErrorResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { ACCESS_CONTROL_ERROR } from '../constants/access-control-error.enum';
 import { AccessControlInputDto } from '../dto/access-control-input.dto';
 import { AccessControlOutputDto } from '../dto/access-control-output.dto';
 
@@ -16,18 +25,24 @@ export function CreateAccessControlSwDec() {
       description: 'DTO with access control data',
       type: AccessControlInputDto,
     }),
-    ApiResponse({
-      status: 201,
+    ApiOkResponse({
       description: 'Create access control success',
       type: AccessControlOutputDto,
     }),
-    ApiResponse({
-      status: 401,
-      description: 'Unauthorized',
+    ApiUnauthorizedResponse({
+      description: ACCESS_CONTROL_ERROR.FORBIDDEN,
     }),
-    ApiResponse({
-      status: 500,
-      description: 'Internal server error',
+    ApiForbiddenResponse({
+      description: `
+      error messages:
+        - ${ACCESS_CONTROL_ERROR.CREATE_ACCESS_ERROR}
+        - ${ACCESS_CONTROL_ERROR.OWN_ACCESS_ERROR}
+        - ${ACCESS_CONTROL_ERROR.DUPLICATE_EXPENSES}
+        - ${ACCESS_CONTROL_ERROR.DUPLICATE_CATEGORIES}
+        - ${ACCESS_CONTROL_ERROR.DUPLICATE_PAYMENT_SOURCES}`,
+    }),
+    ApiInternalServerErrorResponse({
+      description: ACCESS_CONTROL_ERROR.CREATE_ACCESS_ERROR,
     }),
   );
 }
