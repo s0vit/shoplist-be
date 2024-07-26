@@ -25,16 +25,23 @@ export class UserConfigService {
   }
 
   async getConfig(userId: string): Promise<UserConfigOutputDto> {
-    const userConfig = await this.userConfigModel.findOne({ userId });
+    const userConfig = await this.userConfigModel.findOne({ userId }).select('-userId');
 
     if (!userConfig) {
       throw new ConflictException(USER_CONFIG_ERROR.USER_CONFIG_NOT_FOUND);
     }
 
-    return userConfig.toObject({ versionKey: false });
+    return userConfig.toObject({
+      versionKey: false,
+      transform: (_doc, ret) => {
+        delete ret.userId;
+
+        return ret;
+      },
+    });
   }
 
   async updateConfig(updateConfigDto: UserConfigInputDto, userId: string, id: string): Promise<UserConfigOutputDto> {
-    return this.userConfigModel.findOneAndUpdate({ userId, _id: id }, updateConfigDto, { new: true });
+    return this.userConfigModel.findOneAndUpdate({ userId, _id: id }, updateConfigDto, { new: true }).select('-userId');
   }
 }
