@@ -29,8 +29,17 @@ export class ExpenseService {
 
   async create(inputDto: ExpenseInputDto, userId: string): Promise<ExpenseOutputDto> {
     try {
-      // get current exchange rates
-      const currentRates = await this.currencyService.getRatesByDate(new Date(inputDto.createdAt));
+      // get current exchange rates to USD
+      const currentRates = (await this.currencyService.getRatesByDate(new Date(inputDto.createdAt))).rates;
+
+      // recalculate currencyRate to expense currency
+      const currentCurrencyRate = currentRates[inputDto.currency];
+
+      for (const currency in currentRates) {
+        if (currentRates.hasOwnProperty(currency)) {
+          currentRates[currency] = currentRates[currency] / currentCurrencyRate;
+        }
+      }
 
       const newExpansesInstance = new this.expensesModel({
         userId: userId,
@@ -40,7 +49,7 @@ export class ExpenseService {
         comments: inputDto.comments,
         createdAt: inputDto.createdAt,
         currency: inputDto.currency,
-        exchangeRates: currentRates.rates,
+        exchangeRates: currentRates,
       });
       const createdExpanse = await newExpansesInstance.save();
 
