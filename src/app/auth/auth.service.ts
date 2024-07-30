@@ -252,4 +252,24 @@ export class AuthService {
       throw new NotFoundException(ERROR_AUTH.NOT_FOUND_USER);
     }
   }
+
+  async changePassword(userId: string, oldPassword: string, newPassword: string) {
+    const foundUser = await this.userModel.findById(userId).exec();
+    const validPassword = await compare(oldPassword, foundUser.passwordHash);
+
+    if (!validPassword) {
+      throw new BadRequestException(ERROR_AUTH.WRONG_PASSWORD);
+    }
+
+    const isSamePassword = await compare(newPassword, foundUser.passwordHash);
+
+    if (isSamePassword) {
+      throw new BadRequestException(ERROR_AUTH.SAME_PASSWORD);
+    }
+
+    const salt = await genSalt(10);
+    const passwordHash = await hash(newPassword, salt);
+
+    await this.userModel.findByIdAndUpdate(userId, { $set: { passwordHash } }).exec();
+  }
 }
