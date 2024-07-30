@@ -42,6 +42,8 @@ export class UserConfigService {
   }
 
   async updateConfig(updateConfigDto: UserConfigInputDto, userId: string, id: string): Promise<UserConfigOutputDto> {
-    return this.userConfigModel.findOneAndUpdate({ userId, _id: id }, updateConfigDto, { new: true }).select('-userId');
+    return this.userConfigModel
+      .findOneAndUpdate({ userId, _id: id }, updateConfigDto, { new: true })
+      .select('-userId -__v');
   }
 }

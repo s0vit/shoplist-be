@@ -14,7 +14,6 @@ import { compare, genSalt, hash } from 'bcryptjs';
 import { Model } from 'mongoose';
 import { TokenPayload } from 'src/common/interfaces/token.interface';
 import { confirmEmailTemplate } from '../../utils/templates/confirm-email.template';
-import { resetPasswordTemplate } from '../../utils/templates/reset-password.template';
 import { CategoryService } from '../category/category.service';
 import { PaymentSourceService } from '../payment-source/payment-source.service';
 import { User, UserDocument } from '../user/models/user.model';
@@ -216,7 +215,7 @@ export class AuthService {
       await this.mailerService.sendMail({
         to: user.email,
         subject: 'Confirm your registration',
-        html: resetPasswordTemplate(resetLink),
+        html: confirmEmailTemplate(confirmToken, resetLink),
       });
     } catch (error) {
       throw new HttpException(ERROR_AUTH.SEND_EMAIL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
