@@ -13,4 +13,6 @@ export enum ERROR_AUTH {
   CONFIRM_REGISTRATION_CONFLICT = 'User not found or incorrect email',
   TOO_MANY_REQUESTS = 'Too Many Requests',
   CREATE_USER_ERROR = 'Error creating user',
+  WRONG_PASSWORD = 'Wrong password',
+  SAME_PASSWORD = 'New password must be different from the old one',
 }

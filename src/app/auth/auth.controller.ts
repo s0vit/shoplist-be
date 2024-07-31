@@ -1,6 +1,8 @@
-import { BadRequestException, Body, Controller, Delete, Get, Post, Query, Req } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
+import { CustomRequest } from 'src/common/interfaces/token.interface';
+import { AccessJwtGuard } from 'src/guards/access-jwt.guard';
 import { AuthService } from './auth.service';
 import { ERROR_AUTH } from './constants/auth-error.enum';
 import { ConfirmEmailSwDec } from './decorators/confirm-email-sw.decorator';
@@ -11,6 +13,7 @@ import { ReRequestVerificationTokenSwDec } from './decorators/re-request-validat
 import { RefreshTokenSwDec } from './decorators/refresh-token-sw.decorator';
 import { RegisterSwDec } from './decorators/register-sw.decorator';
 import { ResetPasswordSwDec } from './decorators/reset-password-sw.decorator';
+import { SetNewPasswordSwDec } from './decorators/set-new-password-sw.decorator';
 import { AuthInputDto } from './dto/auth-input.dto';
 import { ConfirmOutputDto } from './dto/confirm-output.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -18,6 +21,7 @@ import { LoginInputDto } from './dto/login-input.dto';
 import { LoginOutputDto } from './dto/login-output.dto';
 import { RefreshInputDto } from './dto/refresh-input.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SetNewPasswordDto } from './dto/set-new-password.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -84,5 +88,14 @@ export class AuthController {
     const accessToken = req.headers['authorization']?.split(' ')?.[1];
     if (!accessToken) throw new BadRequestException(ERROR_AUTH.AUTH_ERROR_NO_TOKEN);
     await this.authService.logout(accessToken);
+  }
+
+  @UseGuards(AccessJwtGuard)
+  @SetNewPasswordSwDec()
+  @Put('change-password')
+  async changePassword(@Body() dto: SetNewPasswordDto, @Req() req: CustomRequest): Promise<void> {
+    const userId = req.user.userId;
+
+    return await this.authService.changePassword(userId, dto.oldPassword, dto.newPassword);
   }
 }
