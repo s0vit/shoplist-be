@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
 import { CURRENCIES } from 'src/common/interfaces/currencies.enum';
 import { LANGUAGES } from 'src/common/interfaces/languages.enum';
 import { THEME_ENUM } from '../constants/theme.enum';
@@ -77,4 +77,12 @@ export class UserConfigInputDto {
   })
   @IsBoolean()
   showSharedSources: boolean;
+
+  @ApiProperty({
+    type: Boolean,
+    description: 'Show expenses in each currency',
+  })
+  @IsOptional()
+  @IsBoolean()
+  showExpensesInEachCurrency?: boolean;
 }

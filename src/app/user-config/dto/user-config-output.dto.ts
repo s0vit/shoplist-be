@@ -72,4 +72,10 @@ export class UserConfigOutputDto {
     description: 'Show shared sources',
   })
   showSharedSources: boolean;
+
+  @ApiProperty({
+    type: Boolean,
+    description: 'Show expenses in each currency',
+  })
+  showExpensesInEachCurrency: boolean;
 }

@@ -39,6 +39,9 @@ export class UserConfig {
 
   @Prop({ required: true })
   showSourceColours: boolean;
+
+  @Prop({ required: false })
+  showExpensesInEachCurrency?: boolean;
 }
 
 export const UserConfigSchema = SchemaFactory.createForClass(UserConfig);
