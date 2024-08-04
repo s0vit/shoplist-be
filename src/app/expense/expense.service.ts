@@ -46,7 +46,7 @@ export class ExpenseService {
         comments: inputDto.comments,
         createdAt: inputDto.createdAt,
         currency: inputDto.currency,
-        exchangeRates: currentRates,
+        exchangeRates: currentCurrencyRate,
       });
       const createdExpanse = await newExpansesInstance.save();
 
