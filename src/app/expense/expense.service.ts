@@ -33,10 +33,7 @@ export class ExpenseService {
       const currentRates = (await this.currencyService.getRatesByDate(new Date(inputDto.createdAt))).rates;
 
       // recalculate currencyRate to expense currency
-      const currentCurrencyRate = this.currencyService.recalculateCurrencyRate(
-        inputDto.currency,
-        currentRates,
-      );
+      const currentCurrencyRate = this.currencyService.recalculateCurrencyRate(inputDto.currency, currentRates);
 
       const newExpansesInstance = new this.expensesModel({
         userId: userId,

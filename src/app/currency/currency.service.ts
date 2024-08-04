@@ -85,7 +85,6 @@ export class CurrencyService {
     return rate;
   }
 
-
   recalculateCurrencyRate(currency: CURRENCIES, rates: Record<CURRENCIES, number>): Record<CURRENCIES, number> {
     const currentCurrencyRate = rates[currency];
 
@@ -95,6 +94,6 @@ export class CurrencyService {
       }
     }
 
-    return rates
+    return rates;
   }
 }
