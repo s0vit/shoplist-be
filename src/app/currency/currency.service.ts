@@ -84,4 +84,16 @@ export class CurrencyService {
 
     return rate;
   }
+
+  recalculateCurrencyRate(currency: CURRENCIES, rates: Record<CURRENCIES, number>): Record<CURRENCIES, number> {
+    const currentCurrencyRate = rates[currency];
+
+    for (const currency in rates) {
+      if (rates.hasOwnProperty(currency)) {
+        rates[currency] = rates[currency] / currentCurrencyRate;
+      }
+    }
+
+    return rates;
+  }
 }

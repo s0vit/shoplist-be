@@ -33,13 +33,7 @@ export class ExpenseService {
       const currentRates = (await this.currencyService.getRatesByDate(new Date(inputDto.createdAt))).rates;
 
       // recalculate currencyRate to expense currency
-      const currentCurrencyRate = currentRates[inputDto.currency];
-
-      for (const currency in currentRates) {
-        if (currentRates.hasOwnProperty(currency)) {
-          currentRates[currency] = currentRates[currency] / currentCurrencyRate;
-        }
-      }
+      const currentCurrencyRate = this.currencyService.recalculateCurrencyRate(inputDto.currency, currentRates);
 
       const newExpansesInstance = new this.expensesModel({
         userId: userId,
@@ -49,7 +43,7 @@ export class ExpenseService {
         comments: inputDto.comments,
         createdAt: inputDto.createdAt,
         currency: inputDto.currency,
-        exchangeRates: currentRates,
+        exchangeRates: currentCurrencyRate,
       });
       const createdExpanse = await newExpansesInstance.save();
 
@@ -200,6 +194,11 @@ export class ExpenseService {
 
     if (inputDto.createdAt && inputDto.createdAt !== foundExpanse.createdAt) {
       exchangeRates = (await this.currencyService.getRatesByDate(new Date(inputDto.createdAt))).rates;
+    }
+
+    //if currency is changed, we need to recalculate exchange rates
+    if (inputDto.currency && inputDto.currency !== foundExpanse.currency) {
+      exchangeRates = this.currencyService.recalculateCurrencyRate(inputDto.currency, exchangeRates);
     }
 
     return this.expensesModel.findByIdAndUpdate(expensesId, { ...inputDto, exchangeRates }, { new: true }).lean();
