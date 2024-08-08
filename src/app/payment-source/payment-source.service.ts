@@ -99,21 +99,27 @@ export class PaymentSourceService {
       { title: 'Debit Card', color: '#008000' },
     ];
 
-    for (const paymentSource of defaultPaymentSources) {
-      const titleToSearch = this.utilsService.createTitleRegex(paymentSource.title);
-      const existingPaymentSourceForCurrentUser = await this.paymentSourceModel.findOne({
-        title: titleToSearch,
-        userId,
-      });
+    const titlesToSearch = defaultPaymentSources.map((paymentSource) =>
+      this.utilsService.createTitleRegex(paymentSource.title),
+    );
 
-      if (existingPaymentSourceForCurrentUser) continue;
-      const newPaymentSource = new this.paymentSourceModel({
+    const existingPaymentSources = await this.paymentSourceModel.find({
+      title: { $in: titlesToSearch },
+      userId,
+    });
+
+    const existingTitles = new Set(existingPaymentSources.map((source) => source.title));
+
+    const newPaymentSources = defaultPaymentSources
+      .filter((paymentSource) => !existingTitles.has(paymentSource.title))
+      .map((paymentSource) => ({
         title: paymentSource.title,
         userId,
         color: paymentSource.color,
-      });
+      }));
 
-      await newPaymentSource.save();
+    if (newPaymentSources.length > 0) {
+      await this.paymentSourceModel.insertMany(newPaymentSources);
     }
   }
 }
