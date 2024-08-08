@@ -6,6 +6,8 @@ import { PAYMENT_SOURCE_ERROR } from './constants/error.constant';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaymentSourceOutputDto } from './dto/payment-source-output.dto';
 import { UtilsService } from '../../common/utils/utils.service';
+import { TokenPayload } from '../../common/interfaces/token.interface';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class PaymentSourceService {
@@ -13,6 +15,7 @@ export class PaymentSourceService {
     @InjectModel(PaymentSource.name)
     private readonly paymentSourceModel: Model<PaymentSourceDocument>,
     private readonly utilsService: UtilsService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async create(userId: string, inputDTO: PaymentSourceInputDto): Promise<PaymentSourceOutputDto> {
@@ -74,8 +77,9 @@ export class PaymentSourceService {
     return paymentSource.toObject({ versionKey: false });
   }
 
-  async getOne(id: string, userId: string): Promise<PaymentSourceOutputDto> {
+  async getOne(id: string, userToken: string): Promise<PaymentSourceOutputDto> {
     const paymentSource = await this.paymentSourceModel.findById(id);
+    const { userId } = this.jwtService.decode<TokenPayload>(userToken);
 
     if (!paymentSource) {
       throw new ConflictException(PAYMENT_SOURCE_ERROR.NOT_FOUND);
@@ -88,7 +92,9 @@ export class PaymentSourceService {
     return paymentSource.toObject({ versionKey: false });
   }
 
-  async getAll(userId: string): Promise<PaymentSourceOutputDto[]> {
+  async getAll(userToken: string): Promise<PaymentSourceOutputDto[]> {
+    const { userId } = this.jwtService.decode<TokenPayload>(userToken);
+
     return this.paymentSourceModel.find({ userId }).select('-__v').lean();
   }
 

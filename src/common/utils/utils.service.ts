@@ -44,13 +44,4 @@ export class UtilsService {
 
     return sharp(convertedBuffer).webp().toBuffer();
   }
-
-  /**
-   * Normalizes a date to the format 'YYYY-MM-DD'.
-   * @param date - The date to normalize.
-   * @returns The date in 'YYYY-MM-DD' format.
-   */
-  normalizeDate(date: Date): string {
-    return date.toISOString().split('T')[0]; // Получаем строку в формате YYYY-MM-DD
-  }
 }

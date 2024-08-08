@@ -13,11 +13,11 @@ import { CustomRequest } from '../../common/interfaces/token.interface';
 
 @ApiTags('Payment source')
 @Controller('payment-source')
-@UseGuards(AccessJwtGuard)
 export class PaymentSourceController {
   constructor(private readonly paymentSourceService: PaymentSourceService) {}
   @CreatePaymentSourceSwDec()
   @Post()
+  @UseGuards(AccessJwtGuard)
   async create(@Body() inputDTO: PaymentSourceInputDto, @Req() req: CustomRequest): Promise<PaymentSourceOutputDto> {
     return this.paymentSourceService.create(req.user.userId, inputDTO);
   }
@@ -25,6 +25,7 @@ export class PaymentSourceController {
   @DeletePaymentSourceSwDec()
   @Delete(':id')
   // ToDo: No id verification
+  @UseGuards(AccessJwtGuard)
   async delete(@Param('id') id: string, @Req() req: CustomRequest): Promise<PaymentSourceOutputDto> {
     return this.paymentSourceService.delete(id, req.user.userId);
   }
@@ -33,17 +34,22 @@ export class PaymentSourceController {
   @Get(':id')
   // ToDo: No id verification
   async getOne(@Param('id') id: string, @Req() req: CustomRequest): Promise<PaymentSourceOutputDto> {
-    return this.paymentSourceService.getOne(id, req.user.userId);
+    const accessToken = req.headers['authorization']?.split(' ')?.[1];
+
+    return this.paymentSourceService.getOne(id, accessToken);
   }
 
   @GetAllPaymentSourceSwDec()
   @Get()
   async getAll(@Req() req: CustomRequest): Promise<PaymentSourceOutputDto[]> {
-    return this.paymentSourceService.getAll(req.user.userId);
+    const accessToken = req.headers['authorization']?.split(' ')?.[1];
+
+    return this.paymentSourceService.getAll(accessToken);
   }
 
   @UpdatePaymentSourceSwDec()
   @Put(':id')
+  @UseGuards(AccessJwtGuard)
   async update(
     // ToDo: No id verification
     @Param('id') id: string,
