@@ -110,17 +110,25 @@ export class CategoryService {
       { title: 'Other', color: '#373737' },
     ];
 
-    for (const category of defaultCategories) {
-      const titleToSearch = this.utilsService.createTitleRegex(category.title);
-      const existingCategory = await this.categoryModel.findOne({ title: titleToSearch, userId });
+    const titlesToSearch = defaultCategories.map((category) => this.utilsService.createTitleRegex(category.title));
 
-      if (existingCategory) continue;
-      const newCategory = new this.categoryModel({
+    const existingCategories = await this.categoryModel.find({
+      title: { $in: titlesToSearch },
+      userId,
+    });
+
+    const existingTitles = new Set(existingCategories.map((category) => category.title));
+
+    const newCategories = defaultCategories
+      .filter((category) => !existingTitles.has(category.title))
+      .map((category) => ({
         userId,
         title: category.title,
         color: category.color,
-      });
-      await newCategory.save();
+      }));
+
+    if (newCategories.length > 0) {
+      await this.categoryModel.insertMany(newCategories);
     }
   }
 }
