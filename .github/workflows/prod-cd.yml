@@ -72,7 +72,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y sshpass
           sshpass -p "${SSH_PASSWORD}" ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "rm -rf /var/www/shoplist-be/*"
-          sshpass -p "${SSH_PASSWORD}" rsync -avz --exclude 'node_modules/' --exclude '.git/' --exclude '.github/' -e "ssh -o StrictHostKeyChecking=no" ./ ${SSH_USER}@${SSH_HOST}:/var/www/shoplist-be
+          sshpass -p "${SSH_PASSWORD}" rsync -avz --exclude 'node_modules/' --exclude '.git/' --exclude '.github/' -e "ssh -o StrictHostKeyChecking=no" ./dist ${SSH_USER}@${SSH_HOST}:/var/www/shoplist-be
 
       - name: Restart Application
         env:
@@ -86,7 +86,7 @@ jobs:
           pnpm install --production &&
           pm2 stop shoplist-be || true &&
           pm2 delete shoplist-be || true &&
-          pm2 start /var/www/shoplist-be/main.js --name shoplist-be -- -p 5555 &&
+          pm2 start /var/www/shoplist-be/dist/main.js --name shoplist-be -- -p 5555 &&
           pm2 save"
 
       - name: Build Project Artifacts
