@@ -53,8 +53,8 @@ export class ExpenseService {
     }
   }
 
-  async getById(expensesId: string, userId: string): Promise<ExpenseOutputDto> {
-    const foundExpanse = await this.expensesModel.findById(expensesId);
+  async getById(expenseId: string, userId: string): Promise<ExpenseOutputDto> {
+    const foundExpanse = await this.expensesModel.findById(expenseId);
 
     if (!foundExpanse) {
       throw new NotFoundException(EXPENSE_ERROR.EXPENSE_NOT_FOUND);
@@ -178,8 +178,8 @@ export class ExpenseService {
     }
   }
 
-  async update(expensesId: string, inputDto: ExpenseInputDto, userId: string): Promise<ExpenseOutputDto> {
-    const foundExpanse = await this.expensesModel.findById(expensesId);
+  async update(expenseId: string, inputDto: ExpenseInputDto, userId: string): Promise<ExpenseOutputDto> {
+    const foundExpanse = await this.expensesModel.findById(expenseId);
 
     if (!foundExpanse) {
       throw new NotFoundException(EXPENSE_ERROR.EXPENSE_NOT_FOUND);
@@ -201,11 +201,11 @@ export class ExpenseService {
       exchangeRates = this.currencyService.recalculateCurrencyRate(inputDto.currency, exchangeRates);
     }
 
-    return this.expensesModel.findByIdAndUpdate(expensesId, { ...inputDto, exchangeRates }, { new: true }).lean();
+    return this.expensesModel.findByIdAndUpdate(expenseId, { ...inputDto, exchangeRates }, { new: true }).lean();
   }
 
-  async delete(expensesId: string, userId: string): Promise<ExpenseOutputDto> {
-    const expense = await this.expensesModel.findById(expensesId);
+  async delete(expenseId: string, userId: string): Promise<ExpenseOutputDto> {
+    const expense = await this.expensesModel.findById(expenseId);
 
     if (!expense) {
       throw new NotFoundException(EXPENSE_ERROR.EXPENSE_NOT_FOUND);

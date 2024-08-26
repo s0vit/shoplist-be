@@ -6,6 +6,7 @@ async function bootstrap() {
 
   await app.listen(PORT, () => {
     console.info(`Server is running on port:${PORT}`);
+    console.info(`Swagger documentation is available at http://localhost:${PORT}/swagger`);
   });
 }
 

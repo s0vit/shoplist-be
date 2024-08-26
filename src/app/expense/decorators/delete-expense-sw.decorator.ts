@@ -10,13 +10,13 @@ export function DeleteExpenseSwDec() {
       description: `
       Requires:
       - token in the header
-      - expensesId in Params`,
+      - expenseId in Params`,
     }),
     ApiBearerAuth(),
     ApiParam({
-      name: 'expensesId',
+      name: 'expenseId',
       description: `
-      expensesId: The ID of the Expense to delete.`,
+      expenseId: The ID of the Expense to delete.`,
       type: String,
       required: true,
     }),
