@@ -10,7 +10,7 @@ export function UpdateExpenseSwDec() {
       description: `
       Requires:
       - token in the header
-      - expensesId in Params
+      - expenseId in Params
       - amount in Body
       - categoryId in Body
       - paymentSourceId in Body
@@ -23,9 +23,9 @@ export function UpdateExpenseSwDec() {
     }),
     ApiBearerAuth(),
     ApiParam({
-      name: 'expensesId',
+      name: 'expenseId',
       description: `
-      expensesId: The ID of the Expense to update.`,
+      expenseId: The ID of the Expense to update.`,
       type: String,
       required: true,
     }),
