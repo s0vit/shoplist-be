@@ -126,12 +126,12 @@ export class ExpenseService {
   }
 
   async getOwn(userId: string, queryInputDto?: ExpenseQueryInputDto): Promise<ExpenseOutputDto[]> {
-    const query = { userId };
+    const currentMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toString();
+    const query = { userId, createdAt: { $gte: currentMonthStart, $lte: new Date().toString() } };
     if (queryInputDto?.paymentSourceId) query['paymentSourceId'] = queryInputDto.paymentSourceId;
     if (queryInputDto?.categoryId) query['categoryId'] = queryInputDto.categoryId;
 
     if (queryInputDto?.createdStartDate || queryInputDto?.createdEndDate) {
-      query['createdAt'] = {};
       if (queryInputDto?.createdStartDate) query['createdAt'].$gte = queryInputDto.createdStartDate;
       if (queryInputDto?.createdEndDate) query['createdAt'].$lte = queryInputDto.createdEndDate;
     }
@@ -144,8 +144,8 @@ export class ExpenseService {
 
     const foundExpanse = await this.expensesModel
       .find(query)
-      .skip(queryInputDto?.skip || 0)
-      .limit(queryInputDto?.limit || 100)
+      .skip(queryInputDto?.skip)
+      .limit(queryInputDto?.limit)
       .sort({ createdAt: -1 })
       .select('-__v')
       .lean();

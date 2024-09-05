@@ -157,8 +157,8 @@ export class UserService {
   async createCategoryAndPaymentSource(inputDataDto: CreateDataInputDto, userId: string): Promise<void> {
     const categoryData = this.createRandomCategoryOrPaymentSource(userId, inputDataDto.categories);
     const paymentSourceData = this.createRandomCategoryOrPaymentSource(userId, inputDataDto.paymentSources);
-    const categoryTitleToSearch = this.utilsService.createTitleRegex(categoryData[0].title);
-    const paymentSrcTitleToSearch = this.utilsService.createTitleRegex(paymentSourceData[0].title);
+    const categoryTitleToSearch = this.utilsService.createCaseInsensitiveRegexFromString(categoryData[0].title);
+    const paymentSrcTitleToSearch = this.utilsService.createCaseInsensitiveRegexFromString(paymentSourceData[0].title);
     const category = await this.categoryModel.findOne({ title: categoryTitleToSearch, userId });
     const paymentSource = await this.categoryModel.findOne({ title: paymentSrcTitleToSearch, userId });
 

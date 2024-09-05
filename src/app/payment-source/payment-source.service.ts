@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { PaymentSource, PaymentSourceDocument } from './models/payment-source.model';
 import { PaymentSourceInputDto } from './dto/payment-source-input.dto';
@@ -6,17 +6,19 @@ import { PAYMENT_SOURCE_ERROR } from './constants/error.constant';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaymentSourceOutputDto } from './dto/payment-source-output.dto';
 import { UtilsService } from '../../common/utils/utils.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class PaymentSourceService {
   constructor(
     @InjectModel(PaymentSource.name)
     private readonly paymentSourceModel: Model<PaymentSourceDocument>,
+    private readonly jwtService: JwtService,
     private readonly utilsService: UtilsService,
   ) {}
 
   async create(userId: string, inputDTO: PaymentSourceInputDto): Promise<PaymentSourceOutputDto> {
-    const titleToSearch = this.utilsService.createTitleRegex(inputDTO.title);
+    const titleToSearch = this.utilsService.createCaseInsensitiveRegexFromString(inputDTO.title);
     const existingPaymentSourceForCurrentUser = await this.paymentSourceModel.findOne({
       title: titleToSearch,
       userId,
@@ -74,7 +76,12 @@ export class PaymentSourceService {
     return paymentSource.toObject({ versionKey: false });
   }
 
-  async getOne(id: string, userId: string): Promise<PaymentSourceOutputDto> {
+  async getOne(id: string, accessToken: string): Promise<PaymentSourceOutputDto> {
+    if (!accessToken) {
+      throw new BadRequestException('Access token is missing');
+    }
+
+    const userId = this.jwtService.decode(accessToken)['userId'];
     const paymentSource = await this.paymentSourceModel.findById(id);
 
     if (!paymentSource) {
@@ -88,19 +95,25 @@ export class PaymentSourceService {
     return paymentSource.toObject({ versionKey: false });
   }
 
-  async getAll(userId: string): Promise<PaymentSourceOutputDto[]> {
+  async getAll(accessToken: string): Promise<PaymentSourceOutputDto[]> {
+    if (!accessToken) {
+      throw new BadRequestException('Access token is missing');
+    }
+
+    const userId = this.jwtService.decode(accessToken)['userId'];
+
     return this.paymentSourceModel.find({ userId }).select('-__v').lean();
   }
 
   async createDefaultPaymentSources(userId: string): Promise<void> {
     const defaultPaymentSources = [
-      { title: 'Cash', color: '#000000' },
+      { title: 'Cash', color: '#00fa58' },
       { title: 'Credit Card', color: '#0000FF' },
-      { title: 'Debit Card', color: '#008000' },
+      { title: 'Debit Card', color: '#ecff00' },
     ];
 
     const titlesToSearch = defaultPaymentSources.map((paymentSource) =>
-      this.utilsService.createTitleRegex(paymentSource.title),
+      this.utilsService.createCaseInsensitiveRegexFromString(paymentSource.title),
     );
 
     const existingPaymentSources = await this.paymentSourceModel.find({

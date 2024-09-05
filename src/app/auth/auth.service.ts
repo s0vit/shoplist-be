@@ -21,6 +21,7 @@ import { ERROR_AUTH } from './constants/auth-error.enum';
 import { AuthInputDto } from './dto/auth-input.dto';
 import { ConfirmOutputDto } from './dto/confirm-output.dto';
 import { LoginOutputDto } from './dto/login-output.dto';
+import { UtilsService } from '../../common/utils/utils.service';
 
 @Injectable()
 export class AuthService {
@@ -35,6 +36,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly categoryService: CategoryService,
     private readonly paymentSourceService: PaymentSourceService,
+    private readonly utilsService: UtilsService,
   ) {
     this.accessSecret = this.configService.get<string>('ACCESS_TOKEN_KEY');
     this.refreshSecret = this.configService.get<string>('REFRESH_TOKEN_KEY');
@@ -50,7 +52,9 @@ export class AuthService {
   }
 
   private async findUser(email: string): Promise<UserDocument> {
-    return this.userModel.findOne({ email }).exec();
+    const emailRegex = this.utilsService.createCaseInsensitiveRegexFromString(email);
+
+    return this.userModel.findOne({ email: { $regex: emailRegex } }).exec();
   }
 
   private async createUser(dto: AuthInputDto) {
@@ -139,7 +143,10 @@ export class AuthService {
 
     const payloadData = { email, userId: foundUser._id, isVerified: foundUser.isVerified };
     const tokens = await this.generateTokens(payloadData);
-    const updatedUser = await this.userModel.findOneAndUpdate({ email }, { $set: { ...tokens } }, { new: true }).exec();
+    const emailRegex = this.utilsService.createCaseInsensitiveRegexFromString(email);
+    const updatedUser = await this.userModel
+      .findOneAndUpdate({ email: { $regex: emailRegex } }, { $set: { ...tokens } }, { new: true })
+      .exec();
 
     return new LoginOutputDto(updatedUser);
   }
@@ -171,8 +178,9 @@ export class AuthService {
   async logout(accessToken: string) {
     try {
       const decoded = this.jwtService.decode<TokenPayload>(accessToken);
+      const emailRegex = this.utilsService.createCaseInsensitiveRegexFromString(decoded.email);
       await this.userModel
-        .findOneAndUpdate({ email: decoded.email }, { $set: { accessToken: null, refreshToken: null } })
+        .findOneAndUpdate({ email: { $regex: emailRegex } }, { $set: { accessToken: null, refreshToken: null } })
         .exec();
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
@@ -226,7 +234,10 @@ export class AuthService {
     try {
       const resetToken = await this.jwtService.signAsync({ email });
       const resetPasswordLink = `${origin}/reset-password?token=${resetToken}`;
-      await this.userModel.findOneAndUpdate({ email }, { $set: { resetPasswordToken: resetToken } }).exec();
+      const emailRegex = this.utilsService.createCaseInsensitiveRegexFromString(email);
+      await this.userModel
+        .findOneAndUpdate({ email: { $regex: emailRegex } }, { $set: { resetPasswordToken: resetToken } })
+        .exec();
       await this.mailerService.sendMail({
         to: email,
         subject: 'Reset your password',
@@ -241,9 +252,10 @@ export class AuthService {
     const decoded = this.jwtService.decode<{ email: string }>(resetPasswordToken);
     const salt = await genSalt(10);
     const passwordHash = await hash(newPassword, salt);
+    const emailRegex = this.utilsService.createCaseInsensitiveRegexFromString(decoded.email);
     const updatedUser = await this.userModel
       .findOneAndUpdate(
-        { email: decoded.email, resetPasswordToken },
+        { email: { $regex: emailRegex }, resetPasswordToken },
         { $set: { passwordHash, resetPasswordToken: null } },
       )
       .lean();

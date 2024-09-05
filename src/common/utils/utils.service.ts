@@ -5,12 +5,14 @@ import * as sharp from 'sharp';
 export class UtilsService {
   /**
    * Creates a case-insensitive regular expression to match the entire string exactly.
-   * @param title - The string to create a regex for.
+   * @param string - The string to create a regex for.
    * @returns A regular expression that matches the exact title, case-insensitively.
    * This is possible thanks to MongoDB's support for regular expressions in queries.
    */
-  createTitleRegex(title: string): RegExp {
-    return new RegExp(`^${title}$`, 'i');
+  createCaseInsensitiveRegexFromString(string: string): RegExp {
+    const escapedString = string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    return new RegExp(`^${escapedString}$`, 'i');
   }
 
   /**
