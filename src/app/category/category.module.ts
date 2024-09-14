@@ -6,6 +6,7 @@ import { CategoryService } from './category.service';
 import { ConfigModule } from '@nestjs/config';
 import { UtilsService } from '../../common/utils/utils.service';
 import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { AccessJwtStrategy } from '../auth/strategies/access-jwt.strategy';
     ConfigModule,
   ],
   controllers: [CategoryController],
-  providers: [CategoryService, UtilsService, AccessJwtStrategy],
+  providers: [CategoryService, UtilsService, AccessJwtStrategy, JwtService],
   exports: [CategoryService],
 })
 export class CategoryModule {}

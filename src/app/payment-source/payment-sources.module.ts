@@ -7,6 +7,7 @@ import { User, UserSchema } from '../user/models/user.model';
 import { PaymentSource, PaymentSourceSchema } from './models/payment-source.model';
 import { PaymentSourceController } from './payment-source.controller';
 import { PaymentSourceService } from './payment-source.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   controllers: [PaymentSourceController],
@@ -15,7 +16,7 @@ import { PaymentSourceService } from './payment-source.service';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema, collection: 'User' }]),
     ConfigModule,
   ],
-  providers: [PaymentSourceService, UtilsService, AccessJwtStrategy],
+  providers: [PaymentSourceService, UtilsService, AccessJwtStrategy, JwtService],
   exports: [UtilsService, PaymentSourceService],
 })
 export class PaymentSourcesModule {}

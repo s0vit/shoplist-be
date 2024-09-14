@@ -12,7 +12,6 @@ import { GetByCategoryIdSwDec } from './decorators/get-by-category-id-sw.decorat
 import { DeleteCategorySwDec } from './decorators/delete-category-sw.decorator';
 import { ValidMongoIdInParamsDec } from '../../common/decorators/valid-mongo-id.decorator';
 
-@UseGuards(AccessJwtGuard)
 @ApiTags('Category')
 @Controller('category')
 export class CategoryController {
@@ -21,7 +20,9 @@ export class CategoryController {
   @GetCategorySwDec()
   @Get()
   async getAll(@Req() req: CustomRequest): Promise<CategoryOutputDto[]> {
-    return this.categoryService.getAll(req.user.userId);
+    const accessToken = req.headers['authorization']?.split(' ')?.[1];
+
+    return this.categoryService.getAll(accessToken);
   }
 
   @GetByCategoryIdSwDec()
@@ -31,15 +32,19 @@ export class CategoryController {
     categoryId: string,
     @Req() req: CustomRequest,
   ): Promise<CategoryOutputDto> {
-    return this.categoryService.getOne(categoryId, req.user.userId);
+    const accessToken = req.headers['authorization']?.split(' ')?.[1];
+
+    return this.categoryService.getOne(categoryId, accessToken);
   }
 
+  @UseGuards(AccessJwtGuard)
   @CreateCategorySwDec()
   @Post()
   async create(@Body() inputDTO: CategoryInputDto, @Req() req: CustomRequest): Promise<CategoryOutputDto> {
     return this.categoryService.create(inputDTO, req.user.userId);
   }
 
+  @UseGuards(AccessJwtGuard)
   @UpdateCategorySwDec()
   @Put(':categoryId')
   async update(
@@ -51,6 +56,7 @@ export class CategoryController {
     return this.categoryService.update(categoryId, inputDTO, req.user.userId);
   }
 
+  @UseGuards(AccessJwtGuard)
   @DeleteCategorySwDec()
   @Delete(':categoryId')
   async delete(

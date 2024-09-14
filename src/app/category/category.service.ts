@@ -1,4 +1,11 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Category, CategoryDocument } from './models/category.model';
@@ -6,6 +13,7 @@ import { CategoryInputDto } from './dto/category-input.dto';
 import { CATEGORY_ERROR } from './constants/category-error.enum';
 import { CategoryOutputDto } from './dto/category-output.dto';
 import { UtilsService } from '../../common/utils/utils.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class CategoryService {
@@ -13,16 +21,28 @@ export class CategoryService {
     @InjectModel(Category.name)
     private readonly categoryModel: Model<CategoryDocument>,
     private readonly utilsService: UtilsService,
+    private readonly jwtService: JwtService,
   ) {}
 
-  async getAll(userId: string): Promise<CategoryOutputDto[]> {
+  async getAll(accessToken: string): Promise<CategoryOutputDto[]> {
+    if (!accessToken) {
+      throw new BadRequestException('Access token is missing');
+    }
+
+    const userId = this.jwtService.decode(accessToken).userId;
+
     try {
       return await this.categoryModel.find({ userId }).select('-__v').lean();
     } catch (error) {
       throw new HttpException(CATEGORY_ERROR.GET_CATEGORY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  async getOne(categoryId: string, userId: string): Promise<CategoryOutputDto> {
+  async getOne(categoryId: string, accessToken: string): Promise<CategoryOutputDto> {
+    if (!accessToken) {
+      throw new BadRequestException('Access token is missing');
+    }
+
+    const userId = this.jwtService.decode(accessToken).userId;
     const category = await this.categoryModel.findById(categoryId);
 
     if (!category) {
@@ -36,7 +56,7 @@ export class CategoryService {
     return category.toObject({ versionKey: false });
   }
   async create(inputDTO: CategoryInputDto, userId: string): Promise<CategoryOutputDto> {
-    const titleToSearch = this.utilsService.createTitleRegex(inputDTO.title);
+    const titleToSearch = this.utilsService.createCaseInsensitiveRegexFromString(inputDTO.title);
     const category = await this.categoryModel.findOne({ title: titleToSearch, userId });
 
     if (category) {
@@ -110,7 +130,9 @@ export class CategoryService {
       { title: 'Other', color: '#373737' },
     ];
 
-    const titlesToSearch = defaultCategories.map((category) => this.utilsService.createTitleRegex(category.title));
+    const titlesToSearch = defaultCategories.map((category) =>
+      this.utilsService.createCaseInsensitiveRegexFromString(category.title),
+    );
 
     const existingCategories = await this.categoryModel.find({
       title: { $in: titlesToSearch },

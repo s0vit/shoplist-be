@@ -10,6 +10,7 @@ import { PaymentSourcesModule } from '../payment-source/payment-sources.module';
 import { User, UserSchema } from '../user/models/user.model';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { UtilsService } from '../../common/utils/utils.service';
 
 @Module({
   imports: [
@@ -29,6 +30,6 @@ import { AuthService } from './auth.service';
     CategoryModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, UtilsService],
 })
 export class AuthModule {}
