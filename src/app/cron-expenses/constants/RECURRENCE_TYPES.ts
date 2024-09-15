@@ -1,0 +1,6 @@
+export enum RECURRENCE_TYPES {
+  DAILY = 'DAILY',
+  WEEKLY = 'WEEKLY',
+  MONTHLY = 'MONTHLY',
+  YEARLY = 'YEARLY',
+}

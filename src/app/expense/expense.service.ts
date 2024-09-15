@@ -1,7 +1,9 @@
 import {
   ForbiddenException,
+  forwardRef,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -16,6 +18,9 @@ import { ExpenseInputDto } from './dto/expense-input.dto';
 import { ExpenseOutputDto } from './dto/expense-output.dto';
 import { ExpenseQueryInputDto } from './dto/expense-query-input.dto';
 import { Expense, ExpensesDocument } from './models/expense.model';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { CronExpenseService } from '../cron-expenses/cron-expense.service';
+import { RECURRENCE_TYPES } from '../cron-expenses/constants/RECURRENCE_TYPES';
 
 @Injectable()
 export class ExpenseService {
@@ -25,7 +30,61 @@ export class ExpenseService {
     private readonly accessControlService: AccessControlService,
     private readonly currencyService: CurrencyService,
     private readonly familyBudgetService: FamilyBudgetService,
+    @Inject(forwardRef(() => CronExpenseService))
+    private readonly cronExpenseService: CronExpenseService,
   ) {}
+
+  @Cron(CronExpression.EVERY_12_HOURS, {
+    timeZone: 'UTC',
+  })
+  async processCronExpenses(): Promise<void> {
+    const cronExpenses = await this.cronExpenseService.findAll();
+    const now = new Date();
+
+    for (const cronExpense of cronExpenses) {
+      let shouldCreateExpense = false;
+
+      const currentRates = (await this.currencyService.getRatesByDate(now)).rates;
+      const currentCurrencyRate = this.currencyService.recalculateCurrencyRate(cronExpense.currency, currentRates);
+
+      const newExpenseInstance = {
+        userId: cronExpense.userId,
+        amount: cronExpense.amount,
+        categoryId: cronExpense.categoryId,
+        paymentSourceId: cronExpense.paymentSourceId,
+        comments: cronExpense.comments,
+        createdAt: now,
+        currency: cronExpense.currency,
+        exchangeRates: currentCurrencyRate,
+      };
+
+      switch (cronExpense.recurrenceType) {
+        case RECURRENCE_TYPES.DAILY:
+          shouldCreateExpense = now.getHours() === 0;
+          break;
+        case RECURRENCE_TYPES.WEEKLY:
+          shouldCreateExpense = now.getDay() === 1;
+          break;
+        case RECURRENCE_TYPES.MONTHLY:
+          shouldCreateExpense = now.getDate() === 1;
+          break;
+        case RECURRENCE_TYPES.YEARLY:
+          shouldCreateExpense = now.getMonth() === 0 && now.getDate() === 1;
+          break;
+        default:
+          shouldCreateExpense = false;
+          continue;
+      }
+
+      if (shouldCreateExpense) {
+        await this.create(newExpenseInstance, cronExpense.userId);
+      }
+
+      if (cronExpense.recurrenceEndDate && new Date(cronExpense.recurrenceEndDate) < now) {
+        await this.cronExpenseService.delete(cronExpense._id, cronExpense.userId);
+      }
+    }
+  }
 
   async create(inputDto: ExpenseInputDto, userId: string): Promise<ExpenseOutputDto> {
     try {

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AccessControlModule } from '../access-control/access-control.module';
@@ -10,6 +10,7 @@ import { User, UserSchema } from '../user/models/user.model';
 import { ExpenseController } from './expense.controller';
 import { ExpenseService } from './expense.service';
 import { ExpansesSchema, Expense } from './models/expense.model';
+import { CronExpenseModule } from '../cron-expenses/cron-expense.module';
 
 @Module({
   imports: [
@@ -19,8 +20,10 @@ import { ExpansesSchema, Expense } from './models/expense.model';
     AccessControlModule,
     CurrencyModule,
     FamilyBudgetModule,
+    forwardRef(() => CronExpenseModule),
   ],
   controllers: [ExpenseController],
   providers: [ExpenseService, AccessControlService, AccessJwtStrategy],
+  exports: [ExpenseService],
 })
 export class ExpenseModule {}
