@@ -1,7 +1,19 @@
-import { BadRequestException, Body, Controller, Delete, Get, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Request } from 'express';
-import { CustomRequest } from 'src/common/interfaces/token.interface';
+import { Request, Response } from 'express';
+import { CustomRequest, GoogleRequest } from 'src/common/interfaces/token.interface';
 import { AccessJwtGuard } from 'src/guards/access-jwt.guard';
 import { AuthService } from './auth.service';
 import { ERROR_AUTH } from './constants/auth-error.enum';
@@ -22,6 +34,7 @@ import { LoginOutputDto } from './dto/login-output.dto';
 import { RefreshInputDto } from './dto/refresh-input.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SetNewPasswordDto } from './dto/set-new-password.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -97,5 +110,32 @@ export class AuthController {
     const userId = req.user.userId;
 
     return await this.authService.changePassword(userId, dto.oldPassword, dto.newPassword);
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {
+    // This route is left empty; Passport handles the redirect
+  }
+
+  @Get('google/redirect')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(@Req() req: GoogleRequest, @Res() res: Response) {
+    // sending html page with script to store jwt in local storage as frontend will handle the rest
+    res.send(
+      `<html lang="en">
+        <head>
+        <title>Redirect</title>
+          <script>
+            localStorage.setItem('accessToken', '${req.user.accessToken}');
+            localStorage.setItem('refreshToken', '${req.user.refreshToken}');
+            window.location.href = '/';
+          </script>
+        </head>
+        <body>
+          <p>Redirecting...</p>
+        </body>
+      </html>`,
+    );
   }
 }
