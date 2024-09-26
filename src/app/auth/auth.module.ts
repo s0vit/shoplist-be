@@ -11,6 +11,7 @@ import { User, UserSchema } from '../user/models/user.model';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UtilsService } from '../../common/utils/utils.service';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
@@ -30,6 +31,6 @@ import { UtilsService } from '../../common/utils/utils.service';
     CategoryModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, UtilsService],
+  providers: [AuthService, UtilsService, GoogleStrategy],
 })
 export class AuthModule {}

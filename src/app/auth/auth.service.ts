@@ -12,7 +12,7 @@ import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { compare, genSalt, hash } from 'bcryptjs';
 import { Model } from 'mongoose';
-import { TokenPayload } from 'src/common/interfaces/token.interface';
+import { GoogleResponse, TokenPayload } from 'src/common/interfaces/token.interface';
 import { confirmEmailTemplate } from '../../utils/templates/confirm-email.template';
 import { CategoryService } from '../category/category.service';
 import { PaymentSourceService } from '../payment-source/payment-source.service';
@@ -283,5 +283,46 @@ export class AuthService {
     const passwordHash = await hash(newPassword, salt);
 
     await this.userModel.findByIdAndUpdate(userId, { $set: { passwordHash } }).exec();
+  }
+
+  async validateOAuthLogin(profile: GoogleResponse): Promise<{ accessToken: string; refreshToken: string }> {
+    const { id, emails, displayName } = profile;
+
+    let user = await this.userModel.findOne({ googleId: id });
+
+    // also check user by email
+
+    const sameEmailUser = await this.userModel.findOne({ email: emails[0].value });
+
+    // if sameEmail user exists, then update googleId field and return token
+    if (sameEmailUser) {
+      await this.userModel.findOneAndUpdate({ email: emails[0].value }, { googleId: id });
+      const payload = { email: sameEmailUser.email, sub: sameEmailUser._id };
+
+      const tokens = await this.generateTokens(payload);
+      await this.userModel.findOneAndUpdate({ email: sameEmailUser.email }, { ...tokens });
+
+      return tokens;
+    }
+
+    if (!user) {
+      user = new this.userModel({
+        email: emails[0].value,
+        login: displayName,
+        googleId: id,
+        isVerified: true,
+      });
+      await user.save();
+
+      await this.categoryService.createDefaultCategories(user._id);
+      await this.paymentSourceService.createDefaultPaymentSources(user._id);
+    }
+
+    const payload = { email: user.email, sub: user._id };
+
+    const tokens = await this.generateTokens(payload);
+    await this.userModel.findOneAndUpdate({ email: user.email }, { ...tokens });
+
+    return tokens;
   }
 }

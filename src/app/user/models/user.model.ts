@@ -10,8 +10,11 @@ export class User {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({ required: true })
-  passwordHash: string;
+  @Prop()
+  googleId?: string;
+
+  @Prop({ required: false }) // required: false for social login
+  passwordHash?: string;
 
   @Prop()
   login?: string;
