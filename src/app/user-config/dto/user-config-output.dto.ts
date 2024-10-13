@@ -5,7 +5,7 @@ import { THEME_ENUM } from '../constants/theme.enum';
 
 export class UserConfigOutputDto {
   @ApiProperty({
-    type: String,
+    example: '60b4b6b0a9f8b4001f9c4f5b',
     description: 'Unique identifier of the user config',
   })
   _id: string;

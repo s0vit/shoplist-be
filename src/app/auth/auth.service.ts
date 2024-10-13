@@ -109,9 +109,10 @@ export class AuthService {
         throw new ConflictException(ERROR_AUTH.CONFIRM_REGISTRATION_CONFLICT);
       }
 
+      const emailRegex = this.utilsService.createCaseInsensitiveRegexFromString(verifiedToken.email);
       const updatedUser = await this.userModel
         .findOneAndUpdate(
-          { email: verifiedToken.email },
+          { email: { $regex: emailRegex } },
           { $set: { isVerified: true, lastVerificationRequest: null } },
           { new: true },
         )
@@ -156,8 +157,9 @@ export class AuthService {
       const result = await this.jwtService.verifyAsync<TokenPayload>(token, { secret: this.refreshSecret });
       const payloadData = { email: result.email, userId: result.userId, isVerified: result.isVerified };
       const newTokens = await this.generateTokens(payloadData);
+      const emailRegex = this.utilsService.createCaseInsensitiveRegexFromString(result.email);
       const foundUser = await this.userModel
-        .findOneAndUpdate({ email: result.email }, { $set: { ...newTokens } }, { new: true })
+        .findOneAndUpdate({ email: { $regex: emailRegex } }, { $set: { ...newTokens } }, { new: true })
         .exec();
 
       if (!foundUser) {
@@ -202,11 +204,12 @@ export class AuthService {
       const now = new Date();
       const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
 
+      const emailRegex = this.utilsService.createCaseInsensitiveRegexFromString(decoded.email);
       const user = await this.userModel
         .findOneAndUpdate(
           // lastVerificationRequest update only if the previous request was more than an hour ago
           {
-            email: decoded.email,
+            email: { $regex: emailRegex },
             $or: [{ lastVerificationRequest: { $eq: null } }, { lastVerificationRequest: { $lt: oneHourAgo } }],
           },
           { $set: { lastVerificationRequest: now } },
@@ -296,11 +299,12 @@ export class AuthService {
 
     // if sameEmail user exists, then update googleId field and return token
     if (sameEmailUser) {
-      await this.userModel.findOneAndUpdate({ email: emails[0].value }, { googleId: id });
+      const emailRegex = this.utilsService.createCaseInsensitiveRegexFromString(emails[0].value);
+      await this.userModel.findOneAndUpdate({ email: { $regex: emailRegex } }, { googleId: id });
       const payload = { email: sameEmailUser.email, sub: sameEmailUser._id };
 
       const tokens = await this.generateTokens(payload);
-      await this.userModel.findOneAndUpdate({ email: sameEmailUser.email }, { ...tokens });
+      await this.userModel.findOneAndUpdate({ email: { $regex: emailRegex } }, { ...tokens });
 
       return tokens;
     }
@@ -321,7 +325,8 @@ export class AuthService {
     const payload = { email: user.email, sub: user._id };
 
     const tokens = await this.generateTokens(payload);
-    await this.userModel.findOneAndUpdate({ email: user.email }, { ...tokens });
+    const emailRegex = this.utilsService.createCaseInsensitiveRegexFromString(user.email);
+    await this.userModel.findOneAndUpdate({ email: { $regex: emailRegex } }, { ...tokens });
 
     return tokens;
   }

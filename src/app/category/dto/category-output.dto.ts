@@ -1,12 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ObjectId } from 'mongoose';
 
 export class CategoryOutputDto {
   @ApiProperty({
     example: '6616f96da226986482597b6c',
     description: 'Category ID',
   })
-  _id: ObjectId;
+  _id: string;
 
   @ApiProperty({
     example: 'Products',
@@ -19,6 +18,12 @@ export class CategoryOutputDto {
     description: 'User ID',
   })
   userId: string;
+
+  @ApiProperty({
+    example: '#d03abf',
+    description: 'Category color',
+  })
+  color: string;
 
   @ApiProperty({
     example: 'All kinds of products...',
