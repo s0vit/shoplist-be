@@ -21,6 +21,9 @@ env:
   REFRESH_TOKEN_KEY: ${{ secrets.REFRESH_TOKEN_KEY }}
   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
   CLIENT_URLS: ${{ secrets.CLIENT_URLS }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+  GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
 
 on:
   pull_request:
