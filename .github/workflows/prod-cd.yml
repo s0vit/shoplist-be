@@ -65,6 +65,9 @@ jobs:
           echo "REFRESH_TOKEN_KEY=${REFRESH_TOKEN_KEY}" >> .env
           echo "CLIENT_URLS=${CLIENT_URLS}" >> .env
           echo "CURRENCY_API_KEY=${CURRENCY_API_KEY}" >> .env
+          echo "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" >> .env
+          echo "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" >> .env
+          echo "GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}" >> .env
 
       - name: Copy Build Artefacts and .env to VPS
         env:
