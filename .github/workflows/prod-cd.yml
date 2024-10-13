@@ -20,6 +20,9 @@ env:
   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
   CLIENT_URLS: ${{ secrets.CLIENT_URLS }}
   CURRENCY_API_KEY: ${{ secrets.CURRENCY_API_KEY }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+  GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
 
 on:
   push:
