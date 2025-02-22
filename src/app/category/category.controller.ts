@@ -11,6 +11,8 @@ import { CategoryOutputDto } from './dto/category-output.dto';
 import { GetByCategoryIdSwDec } from './decorators/get-by-category-id-sw.decorator';
 import { DeleteCategorySwDec } from './decorators/delete-category-sw.decorator';
 import { ValidMongoIdInParamsDec } from '../../common/decorators/valid-mongo-id.decorator';
+import { UpdateCategoryOrderSwDec } from './decorators/update-categoryoder-sw-decorator';
+import { CategoryUpdateOrderDto } from './dto/category-update-order.dto';
 
 @ApiTags('Category')
 @Controller('category')
@@ -64,5 +66,16 @@ export class CategoryController {
     @Req() req: CustomRequest,
   ): Promise<CategoryOutputDto> {
     return this.categoryService.delete(categoryId, req.user.userId);
+  }
+
+  @UpdateCategoryOrderSwDec()
+  @UseGuards(AccessJwtGuard)
+  @Put(':categoryId/order')
+  async updateOrder(
+    @ValidMongoIdInParamsDec({ param: 'categoryId' }) categoryId: string,
+    @Body() newOrder: CategoryUpdateOrderDto,
+    @Req() req: CustomRequest,
+  ): Promise<CategoryOutputDto> {
+    return this.categoryService.updateOrder(categoryId, newOrder.order, req.user.userId);
   }
 }

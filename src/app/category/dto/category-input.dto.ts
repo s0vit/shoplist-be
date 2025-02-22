@@ -1,4 +1,4 @@
-import { IsOptional, IsString, Length, Matches } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Length, Matches } from 'class-validator';
 import { CATEGORY_ERROR } from '../constants/category-error.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -29,4 +29,13 @@ export class CategoryInputDto {
   @IsString()
   @Length(0, 100)
   comments?: string;
+
+  @ApiProperty({
+    example: 1,
+    description: 'Order of the category for drag and drop functionality',
+    type: Number,
+  })
+  @IsOptional()
+  @IsNumber()
+  order?: number;
 }

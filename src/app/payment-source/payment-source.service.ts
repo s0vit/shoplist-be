@@ -33,6 +33,7 @@ export class PaymentSourceService {
       userId,
       comments: inputDTO.comments,
       color: inputDTO.color,
+      order: await this.paymentSourceModel.countDocuments({ userId }),
     });
 
     return (await newPaymentSource.save()).toObject({ versionKey: false });
@@ -102,7 +103,7 @@ export class PaymentSourceService {
 
     const userId = this.jwtService.decode(accessToken)['userId'];
 
-    return this.paymentSourceModel.find({ userId }).select('-__v').lean();
+    return this.paymentSourceModel.find({ userId }).sort({ order: 1 }).select('-__v').lean();
   }
 
   async createDefaultPaymentSources(userId: string): Promise<void> {
@@ -134,5 +135,32 @@ export class PaymentSourceService {
     if (newPaymentSources.length > 0) {
       await this.paymentSourceModel.insertMany(newPaymentSources);
     }
+  }
+
+  async updateOrder(id: string, newOrder: number, userId: string): Promise<PaymentSourceOutputDto> {
+    const paymentSource = await this.paymentSourceModel.findById(id);
+
+    if (!paymentSource) {
+      throw new ConflictException(PAYMENT_SOURCE_ERROR.NOT_FOUND);
+    }
+
+    if (paymentSource.userId !== userId) {
+      throw new UnauthorizedException(PAYMENT_SOURCE_ERROR.FORBIDDEN);
+    }
+
+    // if we move payment source up, we need to decrement order of all payment sources from old order to new order
+    // if we move payment source down, we need to increment order of all payment sources from new order to old order
+    const increment = paymentSource.order > newOrder ? 1 : -1;
+    const condition =
+      paymentSource.order > newOrder
+        ? { $lte: paymentSource.order, $gte: newOrder }
+        : { $gte: paymentSource.order, $lte: newOrder };
+
+    await this.paymentSourceModel.updateMany({ userId, order: condition }, { $inc: { order: increment } });
+
+    paymentSource.set({ order: newOrder });
+    await paymentSource.save();
+
+    return paymentSource.toObject({ versionKey: false });
   }
 }

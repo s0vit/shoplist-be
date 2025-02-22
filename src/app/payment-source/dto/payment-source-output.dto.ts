@@ -26,6 +26,12 @@ export class PaymentSourceOutputDto {
   color: string;
 
   @ApiProperty({
+    example: 1,
+    description: 'Order of the payment source for drag and drop functionality',
+  })
+  order: number;
+
+  @ApiProperty({
     example: new Date(),
     description: 'Creation date',
   })

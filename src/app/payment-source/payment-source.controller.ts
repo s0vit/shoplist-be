@@ -10,6 +10,8 @@ import { GetByIdPaymentSourceSwDec } from './decorators/get-by-id-payment-source
 import { UpdatePaymentSourceSwDec } from './decorators/update-payment-source-sw.decorator';
 import { PaymentSourceOutputDto } from './dto/payment-source-output.dto';
 import { CustomRequest } from '../../common/interfaces/token.interface';
+import { UpdateOrderPaymentSourceSwDec } from './decorators/update-order-payment-source-sw.decorator';
+import { PaymentSourceOrderUpdateDto } from './dto/payment-source-order-update.dto';
 
 @ApiTags('Payment source')
 @Controller('payment-source')
@@ -57,5 +59,16 @@ export class PaymentSourceController {
     @Req() req: CustomRequest,
   ): Promise<PaymentSourceOutputDto> {
     return this.paymentSourceService.update(id, inputDTO, req.user.userId);
+  }
+
+  @UpdateOrderPaymentSourceSwDec()
+  @UseGuards(AccessJwtGuard)
+  @Put(':id/order')
+  async updateOrder(
+    @Param('id') id: string,
+    @Body() newOrder: PaymentSourceOrderUpdateDto,
+    @Req() req: CustomRequest,
+  ): Promise<PaymentSourceOutputDto> {
+    return this.paymentSourceService.updateOrder(id, newOrder.order, req.user.userId);
   }
 }

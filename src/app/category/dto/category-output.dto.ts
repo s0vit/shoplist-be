@@ -42,4 +42,10 @@ export class CategoryOutputDto {
     description: 'Date of last update',
   })
   updatedAt: Date;
+
+  @ApiProperty({
+    example: 1,
+    description: 'Order of the category for drag and drop functionality',
+  })
+  order: number;
 }

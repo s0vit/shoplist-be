@@ -19,6 +19,9 @@ export class PaymentSource {
   @Prop()
   color?: string;
 
+  @Prop({ type: Number, default: 0 })
+  order: number;
+
   @Prop({ default: Date.now })
   createdAt: Date;
 
