@@ -13,6 +13,9 @@ export class Category {
   @Prop({ required: true })
   userId: string;
 
+  @Prop({ type: Number, default: 0 })
+  order: number;
+
   @Prop()
   color: string;
 

@@ -69,6 +69,7 @@ export class CategoryService {
         title: inputDTO.title,
         comments: inputDTO.comments,
         color: inputDTO.color,
+        order: await this.categoryModel.countDocuments({ userId }),
       });
       const createdCategory = await newCategoryInstance.save();
 
@@ -151,6 +152,37 @@ export class CategoryService {
 
     if (newCategories.length > 0) {
       await this.categoryModel.insertMany(newCategories);
+    }
+  }
+
+  async updateOrder(id: string, newOrder: number, userId: string): Promise<CategoryOutputDto> {
+    const category = await this.categoryModel.findById(id);
+
+    if (!category) {
+      throw new NotFoundException(CATEGORY_ERROR.CATEGORY_NOT_FOUND);
+    }
+
+    if (category.userId !== userId) {
+      throw new UnauthorizedException(CATEGORY_ERROR.FORBIDDEN);
+    }
+
+    try {
+      await category.save();
+
+      // if we move category up, we need to decrement order of all categories from old order to new order
+      // if we move category down, we need to increment order of all categories from new order to old order
+      const increment = category.order > newOrder ? 1 : -1;
+      const condition =
+        category.order > newOrder ? { $lte: category.order, $gte: newOrder } : { $gte: category.order, $lte: newOrder };
+
+      await this.categoryModel.updateMany({ userId, order: condition }, { $inc: { order: increment } });
+
+      category.set({ order: newOrder });
+      await category.save();
+
+      return category.toObject({ versionKey: false });
+    } catch (error) {
+      throw new HttpException(CATEGORY_ERROR.UPDATE_CATEGORY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }
