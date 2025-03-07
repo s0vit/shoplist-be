@@ -31,12 +31,23 @@ export class PaymentSourceService {
     const newPaymentSource = new this.paymentSourceModel({
       title: inputDTO.title,
       userId,
-      comments: inputDTO.comments,
+      comments: inputDTO.comments || '',
       color: inputDTO.color,
       order: await this.paymentSourceModel.countDocuments({ userId }),
     });
 
-    return (await newPaymentSource.save()).toObject({ versionKey: false });
+    const saved = await newPaymentSource.save();
+    const result = saved.toObject({ versionKey: false });
+    return {
+      _id: result._id.toString(),
+      userId: result.userId.toString(),
+      title: result.title,
+      comments: result.comments || '',
+      color: result.color,
+      order: result.order,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+    };
   }
 
   async delete(id: string, userId: string): Promise<PaymentSourceOutputDto> {
@@ -52,7 +63,17 @@ export class PaymentSourceService {
 
     await toBeDeletedPaymentSource.deleteOne();
 
-    return toBeDeletedPaymentSource.toObject({ versionKey: false });
+    const result = toBeDeletedPaymentSource.toObject({ versionKey: false });
+    return {
+      _id: result._id.toString(),
+      userId: result.userId.toString(),
+      title: result.title,
+      comments: result.comments || '',
+      color: result.color,
+      order: result.order,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+    };
   }
 
   async update(id: string, inputDTO: PaymentSourceInputDto, userId: string): Promise<PaymentSourceOutputDto> {
@@ -68,13 +89,23 @@ export class PaymentSourceService {
 
     paymentSource.set({
       title: inputDTO.title,
-      comments: inputDTO.comments,
+      comments: inputDTO.comments || '',
       color: inputDTO.color,
       updatedAt: Date.now(),
     });
     await paymentSource.save();
 
-    return paymentSource.toObject({ versionKey: false });
+    const result = paymentSource.toObject({ versionKey: false });
+    return {
+      _id: result._id.toString(),
+      userId: result.userId.toString(),
+      title: result.title,
+      comments: result.comments || '',
+      color: result.color,
+      order: result.order,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+    };
   }
 
   async getOne(id: string, accessToken: string): Promise<PaymentSourceOutputDto> {
@@ -93,7 +124,17 @@ export class PaymentSourceService {
       throw new UnauthorizedException(PAYMENT_SOURCE_ERROR.UNAUTHORIZED_ACCESS);
     }
 
-    return paymentSource.toObject({ versionKey: false });
+    const result = paymentSource.toObject({ versionKey: false });
+    return {
+      _id: result._id.toString(),
+      userId: result.userId.toString(),
+      title: result.title,
+      comments: result.comments || '',
+      color: result.color,
+      order: result.order,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+    };
   }
 
   async getAll(accessToken: string): Promise<PaymentSourceOutputDto[]> {
@@ -103,7 +144,17 @@ export class PaymentSourceService {
 
     const userId = this.jwtService.decode(accessToken)['userId'];
 
-    return this.paymentSourceModel.find({ userId }).sort({ order: 1 }).select('-__v').lean();
+    const results = await this.paymentSourceModel.find({ userId }).sort({ order: 1 }).select('-__v').lean();
+    return results.map((doc) => ({
+      _id: doc._id.toString(),
+      userId: doc.userId.toString(),
+      title: doc.title,
+      comments: doc.comments || '',
+      color: doc.color,
+      order: doc.order,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    }));
   }
 
   async createDefaultPaymentSources(userId: string): Promise<void> {
@@ -161,6 +212,16 @@ export class PaymentSourceService {
     paymentSource.set({ order: newOrder });
     await paymentSource.save();
 
-    return paymentSource.toObject({ versionKey: false });
+    const result = paymentSource.toObject({ versionKey: false });
+    return {
+      _id: result._id.toString(),
+      userId: result.userId.toString(),
+      title: result.title,
+      comments: result.comments || '',
+      color: result.color,
+      order: result.order,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+    };
   }
 }

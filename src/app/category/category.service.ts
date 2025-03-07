@@ -32,11 +32,22 @@ export class CategoryService {
     const userId = this.jwtService.decode(accessToken).userId;
 
     try {
-      return await this.categoryModel.find({ userId }).select('-__v').lean();
+      const results = await this.categoryModel.find({ userId }).select('-__v').lean();
+      return results.map((doc) => ({
+        _id: doc._id.toString(),
+        userId: doc.userId.toString(),
+        title: doc.title,
+        color: doc.color,
+        comments: doc.comments || '',
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt,
+        order: doc.order,
+      }));
     } catch (error) {
       throw new HttpException(CATEGORY_ERROR.GET_CATEGORY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
   async getOne(categoryId: string, accessToken: string): Promise<CategoryOutputDto> {
     if (!accessToken) {
       throw new BadRequestException('Access token is missing');
@@ -53,8 +64,19 @@ export class CategoryService {
       throw new UnauthorizedException(CATEGORY_ERROR.FORBIDDEN);
     }
 
-    return category.toObject({ versionKey: false });
+    const result = category.toObject({ versionKey: false });
+    return {
+      _id: result._id.toString(),
+      userId: result.userId.toString(),
+      title: result.title,
+      color: result.color,
+      comments: result.comments || '',
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+      order: result.order,
+    };
   }
+
   async create(inputDTO: CategoryInputDto, userId: string): Promise<CategoryOutputDto> {
     const titleToSearch = this.utilsService.createCaseInsensitiveRegexFromString(inputDTO.title);
     const category = await this.categoryModel.findOne({ title: titleToSearch, userId });
@@ -67,17 +89,27 @@ export class CategoryService {
       const newCategoryInstance = new this.categoryModel({
         userId,
         title: inputDTO.title,
-        comments: inputDTO.comments,
+        comments: inputDTO.comments || '',
         color: inputDTO.color,
         order: await this.categoryModel.countDocuments({ userId }),
       });
       const createdCategory = await newCategoryInstance.save();
-
-      return createdCategory.toObject({ versionKey: false });
+      const result = createdCategory.toObject({ versionKey: false });
+      return {
+        _id: result._id.toString(),
+        userId: result.userId.toString(),
+        title: result.title,
+        color: result.color,
+        comments: result.comments || '',
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+        order: result.order,
+      };
     } catch (error) {
       throw new HttpException(CATEGORY_ERROR.CREATE_CATEGORY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
   async update(categoryId: string, inputDTO: CategoryInputDto, userId: string): Promise<CategoryOutputDto> {
     const category = await this.categoryModel.findById(categoryId);
 
@@ -92,16 +124,26 @@ export class CategoryService {
     try {
       category.set({
         title: inputDTO.title,
-        comments: inputDTO.comments,
+        comments: inputDTO.comments || '',
         color: inputDTO.color,
       });
       await category.save();
-
-      return category.toObject({ versionKey: false });
+      const result = category.toObject({ versionKey: false });
+      return {
+        _id: result._id.toString(),
+        userId: result.userId.toString(),
+        title: result.title,
+        color: result.color,
+        comments: result.comments || '',
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+        order: result.order,
+      };
     } catch (error) {
       throw new HttpException(CATEGORY_ERROR.UPDATE_CATEGORY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
   async delete(categoryId: string, userId: string): Promise<CategoryOutputDto> {
     const category = await this.categoryModel.findById(categoryId);
 
@@ -115,8 +157,17 @@ export class CategoryService {
 
     try {
       await category.deleteOne();
-
-      return category.toObject({ versionKey: false });
+      const result = category.toObject({ versionKey: false });
+      return {
+        _id: result._id.toString(),
+        userId: result.userId.toString(),
+        title: result.title,
+        color: result.color,
+        comments: result.comments || '',
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+        order: result.order,
+      };
     } catch (error) {
       throw new HttpException(CATEGORY_ERROR.DELETE_CATEGORY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -179,8 +230,17 @@ export class CategoryService {
 
       category.set({ order: newOrder });
       await category.save();
-
-      return category.toObject({ versionKey: false });
+      const result = category.toObject({ versionKey: false });
+      return {
+        _id: result._id.toString(),
+        userId: result.userId.toString(),
+        title: result.title,
+        color: result.color,
+        comments: result.comments || '',
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+        order: result.order,
+      };
     } catch (error) {
       throw new HttpException(CATEGORY_ERROR.UPDATE_CATEGORY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
