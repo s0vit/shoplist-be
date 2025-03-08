@@ -15,6 +15,7 @@ import { UserModule } from './app/user/user.module';
 import { configThrottling } from './configs/config-throttling';
 import { getMongoConfigs } from './configs/get-mongo.configs';
 import { CronExpenseModule } from './app/cron-expenses/cron-expense.module';
+import { PostponedExpenseModule } from './app/postponed-expense/postponed-expense.module';
 
 export const appModuleImports: ModuleMetadata['imports'] = [
   ConfigModule.forRoot(),
@@ -39,4 +40,5 @@ export const appModuleImports: ModuleMetadata['imports'] = [
   CurrencyModule,
   UserConfigModule,
   FamilyBudgetModule,
+  PostponedExpenseModule,
 ];

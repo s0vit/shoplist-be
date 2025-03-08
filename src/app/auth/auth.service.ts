@@ -77,16 +77,16 @@ export class AuthService {
       throw new BadRequestException(ERROR_AUTH.USER_ALREADY_EXISTS);
     }
 
-    try {
-      const newUser = await this.createUser(dto);
-      await this.categoryService.createDefaultCategories(newUser._id);
-      await this.paymentSourceService.createDefaultPaymentSources(newUser._id);
-    } catch (error) {
-      throw new HttpException(ERROR_AUTH.CREATE_USER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    let newUser: UserDocument;
+    let confirmToken: string;
 
     try {
-      const confirmToken = await this.jwtService.signAsync({ email: dto.email });
+      confirmToken = await this.jwtService.signAsync({ email: dto.email });
+
+      newUser = await this.createUser(dto);
+      await this.categoryService.createDefaultCategories(newUser._id);
+      await this.paymentSourceService.createDefaultPaymentSources(newUser._id);
+
       const confirmationUrl = `${origin}/confirm?token=${confirmToken}`;
       await this.mailerService.sendMail({
         to: dto.email,
@@ -96,7 +96,15 @@ export class AuthService {
 
       return confirmToken;
     } catch (error) {
-      throw new HttpException(ERROR_AUTH.SEND_EMAIL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+      if (newUser) {
+        await this.userModel.findByIdAndDelete(newUser._id).catch(() => {});
+      }
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(ERROR_AUTH.CREATE_USER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

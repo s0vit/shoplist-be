@@ -1,11 +1,14 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { createAndSetupApp } from '../../app';
 import { AuthInputDto } from './dto/auth-input.dto';
 import { LoginInputDto } from './dto/login-input.dto';
+import { Connection } from 'mongoose';
+import { setupTestApp, cleanupTestApp } from '../../../test/test-utils';
+import { ERROR_AUTH } from './constants/auth-error.enum';
 
 describe('AuthController', () => {
   let app: INestApplication;
+  let connection: Connection;
   let authTokens: { accessToken: string; refreshToken: string };
 
   const user = {
@@ -15,12 +18,13 @@ describe('AuthController', () => {
   let verificationToken = '';
 
   beforeAll(async () => {
-    app = await createAndSetupApp();
-    await app.init();
+    const testSetup = await setupTestApp();
+    app = testSetup.app;
+    connection = testSetup.connection;
   });
 
   afterAll(async () => {
-    await app.close();
+    await cleanupTestApp(app, connection);
   });
 
   describe('POST /auth/register', () => {
@@ -30,14 +34,19 @@ describe('AuthController', () => {
       const response = await request(app.getHttpServer()).post('/api/auth/register').send(registerDto);
 
       expect(response.status).toBe(201);
-      expect(response.text).toMatch(/.+\..+\..+/); // JWT token
+      expect(response.text).toMatch(/.+\..+\..+/);
       verificationToken = response.text;
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }, 10000);
 
     it('should not register a user with the same email', async () => {
       const registerDto: AuthInputDto = user;
 
-      await request(app.getHttpServer()).post('/api/auth/register').send(registerDto).expect(400);
+      const response = await request(app.getHttpServer()).post('/api/auth/register').send(registerDto);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(ERROR_AUTH.USER_ALREADY_EXISTS);
     });
 
     it('should not register a user with invalid email', async () => {
@@ -123,9 +132,11 @@ describe('AuthController', () => {
     it('should not confirm user registration with invalid token', async () => {
       await request(app.getHttpServer()).get('/api/auth/confirm?token=invalid-token').expect(400);
     });
+
     it('should confirm user registration', async () => {
       await request(app.getHttpServer()).get(`/api/auth/confirm?token=${verificationToken}`).expect(200);
     });
+
     it('should login and observe user is verified', async () => {
       const loginDto: LoginInputDto = user;
 

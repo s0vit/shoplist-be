@@ -11,7 +11,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AccessControlService } from '../access-control/access-control.service';
-import { CurrencyService } from '../currency/currency.service'; // Добавлено
+import { CurrencyService } from '../currency/currency.service';
 import { FamilyBudgetService } from '../family-budget/family-budget.service';
 import { EXPENSE_ERROR } from './constants/expense-error.enum';
 import { ExpenseInputDto } from './dto/expense-input.dto';
@@ -21,6 +21,7 @@ import { Expense, ExpensesDocument } from './models/expense.model';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CronExpenseService } from '../cron-expenses/cron-expense.service';
 import { RECURRENCE_TYPES } from '../cron-expenses/constants/RECURRENCE_TYPES';
+import { CURRENCIES } from '../../common/interfaces/currencies.enum';
 
 @Injectable()
 export class ExpenseService {
@@ -216,7 +217,7 @@ export class ExpenseService {
     return foundExpanse;
   }
 
-  async getSharedExpenses(sharedUserId: string, currentUserId: string): Promise<ExpensesDocument[]> {
+  async getSharedExpenses(sharedUserId: string, currentUserId: string): Promise<ExpenseOutputDto[]> {
     if (currentUserId === sharedUserId) {
       throw new ForbiddenException(EXPENSE_ERROR.GET_OWN_EXPENSE);
     }
@@ -231,36 +232,100 @@ export class ExpenseService {
       return this.expensesModel
         .find({ _id: { $in: accessControlAllowed } })
         .select('-__v')
-        .lean();
+        .lean()
+        .exec();
     } catch (error) {
       throw new HttpException(EXPENSE_ERROR.GET_SHARED_EXPENSE, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   async update(expenseId: string, inputDto: ExpenseInputDto, userId: string): Promise<ExpenseOutputDto> {
-    const foundExpanse = await this.expensesModel.findById(expenseId);
+    try {
+      const foundExpanse = await this.expensesModel.findById(expenseId);
 
-    if (!foundExpanse) {
-      throw new NotFoundException(EXPENSE_ERROR.EXPENSE_NOT_FOUND);
+      if (!foundExpanse) {
+        throw new NotFoundException(EXPENSE_ERROR.EXPENSE_NOT_FOUND);
+      }
+
+      if (foundExpanse.userId !== userId) {
+        throw new UnauthorizedException(EXPENSE_ERROR.ACCESS_DENIED);
+      }
+
+      let exchangeRates: Record<CURRENCIES, number>;
+      const targetCurrency = (inputDto.currency || foundExpanse.currency) as CURRENCIES;
+
+      if (inputDto.createdAt) {
+        const inputDate = new Date(inputDto.createdAt);
+
+        if (isNaN(inputDate.getTime())) {
+          throw new HttpException('Invalid date format', HttpStatus.BAD_REQUEST);
+        }
+
+        const now = new Date();
+
+        if (inputDate.getTime() > now.getTime()) {
+          throw new HttpException('Cannot set future date for expense', HttpStatus.BAD_REQUEST);
+        }
+      }
+
+      const dateChanged =
+        inputDto.createdAt && new Date(inputDto.createdAt).getTime() !== foundExpanse.createdAt.getTime();
+      const currencyChanged = inputDto.currency && inputDto.currency !== foundExpanse.currency;
+
+      if (!dateChanged && !currencyChanged) {
+        exchangeRates = foundExpanse.exchangeRates;
+      } else {
+        try {
+          const targetDate = inputDto.createdAt ? new Date(inputDto.createdAt) : foundExpanse.createdAt;
+          const ratesResponse = await this.currencyService.getRatesByDate(targetDate);
+
+          if (!ratesResponse?.rates) {
+            throw new HttpException('Failed to fetch exchange rates', HttpStatus.INTERNAL_SERVER_ERROR);
+          }
+
+          if (!Object.values(CURRENCIES).includes(targetCurrency)) {
+            throw new HttpException('Invalid currency', HttpStatus.BAD_REQUEST);
+          }
+
+          exchangeRates = ratesResponse.rates;
+
+          const requiredCurrencies = Object.values(CURRENCIES);
+          const missingCurrencies = requiredCurrencies.filter((currency) => !(currency in exchangeRates));
+
+          if (missingCurrencies.length > 0) {
+            throw new HttpException(
+              `Missing exchange rates for currencies: ${missingCurrencies.join(', ')}`,
+              HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+          }
+
+          exchangeRates = this.currencyService.recalculateCurrencyRate(targetCurrency, exchangeRates);
+        } catch (error) {
+          if (error instanceof HttpException) {
+            throw error;
+          }
+
+          throw new HttpException(
+            `Error updating exchange rates: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+      }
+
+      const updateData = {
+        ...inputDto,
+        exchangeRates,
+        updatedAt: new Date(),
+      };
+
+      return this.expensesModel.findByIdAndUpdate(expenseId, updateData, { new: true }).lean();
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(EXPENSE_ERROR.CREATE_EXPENSE_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-    if (foundExpanse.userId !== userId) {
-      throw new UnauthorizedException(EXPENSE_ERROR.ACCESS_DENIED);
-    }
-
-    //if expense create date is changed, we need to update exchange rates
-    let exchangeRates = foundExpanse.exchangeRates;
-
-    if (inputDto.createdAt && inputDto.createdAt !== foundExpanse.createdAt) {
-      exchangeRates = (await this.currencyService.getRatesByDate(new Date(inputDto.createdAt))).rates;
-    }
-
-    //if currency is changed, we need to recalculate exchange rates
-    if (inputDto.currency && inputDto.currency !== foundExpanse.currency) {
-      exchangeRates = this.currencyService.recalculateCurrencyRate(inputDto.currency, exchangeRates);
-    }
-
-    return this.expensesModel.findByIdAndUpdate(expenseId, { ...inputDto, exchangeRates }, { new: true }).lean();
   }
 
   async delete(expenseId: string, userId: string): Promise<ExpenseOutputDto> {

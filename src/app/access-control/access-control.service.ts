@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { ACCESS_CONTROL_ERROR } from './constants/access-control-error.enum';
 import { AccessControlInputDto } from './dto/access-control-input.dto';
 import { AccessControlOutputDto } from './dto/access-control-output.dto';
@@ -22,12 +22,22 @@ export class AccessControlService {
   ) {}
 
   async getAll(userId: string): Promise<AccessControlOutputDto[]> {
-    return this.accessControlModel.find({ ownerId: userId }).select('-__v').lean();
+    const results = await this.accessControlModel.find({ ownerId: userId }).select('-__v').lean();
+    return results.map((doc) => ({
+      ...doc,
+      _id: doc._id.toString(),
+      ownerId: doc.ownerId.toString(),
+      sharedWith: doc.sharedWith.toString(),
+      expenseIds: doc.expenseIds?.map((id) => id.toString()) || [],
+      categoryIds: doc.categoryIds?.map((id) => id.toString()) || [],
+      paymentSourceIds: doc.paymentSourceIds?.map((id) => id.toString()) || [],
+    }));
   }
 
   async _getAllowedExpensesId(ownerId: string, participantID: string): Promise<string[]> {
     const result = await this.accessControlModel.findOne({ ownerId, sharedWith: participantID });
-    if (result) return result.expenseIds;
+    if (result) return result.expenseIds.map((id) => id.toString());
+    return [];
   }
 
   async create(userId: string, dto: AccessControlInputDto): Promise<AccessControlOutputDto> {
@@ -68,7 +78,6 @@ export class AccessControlService {
         }
 
         // if the owner has already shared access with the user, update the access
-        // TODO Simplify this code
         existingAccessControl.set({
           ownerId: userId,
           sharedWith: dto.sharedWith,
@@ -90,13 +99,31 @@ export class AccessControlService {
           updatedAt: new Date(),
         });
 
-        return (await existingAccessControl.save()).toObject({ versionKey: false });
+        const saved = await existingAccessControl.save();
+        const result = saved.toObject({ versionKey: false });
+        return {
+          ...result,
+          _id: result._id.toString(),
+          ownerId: result.ownerId.toString(),
+          sharedWith: result.sharedWith.toString(),
+          expenseIds: result.expenseIds?.map((id) => id.toString()) || [],
+          categoryIds: result.categoryIds?.map((id) => id.toString()) || [],
+          paymentSourceIds: result.paymentSourceIds?.map((id) => id.toString()) || [],
+        };
       }
 
       const accessControl = new this.accessControlModel({ ownerId: userId, ...dto });
-      const result = await accessControl.save();
-
-      return result.toObject({ versionKey: false });
+      const saved = await accessControl.save();
+      const result = saved.toObject({ versionKey: false });
+      return {
+        ...result,
+        _id: result._id.toString(),
+        ownerId: result.ownerId.toString(),
+        sharedWith: result.sharedWith.toString(),
+        expenseIds: result.expenseIds?.map((id) => id.toString()) || [],
+        categoryIds: result.categoryIds?.map((id) => id.toString()) || [],
+        paymentSourceIds: result.paymentSourceIds?.map((id) => id.toString()) || [],
+      };
     } catch (error) {
       throw new HttpException(ACCESS_CONTROL_ERROR.CREATE_ACCESS_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -118,9 +145,17 @@ export class AccessControlService {
     }
 
     result.set({ ...dto, updatedAt: new Date() });
-    result.save();
-
-    return result.toObject({ versionKey: false });
+    const saved = await result.save();
+    const updated = saved.toObject({ versionKey: false });
+    return {
+      ...updated,
+      _id: updated._id.toString(),
+      ownerId: updated.ownerId.toString(),
+      sharedWith: updated.sharedWith.toString(),
+      expenseIds: updated.expenseIds?.map((id) => id.toString()) || [],
+      categoryIds: updated.categoryIds?.map((id) => id.toString()) || [],
+      paymentSourceIds: updated.paymentSourceIds?.map((id) => id.toString()) || [],
+    };
   }
 
   async delete(userId: string, accessId: string): Promise<AccessControlOutputDto> {
@@ -130,7 +165,16 @@ export class AccessControlService {
       throw new NotFoundException(ACCESS_CONTROL_ERROR.DELETE_ACCESS_ERROR);
     }
 
-    return result.toObject({ versionKey: false });
+    const deleted = result.toObject({ versionKey: false });
+    return {
+      ...deleted,
+      _id: deleted._id.toString(),
+      ownerId: deleted.ownerId.toString(),
+      sharedWith: deleted.sharedWith.toString(),
+      expenseIds: deleted.expenseIds?.map((id) => id.toString()) || [],
+      categoryIds: deleted.categoryIds?.map((id) => id.toString()) || [],
+      paymentSourceIds: deleted.paymentSourceIds?.map((id) => id.toString()) || [],
+    };
   }
 
   async deleteMeFromShared(userId: string, dto: DeleteMeFromSharedInputDto): Promise<AccessControlOutputDto> {
@@ -152,22 +196,33 @@ export class AccessControlService {
     accessControl.paymentSourceIds = accessControl.paymentSourceIds.filter((id) => !paymentSourceIds.includes(id));
 
     try {
-      await this.accessControlModel.findByIdAndUpdate(accessId, accessControl);
+      const updated = await this.accessControlModel.findByIdAndUpdate(accessId, accessControl, { new: true });
+      if (!updated) {
+        throw new Error('Failed to update access control');
+      }
+      return {
+        _id: updated._id.toString(),
+        ownerId: updated.ownerId.toString(),
+        sharedWith: updated.sharedWith.toString(),
+        expenseIds: updated.expenseIds?.map((id) => id.toString()) || [],
+        categoryIds: updated.categoryIds?.map((id) => id.toString()) || [],
+        paymentSourceIds: updated.paymentSourceIds?.map((id) => id.toString()) || [],
+      };
     } catch (error) {
       throw new InternalServerErrorException(ACCESS_CONTROL_ERROR.DELETE_ME_ERROR);
     }
-
-    return {
-      _id: accessId,
-      ownerId: accessControl.ownerId,
-      sharedWith: accessControl.sharedWith,
-      expenseIds: accessControl.expenseIds,
-      categoryIds: accessControl.categoryIds,
-      paymentSourceIds: accessControl.paymentSourceIds,
-    };
   }
 
   async getSharedWithMe(userId: string): Promise<AccessControlOutputDto[]> {
-    return this.accessControlModel.find({ sharedWith: userId }).select('-__v').lean();
+    const results = await this.accessControlModel.find({ sharedWith: userId }).select('-__v').lean();
+    return results.map((doc) => ({
+      ...doc,
+      _id: doc._id.toString(),
+      ownerId: doc.ownerId.toString(),
+      sharedWith: doc.sharedWith.toString(),
+      expenseIds: doc.expenseIds?.map((id) => id.toString()) || [],
+      categoryIds: doc.categoryIds?.map((id) => id.toString()) || [],
+      paymentSourceIds: doc.paymentSourceIds?.map((id) => id.toString()) || [],
+    }));
   }
 }
