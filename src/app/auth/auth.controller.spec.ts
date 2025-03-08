@@ -1,11 +1,13 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { createAndSetupApp } from '../../app';
 import { AuthInputDto } from './dto/auth-input.dto';
 import { LoginInputDto } from './dto/login-input.dto';
+import { Connection } from 'mongoose';
+import { setupTestApp, cleanupTestApp } from '../../../test/test-utils';
 
 describe('AuthController', () => {
   let app: INestApplication;
+  let connection: Connection;
   let authTokens: { accessToken: string; refreshToken: string };
 
   const user = {
@@ -15,12 +17,13 @@ describe('AuthController', () => {
   let verificationToken = '';
 
   beforeAll(async () => {
-    app = await createAndSetupApp();
-    await app.init();
+    const testSetup = await setupTestApp();
+    app = testSetup.app;
+    connection = testSetup.connection;
   });
 
   afterAll(async () => {
-    await app.close();
+    await cleanupTestApp(app, connection);
   });
 
   describe('POST /auth/register', () => {

@@ -1,10 +1,12 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { createAndSetupApp } from '../../app';
-import { LoginInputDto } from '../auth/dto/login-input.dto';
+import { Connection } from 'mongoose';
+import { setupTestApp, cleanupTestApp } from '../../../test/test-utils';
+import { AuthInputDto } from '../auth/dto/auth-input.dto';
 
-describe('AuthController', () => {
+describe('UserController', () => {
   let app: INestApplication;
+  let connection: Connection;
   let authTokens: { accessToken: string; refreshToken: string };
 
   const user = {
@@ -13,30 +15,52 @@ describe('AuthController', () => {
   };
 
   beforeAll(async () => {
-    app = await createAndSetupApp();
-    await app.init();
-  });
+    try {
+      const testSetup = await setupTestApp();
+      app = testSetup.app;
+      connection = testSetup.connection;
 
-  afterAll(async () => {
-    await app.close();
-  });
+      const registerDto: AuthInputDto = user;
+      const registerResponse = await request(app.getHttpServer())
+        .post('/api/auth/register')
+        .send(registerDto)
+        .expect(201);
 
-  describe('POST /auth/login', () => {
-    it('should login a user', async () => {
-      const loginDto: LoginInputDto = user;
+      expect(registerResponse.status).toBe(201);
+      const verificationToken = registerResponse.text;
 
-      const response = await request(app.getHttpServer()).post('/api/auth/login').send(loginDto).expect(200);
+      await request(app.getHttpServer()).get(`/api/auth/confirm?token=${verificationToken}`).expect(200);
 
-      expect(response.body).toEqual(
+      const loginResponse = await request(app.getHttpServer()).post('/api/auth/login').send(user).expect(200);
+
+      expect(loginResponse.body).toEqual(
         expect.objectContaining({
           accessToken: expect.any(String),
           refreshToken: expect.any(String),
+          isVerified: true,
         }),
       );
 
-      authTokens = { accessToken: response.body.accessToken, refreshToken: response.body.refreshToken };
-    });
-  });
+      expect(loginResponse.body.accessToken).toBeTruthy();
+      expect(loginResponse.body.refreshToken).toBeTruthy();
+
+      authTokens = {
+        accessToken: loginResponse.body.accessToken,
+        refreshToken: loginResponse.body.refreshToken,
+      };
+
+      expect(authTokens.accessToken).toBeTruthy();
+      expect(authTokens.refreshToken).toBeTruthy();
+    } catch (error) {
+      console.error('Error in beforeAll:', error);
+      await cleanupTestApp(app, connection);
+      throw error;
+    }
+  }, 30000);
+
+  afterAll(async () => {
+    await cleanupTestApp(app, connection);
+  }, 10000);
 
   describe('DELETE /user/delete-me', () => {
     it('should not delete a user without authorization', async () => {
@@ -51,6 +75,8 @@ describe('AuthController', () => {
     });
 
     it('should delete a user', async () => {
+      expect(authTokens.accessToken).toBeTruthy();
+
       const response = await request(app.getHttpServer())
         .delete('/api/user/delete-me')
         .set('Authorization', `Bearer ${authTokens.accessToken}`)

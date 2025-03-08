@@ -1,10 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
 import { CURRENCIES } from '../src/common/interfaces/currencies.enum';
 import { Connection } from 'mongoose';
-import { getConnectionToken } from '@nestjs/mongoose';
+import { setupTestApp, cleanupTestApp } from './test-utils';
 
 describe('PostponedExpense (e2e)', () => {
   let app: INestApplication;
@@ -12,15 +10,10 @@ describe('PostponedExpense (e2e)', () => {
   let authToken: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    const testSetup = await setupTestApp();
+    app = testSetup.app;
+    connection = testSetup.connection;
 
-    app = moduleFixture.createNestApplication();
-    connection = moduleFixture.get<Connection>(getConnectionToken());
-    await app.init();
-
-    // Получаем токен авторизации
     const loginResponse = await request(app.getHttpServer()).post('/api/auth/login').send({
       email: 'test@example.com',
       password: 'password123',
@@ -30,9 +23,7 @@ describe('PostponedExpense (e2e)', () => {
   });
 
   afterAll(async () => {
-    await connection.dropDatabase();
-    await connection.close();
-    await app.close();
+    await cleanupTestApp(app, connection);
   });
 
   describe('/api/postponed-expenses', () => {
@@ -73,7 +64,6 @@ describe('PostponedExpense (e2e)', () => {
     });
 
     it('should get a specific postponed expense', async () => {
-      // Сначала создаем расход
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + 1);
 
@@ -89,8 +79,6 @@ describe('PostponedExpense (e2e)', () => {
         });
 
       const expenseId = createResponse.body._id;
-
-      // Затем получаем его по ID
       const response = await request(app.getHttpServer())
         .get(`/api/postponed-expenses/${expenseId}`)
         .set('Authorization', `Bearer ${authToken}`)
@@ -100,7 +88,6 @@ describe('PostponedExpense (e2e)', () => {
     });
 
     it('should update a postponed expense', async () => {
-      // Сначала создаем расход
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + 1);
 
@@ -117,7 +104,6 @@ describe('PostponedExpense (e2e)', () => {
 
       const expenseId = createResponse.body._id;
 
-      // Затем обновляем его
       const updateDto = {
         amount: 200,
         currency: CURRENCIES.EUR,
@@ -134,7 +120,6 @@ describe('PostponedExpense (e2e)', () => {
     });
 
     it('should delete a postponed expense', async () => {
-      // Сначала создаем расход
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + 1);
 
@@ -151,13 +136,11 @@ describe('PostponedExpense (e2e)', () => {
 
       const expenseId = createResponse.body._id;
 
-      // Затем удаляем его
       await request(app.getHttpServer())
         .delete(`/api/postponed-expenses/${expenseId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
-      // Проверяем, что расход действительно удален
       await request(app.getHttpServer())
         .get(`/api/postponed-expenses/${expenseId}`)
         .set('Authorization', `Bearer ${authToken}`)

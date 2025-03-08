@@ -5,7 +5,15 @@ export const getMongoConfigs = (configService: ConfigService) => {
   const dbAdminPassword = configService.get('DB_ADMIN_PASSWORD');
   const dbName = process.env.NODE_ENV === 'test' ? configService.get('TEST_DB_NAME') : configService.get('DB_NAME');
 
+  const uri = `mongodb+srv://${dbAdminName}:${dbAdminPassword}@cluster0.fujwcru.mongodb.net/${dbName}`;
+
   return {
-    uri: `mongodb+srv://${dbAdminName}:${dbAdminPassword}@cluster0.fujwcru.mongodb.net/${dbName}`,
+    uri,
+    ...(process.env.NODE_ENV === 'test' && {
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 5000,
+      heartbeatFrequencyMS: 1000,
+    }),
   };
 };
