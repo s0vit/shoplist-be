@@ -5,6 +5,26 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
 import { setupApp } from '../src/configs/setupApp';
 
+async function waitForConnection(connection: Connection, timeoutMs: number = 10000): Promise<void> {
+  if (connection.readyState === 1) return;
+
+  return new Promise<void>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Database connection timeout'));
+    }, timeoutMs);
+
+    connection.once('connected', () => {
+      clearTimeout(timeout);
+      resolve();
+    });
+
+    connection.once('error', (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+  });
+}
+
 export async function setupTestApp(): Promise<{
   app: INestApplication;
   connection: Connection;
@@ -21,25 +41,11 @@ export async function setupTestApp(): Promise<{
     app = moduleFixture.createNestApplication();
     connection = moduleFixture.get<Connection>(getConnectionToken());
 
-    if (connection.readyState !== 1) {
-      await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error('Database connection timeout'));
-        }, 5000);
-
-        connection!.once('connected', () => {
-          clearTimeout(timeout);
-          resolve();
-        });
-
-        connection!.once('error', (error) => {
-          clearTimeout(timeout);
-          reject(error);
-        });
-      });
-    }
-
+    await waitForConnection(connection);
     await connection.dropDatabase();
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     await setupApp(app);
     await app.init();
 
@@ -53,9 +59,15 @@ export async function setupTestApp(): Promise<{
 
 export async function cleanupTestApp(app?: INestApplication, connection?: Connection): Promise<void> {
   try {
-    if (connection) await connection.close();
+    if (connection) {
+      await connection.dropDatabase();
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      await connection.close();
+    }
+
     if (app) await app.close();
   } catch (error) {
+    console.error('Error during cleanup:', error);
     throw error;
   }
 }
