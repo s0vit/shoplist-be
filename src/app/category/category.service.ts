@@ -33,6 +33,7 @@ export class CategoryService {
 
     try {
       const results = await this.categoryModel.find({ userId }).select('-__v').lean();
+
       return results.map((doc) => ({
         _id: doc._id.toString(),
         userId: doc.userId.toString(),
@@ -65,6 +66,7 @@ export class CategoryService {
     }
 
     const result = category.toObject({ versionKey: false });
+
     return {
       _id: result._id.toString(),
       userId: result.userId.toString(),
@@ -95,6 +97,7 @@ export class CategoryService {
       });
       const createdCategory = await newCategoryInstance.save();
       const result = createdCategory.toObject({ versionKey: false });
+
       return {
         _id: result._id.toString(),
         userId: result.userId.toString(),
@@ -129,6 +132,7 @@ export class CategoryService {
       });
       await category.save();
       const result = category.toObject({ versionKey: false });
+
       return {
         _id: result._id.toString(),
         userId: result.userId.toString(),
@@ -158,6 +162,7 @@ export class CategoryService {
     try {
       await category.deleteOne();
       const result = category.toObject({ versionKey: false });
+
       return {
         _id: result._id.toString(),
         userId: result.userId.toString(),
@@ -231,6 +236,7 @@ export class CategoryService {
       category.set({ order: newOrder });
       await category.save();
       const result = category.toObject({ versionKey: false });
+
       return {
         _id: result._id.toString(),
         userId: result.userId.toString(),

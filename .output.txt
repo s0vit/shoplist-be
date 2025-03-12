@@ -1,0 +1,203 @@
+
+> shoplist-be@0.1.1 test
+> jest --runInBand src/app/database-backup/database-backup.service.spec.ts
+
+FAIL src/app/database-backup/database-backup.service.spec.ts
+  DatabaseBackupService
+    ✕ should be defined (1 ms)
+    constructor
+      ✕ should create backup directory if it does not exist (1 ms)
+      ✕ should not create backup directory if it already exists
+    createDatabaseBackup
+      ✕ should execute mongodump command with correct parameters
+      ✕ should not execute mongodump if database credentials are missing
+      ✕ should handle errors during backup (1 ms)
+      ✕ should log error if stderr contains error message
+      ✕ should call cleanupOldBackups after successful backup
+    cleanupOldBackups
+      ✕ should delete files older than 7 days (1 ms)
+      ✕ should handle errors during cleanup
+    manualBackup
+      ✕ should call createDatabaseBackup
+
+  ● DatabaseBackupService › should be defined
+
+    TypeError: common_1.Logger.overrideLogger is not a function
+
+      69 |         },
+      70 |       ],
+    > 71 |     }).compile();
+         |        ^
+      72 |
+      73 |     service = module.get<DatabaseBackupService>(DatabaseBackupService);
+      74 |     configService = module.get<ConfigService>(ConfigService);
+
+      at TestingModuleBuilder.applyLogger (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:127:25)
+      at TestingModuleBuilder.compile (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:59:14)
+      at Object.<anonymous> (app/database-backup/database-backup.service.spec.ts:71:8)
+
+  ● DatabaseBackupService › constructor › should create backup directory if it does not exist
+
+    TypeError: common_1.Logger.overrideLogger is not a function
+
+      69 |         },
+      70 |       ],
+    > 71 |     }).compile();
+         |        ^
+      72 |
+      73 |     service = module.get<DatabaseBackupService>(DatabaseBackupService);
+      74 |     configService = module.get<ConfigService>(ConfigService);
+
+      at TestingModuleBuilder.applyLogger (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:127:25)
+      at TestingModuleBuilder.compile (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:59:14)
+      at Object.<anonymous> (app/database-backup/database-backup.service.spec.ts:71:8)
+
+  ● DatabaseBackupService › constructor › should not create backup directory if it already exists
+
+    TypeError: common_1.Logger.overrideLogger is not a function
+
+      69 |         },
+      70 |       ],
+    > 71 |     }).compile();
+         |        ^
+      72 |
+      73 |     service = module.get<DatabaseBackupService>(DatabaseBackupService);
+      74 |     configService = module.get<ConfigService>(ConfigService);
+
+      at TestingModuleBuilder.applyLogger (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:127:25)
+      at TestingModuleBuilder.compile (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:59:14)
+      at Object.<anonymous> (app/database-backup/database-backup.service.spec.ts:71:8)
+
+  ● DatabaseBackupService › createDatabaseBackup › should execute mongodump command with correct parameters
+
+    TypeError: common_1.Logger.overrideLogger is not a function
+
+      69 |         },
+      70 |       ],
+    > 71 |     }).compile();
+         |        ^
+      72 |
+      73 |     service = module.get<DatabaseBackupService>(DatabaseBackupService);
+      74 |     configService = module.get<ConfigService>(ConfigService);
+
+      at TestingModuleBuilder.applyLogger (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:127:25)
+      at TestingModuleBuilder.compile (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:59:14)
+      at Object.<anonymous> (app/database-backup/database-backup.service.spec.ts:71:8)
+
+  ● DatabaseBackupService › createDatabaseBackup › should not execute mongodump if database credentials are missing
+
+    TypeError: common_1.Logger.overrideLogger is not a function
+
+      69 |         },
+      70 |       ],
+    > 71 |     }).compile();
+         |        ^
+      72 |
+      73 |     service = module.get<DatabaseBackupService>(DatabaseBackupService);
+      74 |     configService = module.get<ConfigService>(ConfigService);
+
+      at TestingModuleBuilder.applyLogger (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:127:25)
+      at TestingModuleBuilder.compile (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:59:14)
+      at Object.<anonymous> (app/database-backup/database-backup.service.spec.ts:71:8)
+
+  ● DatabaseBackupService › createDatabaseBackup › should handle errors during backup
+
+    TypeError: common_1.Logger.overrideLogger is not a function
+
+      69 |         },
+      70 |       ],
+    > 71 |     }).compile();
+         |        ^
+      72 |
+      73 |     service = module.get<DatabaseBackupService>(DatabaseBackupService);
+      74 |     configService = module.get<ConfigService>(ConfigService);
+
+      at TestingModuleBuilder.applyLogger (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:127:25)
+      at TestingModuleBuilder.compile (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:59:14)
+      at Object.<anonymous> (app/database-backup/database-backup.service.spec.ts:71:8)
+
+  ● DatabaseBackupService › createDatabaseBackup › should log error if stderr contains error message
+
+    TypeError: common_1.Logger.overrideLogger is not a function
+
+      69 |         },
+      70 |       ],
+    > 71 |     }).compile();
+         |        ^
+      72 |
+      73 |     service = module.get<DatabaseBackupService>(DatabaseBackupService);
+      74 |     configService = module.get<ConfigService>(ConfigService);
+
+      at TestingModuleBuilder.applyLogger (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:127:25)
+      at TestingModuleBuilder.compile (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:59:14)
+      at Object.<anonymous> (app/database-backup/database-backup.service.spec.ts:71:8)
+
+  ● DatabaseBackupService › createDatabaseBackup › should call cleanupOldBackups after successful backup
+
+    TypeError: common_1.Logger.overrideLogger is not a function
+
+      69 |         },
+      70 |       ],
+    > 71 |     }).compile();
+         |        ^
+      72 |
+      73 |     service = module.get<DatabaseBackupService>(DatabaseBackupService);
+      74 |     configService = module.get<ConfigService>(ConfigService);
+
+      at TestingModuleBuilder.applyLogger (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:127:25)
+      at TestingModuleBuilder.compile (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:59:14)
+      at Object.<anonymous> (app/database-backup/database-backup.service.spec.ts:71:8)
+
+  ● DatabaseBackupService › cleanupOldBackups › should delete files older than 7 days
+
+    TypeError: common_1.Logger.overrideLogger is not a function
+
+      69 |         },
+      70 |       ],
+    > 71 |     }).compile();
+         |        ^
+      72 |
+      73 |     service = module.get<DatabaseBackupService>(DatabaseBackupService);
+      74 |     configService = module.get<ConfigService>(ConfigService);
+
+      at TestingModuleBuilder.applyLogger (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:127:25)
+      at TestingModuleBuilder.compile (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:59:14)
+      at Object.<anonymous> (app/database-backup/database-backup.service.spec.ts:71:8)
+
+  ● DatabaseBackupService › cleanupOldBackups › should handle errors during cleanup
+
+    TypeError: common_1.Logger.overrideLogger is not a function
+
+      69 |         },
+      70 |       ],
+    > 71 |     }).compile();
+         |        ^
+      72 |
+      73 |     service = module.get<DatabaseBackupService>(DatabaseBackupService);
+      74 |     configService = module.get<ConfigService>(ConfigService);
+
+      at TestingModuleBuilder.applyLogger (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:127:25)
+      at TestingModuleBuilder.compile (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:59:14)
+      at Object.<anonymous> (app/database-backup/database-backup.service.spec.ts:71:8)
+
+  ● DatabaseBackupService › manualBackup › should call createDatabaseBackup
+
+    TypeError: common_1.Logger.overrideLogger is not a function
+
+      69 |         },
+      70 |       ],
+    > 71 |     }).compile();
+         |        ^
+      72 |
+      73 |     service = module.get<DatabaseBackupService>(DatabaseBackupService);
+      74 |     configService = module.get<ConfigService>(ConfigService);
+
+      at TestingModuleBuilder.applyLogger (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:127:25)
+      at TestingModuleBuilder.compile (../node_modules/.pnpm/@nestjs+testing@10.4.15_@nestjs+common@10.4.15_class-transformer@0.5.1_class-validator@_21d6706a2db3e2345ca60bf91347a67c/node_modules/@nestjs/testing/testing-module.builder.js:59:14)
+      at Object.<anonymous> (app/database-backup/database-backup.service.spec.ts:71:8)
+
+[999D[KTest Suites: 1 failed, 1 total
+Tests:       11 failed, 11 total
+Snapshots:   0 total
+Time:        1.899 s
+Ran all test suites matching /src\/app\/database-backup\/database-backup.service.spec.ts/i.

@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { ACCESS_CONTROL_ERROR } from './constants/access-control-error.enum';
 import { AccessControlInputDto } from './dto/access-control-input.dto';
 import { AccessControlOutputDto } from './dto/access-control-output.dto';
@@ -23,6 +23,7 @@ export class AccessControlService {
 
   async getAll(userId: string): Promise<AccessControlOutputDto[]> {
     const results = await this.accessControlModel.find({ ownerId: userId }).select('-__v').lean();
+
     return results.map((doc) => ({
       ...doc,
       _id: doc._id.toString(),
@@ -37,6 +38,7 @@ export class AccessControlService {
   async _getAllowedExpensesId(ownerId: string, participantID: string): Promise<string[]> {
     const result = await this.accessControlModel.findOne({ ownerId, sharedWith: participantID });
     if (result) return result.expenseIds.map((id) => id.toString());
+
     return [];
   }
 
@@ -101,6 +103,7 @@ export class AccessControlService {
 
         const saved = await existingAccessControl.save();
         const result = saved.toObject({ versionKey: false });
+
         return {
           ...result,
           _id: result._id.toString(),
@@ -115,6 +118,7 @@ export class AccessControlService {
       const accessControl = new this.accessControlModel({ ownerId: userId, ...dto });
       const saved = await accessControl.save();
       const result = saved.toObject({ versionKey: false });
+
       return {
         ...result,
         _id: result._id.toString(),
@@ -147,6 +151,7 @@ export class AccessControlService {
     result.set({ ...dto, updatedAt: new Date() });
     const saved = await result.save();
     const updated = saved.toObject({ versionKey: false });
+
     return {
       ...updated,
       _id: updated._id.toString(),
@@ -166,6 +171,7 @@ export class AccessControlService {
     }
 
     const deleted = result.toObject({ versionKey: false });
+
     return {
       ...deleted,
       _id: deleted._id.toString(),
@@ -197,9 +203,11 @@ export class AccessControlService {
 
     try {
       const updated = await this.accessControlModel.findByIdAndUpdate(accessId, accessControl, { new: true });
+
       if (!updated) {
         throw new Error('Failed to update access control');
       }
+
       return {
         _id: updated._id.toString(),
         ownerId: updated.ownerId.toString(),
@@ -215,6 +223,7 @@ export class AccessControlService {
 
   async getSharedWithMe(userId: string): Promise<AccessControlOutputDto[]> {
     const results = await this.accessControlModel.find({ sharedWith: userId }).select('-__v').lean();
+
     return results.map((doc) => ({
       ...doc,
       _id: doc._id.toString(),

@@ -17,7 +17,7 @@ import { EXPENSE_ERROR } from './constants/expense-error.enum';
 import { ExpenseInputDto } from './dto/expense-input.dto';
 import { ExpenseOutputDto } from './dto/expense-output.dto';
 import { ExpenseQueryInputDto } from './dto/expense-query-input.dto';
-import { Expense, ExpensesDocument } from './models/expense.model';
+import { Expense } from './models/expense.model';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CronExpenseService } from '../cron-expenses/cron-expense.service';
 import { RECURRENCE_TYPES } from '../cron-expenses/constants/RECURRENCE_TYPES';

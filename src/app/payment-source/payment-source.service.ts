@@ -38,6 +38,7 @@ export class PaymentSourceService {
 
     const saved = await newPaymentSource.save();
     const result = saved.toObject({ versionKey: false });
+
     return {
       _id: result._id.toString(),
       userId: result.userId.toString(),
@@ -64,6 +65,7 @@ export class PaymentSourceService {
     await toBeDeletedPaymentSource.deleteOne();
 
     const result = toBeDeletedPaymentSource.toObject({ versionKey: false });
+
     return {
       _id: result._id.toString(),
       userId: result.userId.toString(),
@@ -96,6 +98,7 @@ export class PaymentSourceService {
     await paymentSource.save();
 
     const result = paymentSource.toObject({ versionKey: false });
+
     return {
       _id: result._id.toString(),
       userId: result.userId.toString(),
@@ -125,6 +128,7 @@ export class PaymentSourceService {
     }
 
     const result = paymentSource.toObject({ versionKey: false });
+
     return {
       _id: result._id.toString(),
       userId: result.userId.toString(),
@@ -145,6 +149,7 @@ export class PaymentSourceService {
     const userId = this.jwtService.decode(accessToken)['userId'];
 
     const results = await this.paymentSourceModel.find({ userId }).sort({ order: 1 }).select('-__v').lean();
+
     return results.map((doc) => ({
       _id: doc._id.toString(),
       userId: doc.userId.toString(),
@@ -213,6 +218,7 @@ export class PaymentSourceService {
     await paymentSource.save();
 
     const result = paymentSource.toObject({ versionKey: false });
+
     return {
       _id: result._id.toString(),
       userId: result.userId.toString(),
