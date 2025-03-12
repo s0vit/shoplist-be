@@ -24,7 +24,7 @@ export function UpdateOrderPaymentSourceSwDec() {
       type: PaymentSourceOrderUpdateDto,
     }),
     ApiOperation({
-      summary: 'Update a order',
+      summary: 'Update an order',
       description: 'The order has been successfully updated.',
     }),
     ApiOkResponse({

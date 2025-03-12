@@ -17,7 +17,7 @@ export function DeleteCategorySwDec() {
       name: 'categoryId',
       type: String,
       required: true,
-      description: 'The category source id',
+      description: 'The category id',
     }),
     ApiResponse({
       status: 200,

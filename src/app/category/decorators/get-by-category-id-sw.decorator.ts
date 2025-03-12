@@ -15,7 +15,7 @@ export function GetByCategoryIdSwDec() {
     ApiBearerAuth(),
     ApiParam({
       name: 'categoryId',
-      description: '#### The Category source id',
+      description: '#### The Category id',
       type: String,
       required: true,
     }),
