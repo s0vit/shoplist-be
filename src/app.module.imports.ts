@@ -7,6 +7,7 @@ import { AuthModule } from './app/auth/auth.module';
 import { CategoryModule } from './app/category/category.module';
 import { CloudinaryModule } from './app/cloudinary/cloudinary.module';
 import { CurrencyModule } from './app/currency/currency.module';
+import { DatabaseBackupModule } from './app/database-backup/database-backup.module';
 import { ExpenseModule } from './app/expense/expense.module';
 import { FamilyBudgetModule } from './app/family-budget/family-budget.module';
 import { PaymentSourcesModule } from './app/payment-source/payment-sources.module';
@@ -41,4 +42,5 @@ export const appModuleImports: ModuleMetadata['imports'] = [
   UserConfigModule,
   FamilyBudgetModule,
   PostponedExpenseModule,
+  DatabaseBackupModule,
 ];

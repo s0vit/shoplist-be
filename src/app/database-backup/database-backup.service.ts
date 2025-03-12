@@ -14,7 +14,6 @@ export class DatabaseBackupService {
   private readonly backupDir = path.join(process.cwd(), 'backups');
 
   constructor(private readonly configService: ConfigService) {
-    // Create backup directory if it doesn't exist
     if (!fs.existsSync(this.backupDir)) {
       fs.mkdirSync(this.backupDir, { recursive: true });
       this.logger.log(`Created backup directory at ${this.backupDir}`);
@@ -33,13 +32,13 @@ export class DatabaseBackupService {
 
       if (!dbAdminName || !dbAdminPassword || !dbName) {
         this.logger.error('Database credentials not found in environment variables');
+
         return;
       }
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const backupFilePath = path.join(this.backupDir, `${dbName}-${timestamp}`);
 
-      // Create mongodump command
       const mongodumpCommand = `mongodump --uri="mongodb+srv://${dbAdminName}:${dbAdminPassword}@${dbHost}/${dbName}" --out=${backupFilePath}`;
 
       this.logger.log(`Starting database backup to ${backupFilePath}`);
@@ -47,6 +46,7 @@ export class DatabaseBackupService {
 
       if (stderr && !stderr.includes('done dumping')) {
         this.logger.error(`Error during backup: ${stderr}`);
+
         return;
       }
 
@@ -55,7 +55,7 @@ export class DatabaseBackupService {
       // Clean up old backups (keep only the last 7 days)
       this.cleanupOldBackups();
     } catch (error) {
-      this.logger.error(`Failed to create database backup: ${error.message}`);
+      this.logger.error(`Failed to create database backup: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -76,7 +76,16 @@ export class DatabaseBackupService {
         }
       }
     } catch (error) {
-      this.logger.error(`Failed to clean up old backups: ${error.message}`);
+      this.logger.error(`Failed to clean up old backups: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  /**
+   * Manually trigger a database backup
+   * This method can be used for testing or to manually create a backup
+   */
+  async manualBackup(): Promise<void> {
+    this.logger.log('Manually triggering database backup');
+    await this.createDatabaseBackup();
   }
 }

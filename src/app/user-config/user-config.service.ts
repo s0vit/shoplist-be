@@ -52,6 +52,7 @@ export class UserConfigService {
       versionKey: false,
       transform: (_doc, ret) => {
         delete ret.userId;
+
         return ret;
       },
     });
@@ -82,6 +83,7 @@ export class UserConfigService {
     }
 
     const result = updated.toObject();
+
     return {
       _id: result._id.toString(),
       theme: result.theme as THEME_ENUM,
