@@ -30,7 +30,7 @@ export const setupApp = async (app: INestApplication) => {
       if (knownOrigins.includes(origin) || origin.includes('.vercel.app')) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error('Not allowed by CORS, origin:' + origin));
       }
     },
     credentials: true,

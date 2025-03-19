@@ -17,3 +17,5 @@ node_modules
 .notes
 # Sentry Config File
 .sentryclirc
+
+.output
