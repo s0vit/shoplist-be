@@ -17,8 +17,10 @@ import { configThrottling } from './configs/config-throttling';
 import { getMongoConfigs } from './configs/get-mongo.configs';
 import { CronExpenseModule } from './app/cron-expenses/cron-expense.module';
 import { PostponedExpenseModule } from './app/postponed-expense/postponed-expense.module';
+import { SentryModule } from '@sentry/nestjs/setup';
 
 export const appModuleImports: ModuleMetadata['imports'] = [
+  SentryModule.forRoot(),
   ConfigModule.forRoot(),
   MongooseModule.forRootAsync({
     imports: [ConfigModule],
