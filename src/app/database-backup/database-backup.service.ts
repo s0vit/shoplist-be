@@ -14,9 +14,13 @@ export class DatabaseBackupService {
   private readonly backupDir = path.join(process.cwd(), 'backups');
 
   constructor(private readonly configService: ConfigService) {
-    if (!fs.existsSync(this.backupDir)) {
-      fs.mkdirSync(this.backupDir, { recursive: true });
-      this.logger.log(`Created backup directory at ${this.backupDir}`);
+    if (!process.env.VERCEL) {
+      if (!fs.existsSync(this.backupDir)) {
+        fs.mkdirSync(this.backupDir, { recursive: true });
+        this.logger.log(`Created backup directory at ${this.backupDir}`);
+      }
+    } else {
+      this.logger.log('Backup disabled on Vercel environment');
     }
   }
 
@@ -24,6 +28,12 @@ export class DatabaseBackupService {
     timeZone: 'UTC',
   })
   async createDatabaseBackup(): Promise<void> {
+    if (process.env.VERCEL) {
+      this.logger.log('Database backup skipped on Vercel environment');
+
+      return;
+    }
+
     try {
       const dbAdminName = this.configService.get<string>('DB_ADMIN_NAME');
       const dbAdminPassword = this.configService.get<string>('DB_ADMIN_PASSWORD');
