@@ -2,7 +2,7 @@ import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/co
 import { Request, Response } from 'express';
 import { SentryExceptionCaptured } from '@sentry/nestjs';
 
-@Catch(HttpException)
+@Catch()
 class ErrorExceptionFilter implements ExceptionFilter {
   @SentryExceptionCaptured()
   catch(exception: Error, host: ArgumentsHost) {
