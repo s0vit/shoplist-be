@@ -1,4 +1,5 @@
 import { createAndSetupApp } from './app';
+import './instrument.ts';
 
 async function bootstrap() {
   const app = await createAndSetupApp();
