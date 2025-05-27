@@ -1,3 +1,4 @@
+import './instrument';
 import { createAndSetupApp } from './app';
 
 async function bootstrap() {
