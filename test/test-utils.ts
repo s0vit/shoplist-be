@@ -88,7 +88,7 @@ export async function setupTestApp(): Promise<{
       process.env.REFRESH_TOKEN_KEY || 'test-refresh-secret-key-for-testing-purposes-only';
     process.env.REGISTER_TOKEN_KEY =
       process.env.REGISTER_TOKEN_KEY || 'test-register-secret-key-for-testing-purposes-only';
-    process.env.CLIENT_URLS = process.env.CLIENT_URLS || '["http://localhost:3000"]';
+    process.env.CLIENT_URLS = process.env.CLIENT_URLS || JSON.stringify(['http://localhost:3000']);
     process.env.SMTP_HOST = process.env.SMTP_HOST || 'localhost';
     process.env.SMTP_PORT = process.env.SMTP_PORT || '587';
     process.env.SMTP_USER = process.env.SMTP_USER || 'test@example.com';
