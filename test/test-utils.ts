@@ -63,6 +63,12 @@ export async function setupTestApp(): Promise<{
       .useValue({
         createDefaultPaymentSources: jest.fn().mockResolvedValue(true),
       })
+      .overrideProvider('UtilsService')
+      .useValue({
+        createCaseInsensitiveRegexFromString: jest.fn((str: string) => new RegExp(`^${str}$`, 'i')),
+        convertToWebP: jest.fn().mockResolvedValue(Buffer.from('test')),
+        normalizeDate: jest.fn((date: Date) => date.toISOString().split('T')[0]),
+      })
       .compile();
 
     // Set up test environment variables with fallbacks

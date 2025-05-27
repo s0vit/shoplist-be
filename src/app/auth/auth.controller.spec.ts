@@ -33,6 +33,15 @@ describe('AuthController', () => {
 
       const response = await request(app.getHttpServer()).post('/api/auth/register').send(registerDto);
 
+      console.log('Register response status:', response.status);
+      console.log('Register response body:', response.body);
+      console.log('Register response text:', response.text);
+
+      if (response.status !== 201) {
+        console.error('Registration failed with status:', response.status);
+        console.error('Error details:', response.body);
+      }
+
       expect(response.status).toBe(201);
       expect(response.text).toMatch(/.+\..+\..+/);
       verificationToken = response.text;
