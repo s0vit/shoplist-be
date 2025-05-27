@@ -4,6 +4,8 @@ import { getConnectionToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
 import { setupApp } from '../src/configs/setupApp';
+import { CategoryService } from '../src/app/category/category.service';
+import { PaymentSourceService } from '../src/app/payment-source/payment-source.service';
 
 async function waitForConnection(connection: Connection, timeoutMs: number = 10000): Promise<void> {
   if (connection.readyState === 1) return;
@@ -36,7 +38,24 @@ export async function setupTestApp(): Promise<{
   try {
     moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider('MailerService')
+      .useValue({
+        sendMail: jest.fn().mockResolvedValue(true),
+      })
+      .overrideProvider(CategoryService)
+      .useValue({
+        createDefaultCategories: jest.fn().mockResolvedValue(true),
+      })
+      .overrideProvider(PaymentSourceService)
+      .useValue({
+        createDefaultPaymentSources: jest.fn().mockResolvedValue(true),
+      })
+      .compile();
+
+    process.env.ACCESS_TOKEN_KEY = process.env.ACCESS_TOKEN_KEY || 'test-access-secret';
+    process.env.REFRESH_TOKEN_KEY = process.env.REFRESH_TOKEN_KEY || 'test-refresh-secret';
+    process.env.REGISTER_TOKEN_KEY = process.env.REGISTER_TOKEN_KEY || 'test-register-secret';
 
     app = moduleFixture.createNestApplication();
     connection = moduleFixture.get<Connection>(getConnectionToken());

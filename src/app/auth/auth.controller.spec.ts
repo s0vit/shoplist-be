@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import { AuthInputDto } from './dto/auth-input.dto';
 import { LoginInputDto } from './dto/login-input.dto';
 import { Connection } from 'mongoose';
-import { setupTestApp, cleanupTestApp } from '../../../test/test-utils';
+import { cleanupTestApp, setupTestApp } from '../../../test/test-utils';
 import { ERROR_AUTH } from './constants/auth-error.enum';
 
 describe('AuthController', () => {
@@ -134,8 +134,16 @@ describe('AuthController', () => {
     });
 
     it('should confirm user registration', async () => {
-      await request(app.getHttpServer()).get(`/api/auth/confirm?token=${verificationToken}`).expect(200);
-    });
+      console.log('Verification token:', verificationToken);
+      const response = await request(app.getHttpServer())
+        .get(`/api/auth/confirm?token=${verificationToken}`)
+        .timeout(5000);
+      console.log('Confirmation response:', response.status);
+      console.log('Response body:', response.body);
+      console.log('Response text:', response.text);
+      console.log('Response headers:', response.headers);
+      expect(response.status).toBe(200);
+    }, 15000);
 
     it('should login and observe user is verified', async () => {
       const loginDto: LoginInputDto = user;
