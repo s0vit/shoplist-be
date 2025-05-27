@@ -36,6 +36,20 @@ on:
 jobs:
   test-build-and-cache:
     runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7.0
+        env:
+          MONGO_INITDB_ROOT_USERNAME: testuser
+          MONGO_INITDB_ROOT_PASSWORD: testpass
+          MONGO_INITDB_DATABASE: testdb
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -69,6 +83,28 @@ jobs:
         run: pnpm format
 
       - name: Test project
+        env:
+          CI: true
+          NODE_ENV: test
+          DB_ADMIN_NAME: testuser
+          DB_ADMIN_PASSWORD: testpass
+          TEST_DB_NAME: testdb
+          SECRET_KEY: test-secret-key-for-ci
+          EMAIL_LOGIN: test@example.com
+          EMAIL_PASS: test-password
+          SMTP_HOST: localhost
+          SMTP_PORT: 587
+          SMTP_USER: test@example.com
+          SMTP_PASSWORD: test-password
+          MAIL_FROM: test@example.com
+          REGISTER_TOKEN_KEY: test-register-token-key
+          ACCESS_TOKEN_KEY: test-access-token-key
+          REFRESH_TOKEN_KEY: test-refresh-token-key
+          CLIENT_URLS: '["http://localhost:3000"]'
+          CURRENCY_API_KEY: test-currency-api-key
+          GOOGLE_CLIENT_ID: test-google-client-id
+          GOOGLE_CLIENT_SECRET: test-google-client-secret
+          GOOGLE_CALLBACK_URL: http://localhost:3000/auth/google/callback
         run: pnpm test
 
       - name: Build project
