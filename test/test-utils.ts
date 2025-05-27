@@ -57,11 +57,21 @@ export async function setupTestApp(): Promise<{
       })
       .overrideProvider(CategoryService)
       .useValue({
-        createDefaultCategories: jest.fn().mockResolvedValue(true),
+        createDefaultCategories: jest.fn().mockResolvedValue([]),
+        findAll: jest.fn().mockResolvedValue([]),
+        findOne: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockResolvedValue({}),
+        update: jest.fn().mockResolvedValue({}),
+        remove: jest.fn().mockResolvedValue({}),
       })
       .overrideProvider(PaymentSourceService)
       .useValue({
-        createDefaultPaymentSources: jest.fn().mockResolvedValue(true),
+        createDefaultPaymentSources: jest.fn().mockResolvedValue([]),
+        findAll: jest.fn().mockResolvedValue([]),
+        findOne: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockResolvedValue({}),
+        update: jest.fn().mockResolvedValue({}),
+        remove: jest.fn().mockResolvedValue({}),
       })
       .overrideProvider('UtilsService')
       .useValue({
@@ -73,9 +83,11 @@ export async function setupTestApp(): Promise<{
 
     // Set up test environment variables with fallbacks
     process.env.NODE_ENV = 'test';
-    process.env.ACCESS_TOKEN_KEY = process.env.ACCESS_TOKEN_KEY || 'test-access-secret';
-    process.env.REFRESH_TOKEN_KEY = process.env.REFRESH_TOKEN_KEY || 'test-refresh-secret';
-    process.env.REGISTER_TOKEN_KEY = process.env.REGISTER_TOKEN_KEY || 'test-register-secret';
+    process.env.ACCESS_TOKEN_KEY = process.env.ACCESS_TOKEN_KEY || 'test-access-secret-key-for-testing-purposes-only';
+    process.env.REFRESH_TOKEN_KEY =
+      process.env.REFRESH_TOKEN_KEY || 'test-refresh-secret-key-for-testing-purposes-only';
+    process.env.REGISTER_TOKEN_KEY =
+      process.env.REGISTER_TOKEN_KEY || 'test-register-secret-key-for-testing-purposes-only';
     process.env.CLIENT_URLS = process.env.CLIENT_URLS || '["http://localhost:3000"]';
     process.env.SMTP_HOST = process.env.SMTP_HOST || 'localhost';
     process.env.SMTP_PORT = process.env.SMTP_PORT || '587';
