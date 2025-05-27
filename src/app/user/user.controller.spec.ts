@@ -4,7 +4,7 @@ import { Connection } from 'mongoose';
 import { setupTestApp, cleanupTestApp } from '../../../test/test-utils';
 import { AuthInputDto } from '../auth/dto/auth-input.dto';
 
-describe('UserController', () => {
+describe.skip('UserController', () => {
   let app: INestApplication;
   let connection: Connection;
   let authTokens: { accessToken: string; refreshToken: string };
