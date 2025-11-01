@@ -681,11 +681,14 @@ export class ExpenseAnalyticsService {
 
     const supportedCurrencies = new Set(Object.values(CURRENCIES));
     const preferredCurrency = config?.currency as CURRENCIES | undefined;
-    const targetCurrency =
-      (overrideCurrency && supportedCurrencies.has(overrideCurrency)) ||
-      (preferredCurrency && supportedCurrencies.has(preferredCurrency))
-        ? (overrideCurrency ?? preferredCurrency)!
-        : CURRENCIES.USD;
+    let targetCurrency: CURRENCIES;
+    if (overrideCurrency && supportedCurrencies.has(overrideCurrency)) {
+      targetCurrency = overrideCurrency;
+    } else if (preferredCurrency && supportedCurrencies.has(preferredCurrency)) {
+      targetCurrency = preferredCurrency;
+    } else {
+      targetCurrency = CURRENCIES.USD;
+    }
 
     const storedLanguage = (config?.language as string | undefined)?.toLowerCase() as LANGUAGES | undefined;
     const language = Object.values(LANGUAGES).includes(storedLanguage)
