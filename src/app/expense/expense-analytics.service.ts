@@ -402,7 +402,7 @@ export class ExpenseAnalyticsService {
                     input: '$exchangeRates',
                   },
                 },
-                0,
+                1,
               ],
             },
           ],
