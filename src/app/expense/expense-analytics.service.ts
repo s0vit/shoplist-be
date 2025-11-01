@@ -294,17 +294,17 @@ export class ExpenseAnalyticsService {
     const resolvedStart = query.createdStartDate ? new Date(query.createdStartDate) : defaultStart;
     const resolvedEnd = query.createdEndDate ? new Date(query.createdEndDate) : defaultEnd;
 
-    if (!Number.isNaN(resolvedStart.getTime()) || !Number.isNaN(resolvedEnd.getTime())) {
-      const createdAt: Record<string, Date> = {};
+    const createdAt: { $gte?: Date; $lte?: Date } = {};
 
-      if (!Number.isNaN(resolvedStart.getTime())) {
-        createdAt.$gte = resolvedStart;
-      }
+    if (!Number.isNaN(resolvedStart.getTime())) {
+      createdAt.$gte = resolvedStart;
+    }
 
-      if (!Number.isNaN(resolvedEnd.getTime())) {
-        createdAt.$lte = resolvedEnd;
-      }
+    if (!Number.isNaN(resolvedEnd.getTime())) {
+      createdAt.$lte = resolvedEnd;
+    }
 
+    if (Object.keys(createdAt).length > 0) {
       andConditions.push({ createdAt });
     }
 
@@ -493,19 +493,11 @@ export class ExpenseAnalyticsService {
         };
       case AnalyticsTrendGranularity.WEEK:
         return {
-          $concat: [
-            {
-              $toString: {
-                $isoWeekYear: '$createdAt',
-              },
-            },
-            '-W',
-            {
-              $toString: {
-                $isoWeek: '$createdAt',
-              },
-            },
-          ],
+          $dateToString: {
+            date: '$createdAt',
+            format: '%G-W%V',
+            timezone: 'UTC',
+          },
         };
       case AnalyticsTrendGranularity.YEAR:
         return {
