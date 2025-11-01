@@ -24,6 +24,7 @@ env:
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
   GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
 on:
   push:
@@ -69,6 +70,7 @@ jobs:
           echo "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" >> .env
           echo "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" >> .env
           echo "GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}" >> .env
+          echo "GEMINI_API_KEY=${GEMINI_API_KEY}" >> .env
 
       - name: Copy Build Artefacts and .env to VPS
         env:
