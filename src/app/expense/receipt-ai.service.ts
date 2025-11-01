@@ -15,6 +15,7 @@ import { PaymentSource, PaymentSourceDocument } from '../payment-source/models/p
 import { UserConfig, UserConfigDocument } from '../user-config/model/user-config.model';
 import { ExpenseInputDto } from './dto/expense-input.dto';
 import { CURRENCIES } from '../../common/interfaces/currencies.enum';
+import { RECEIPT_AI_ERROR, RECEIPT_AI_PROMPT } from './constants/receipt-ai-error.constant';
 
 type ReceiptOption = {
   id: string;
@@ -121,44 +122,45 @@ export class ReceiptAiService {
                 'Content-Type': 'application/json',
                 'x-goog-api-key': apiKey,
               },
-              timeout: 20000,
+              timeout: RECEIPT_AI_PROMPT.REQUEST_TIMEOUT_MS,
             },
           ),
         );
 
         responseData = response?.data as Record<string, unknown>;
       } catch (err) {
-        const error = err as { response?: { status?: number; data?: unknown } };
-        this.logger.error(`Gemini API request failed`, error);
+        const error = err as Error & { response?: { status?: number; data?: unknown } };
+        const status = error.response?.status ?? 'unknown';
+        this.logger.error(`Gemini API request failed (status: ${status})`, error.message);
 
         if (error.response?.status === 401 || error.response?.status === 403) {
-          throw new InternalServerErrorException('Gemini API rejected the request. Check API key and quota.');
+          throw new InternalServerErrorException(RECEIPT_AI_ERROR.GEMINI_REJECTED);
         }
 
-        throw new UnprocessableEntityException('Не удалось распознать чек');
+        throw new UnprocessableEntityException(RECEIPT_AI_ERROR.RECOGNITION_FAILED);
       }
 
       const candidateText = this.extractCandidateText(responseData);
       const parsed = this.tryParseGeminiJson(candidateText);
 
       if (!parsed) {
-        lastJsonError = new Error('JSON_PARSE_ERROR');
+        lastJsonError = new Error(RECEIPT_AI_ERROR.INVALID_JSON);
         this.logger.warn(`Gemini response was not valid JSON (attempt ${attempt}).`);
         continue;
       }
 
       if (typeof parsed.recognized !== 'boolean') {
-        lastJsonError = new Error('JSON_STRUCTURE_ERROR');
+        lastJsonError = new Error(RECEIPT_AI_ERROR.INVALID_JSON);
         this.logger.warn(`Gemini JSON missing required "recognized" field (attempt ${attempt}).`);
         continue;
       }
 
       if (!parsed.recognized) {
-        throw new UnprocessableEntityException(parsed.reason || 'Чек не распознан моделью');
+        throw new UnprocessableEntityException(parsed.reason || RECEIPT_AI_ERROR.RECOGNITION_FAILED);
       }
 
       if (!parsed.expense) {
-        throw new UnprocessableEntityException('Модель не вернула данные о трате');
+        throw new UnprocessableEntityException(RECEIPT_AI_ERROR.NO_EXPENSE);
       }
 
       const expenseInput = this.normalizeExpenseInput(parsed.expense, categories, paymentSources, preferredCurrency);
@@ -170,29 +172,29 @@ export class ReceiptAiService {
     }
 
     if (lastJsonError) {
-      throw new UnprocessableEntityException('Модель вернула некорректный JSON');
+      throw new UnprocessableEntityException(RECEIPT_AI_ERROR.INVALID_JSON);
     }
 
-    throw new UnprocessableEntityException('Не удалось распознать чек');
+    throw new UnprocessableEntityException(RECEIPT_AI_ERROR.UNKNOWN);
   }
 
   private ensureValidImage(image: Express.Multer.File | undefined) {
     if (!image) {
-      throw new BadRequestException('Необходимо загрузить фотографию чека');
+      throw new BadRequestException(RECEIPT_AI_ERROR.MISSING_IMAGE);
     }
 
     if (!this.supportedMimeTypes.has(image.mimetype)) {
-      throw new BadRequestException('Поддерживаются только изображения JPEG, PNG или WEBP');
+      throw new BadRequestException(RECEIPT_AI_ERROR.UNSUPPORTED_IMAGE_TYPE);
     }
   }
 
   private ensureRequiredData(categories: ReceiptOption[], paymentSources: ReceiptOption[]) {
     if (!categories.length) {
-      throw new UnprocessableEntityException('Для пользователя не найдены категории трат');
+      throw new UnprocessableEntityException(RECEIPT_AI_ERROR.NO_CATEGORIES);
     }
 
     if (!paymentSources.length) {
-      throw new UnprocessableEntityException('Для пользователя не найдены источники трат');
+      throw new UnprocessableEntityException(RECEIPT_AI_ERROR.NO_PAYMENT_SOURCES);
     }
   }
 
@@ -281,13 +283,13 @@ export class ReceiptAiService {
 
   private extractCandidateText(data: unknown): string {
     if (!data || typeof data !== 'object') {
-      throw new UnprocessableEntityException('Не удалось обработать ответ модели');
+      throw new UnprocessableEntityException(RECEIPT_AI_ERROR.INVALID_RESPONSE);
     }
 
     const candidates = (data as Record<string, unknown>).candidates as unknown[];
 
     if (!Array.isArray(candidates) || !candidates.length) {
-      throw new UnprocessableEntityException('Модель не вернула кандидатов');
+      throw new UnprocessableEntityException(RECEIPT_AI_ERROR.NO_CANDIDATES);
     }
 
     const parts = (candidates[0] as Record<string, unknown>)?.content as Record<string, unknown>;
@@ -296,7 +298,7 @@ export class ReceiptAiService {
     const text = firstPart && typeof firstPart === 'object' ? (firstPart as Record<string, unknown>).text : undefined;
 
     if (typeof text !== 'string' || !text.trim()) {
-      throw new UnprocessableEntityException('Модель не вернула текстовый ответ');
+      throw new UnprocessableEntityException(RECEIPT_AI_ERROR.NO_TEXT_PART);
     }
 
     return text.trim();
@@ -326,7 +328,7 @@ export class ReceiptAiService {
     const amount = this.toNumber(expense.amount);
 
     if (!Number.isFinite(amount) || amount <= 0) {
-      throw new UnprocessableEntityException('Модель вернула некорректную сумму');
+      throw new UnprocessableEntityException(RECEIPT_AI_ERROR.INVALID_AMOUNT);
     }
 
     const categoryId = this.validateOption('categoryId', expense.categoryId, categories);
@@ -353,14 +355,20 @@ export class ReceiptAiService {
   ): string {
     if (!value) {
       throw new UnprocessableEntityException(
-        `Модель не выбрала ${field === 'categoryId' ? 'категорию' : 'источник оплаты'}`,
+        field === 'categoryId'
+          ? RECEIPT_AI_ERROR.CATEGORY_NOT_SELECTED
+          : RECEIPT_AI_ERROR.PAYMENT_SOURCE_NOT_SELECTED,
       );
     }
 
     const matched = options.find((option) => option.id === value);
 
     if (!matched) {
-      throw new UnprocessableEntityException(`Модель вернула неизвестный идентификатор в поле ${field}`);
+      throw new UnprocessableEntityException(
+        field === 'categoryId'
+          ? RECEIPT_AI_ERROR.UNKNOWN_CATEGORY_ID
+          : RECEIPT_AI_ERROR.UNKNOWN_PAYMENT_SOURCE_ID,
+      );
     }
 
     return matched.id;
@@ -407,7 +415,7 @@ export class ReceiptAiService {
       return undefined;
     }
 
-    return trimmed.slice(0, 100);
+    return trimmed.slice(0, RECEIPT_AI_PROMPT.MAX_COMMENT_LENGTH);
   }
 
   private toNumber(value: number | string | undefined): number {
