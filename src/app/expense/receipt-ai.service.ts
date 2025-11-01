@@ -245,7 +245,7 @@ export class ReceiptAiService {
       'You are a financial assistant that extracts expense data from receipt photos.',
       'Use only categoryId and paymentSourceId from the provided lists when preparing the expense.',
       'If anything is unreadable set recognized to false and explain why.',
-      'Currency detection is critical: scan the receipt for currency codes (e.g., USD, EUR, KZT), symbols ($, €, ₸, ₴, ₸, ₺, ₽), and localized words (e.g., тенге, доллар, евро).',
+      'Currency detection is critical: scan the receipt for currency codes (e.g., USD, EUR, KZT), symbols ($, €, ₸, ₴, ₺, ₽), and localized words (e.g., тенге, доллар, евро).',
       'If the currency is still unclear, use the language of the receipt as a hint (e.g., Turkish text often implies TRY, Kazakh text mentioning “тенге” implies KZT, Russian text without explicit symbols implies RUB, most European languages imply EUR).',
       'If multiple currencies appear, choose the one attached to the final total. Always output the currency as a three-letter ISO code in uppercase.',
       'Map common symbols to ISO codes: $ -> USD unless otherwise stated, ₸ -> KZT, ₴ -> UAH, ₽ -> RUB, ₺ -> TRY, € -> EUR, £ -> GBP.',
