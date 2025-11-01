@@ -688,8 +688,8 @@ export class ExpenseAnalyticsService {
         : CURRENCIES.USD;
 
     const storedLanguage = (config?.language as string | undefined)?.toLowerCase() as LANGUAGES | undefined;
-    const language = Object.values(LANGUAGES).includes(storedLanguage ?? LANGUAGES.RU)
-      ? (storedLanguage ?? LANGUAGES.RU)
+    const language = Object.values(LANGUAGES).includes(storedLanguage)
+      ? storedLanguage
       : LANGUAGES.RU;
 
     return { targetCurrency, language };
