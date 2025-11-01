@@ -35,6 +35,10 @@ import { GetExpenseByFamilyBudgetSwDec } from './decorators/get-expense-by-famil
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ReceiptParseResponseDto } from './dto/receipt-expense-response.dto';
 import { ParseReceiptSwDec } from './decorators/parse-receipt-sw.decorator';
+import { ExpenseAnalyticsService } from './expense-analytics.service';
+import { ExpenseAnalyticsQueryDto } from './dto/expense-analytics-query.dto';
+import { ExpenseAnalyticsResponseDto } from './dto/expense-analytics-response.dto';
+import { GetExpenseAnalyticsSwDec } from './decorators/get-expense-analytics-sw.decorator';
 
 @UseGuards(AccessJwtGuard)
 @ApiTags('Expense')
@@ -43,12 +47,22 @@ export class ExpenseController {
   constructor(
     private readonly expenseService: ExpenseService,
     private readonly receiptAiService: ReceiptAiService,
+    private readonly expenseAnalyticsService: ExpenseAnalyticsService,
   ) {}
 
   @GetExpenseSwDec()
   @Get()
   async getOwn(@Query() queryInputDto: ExpenseQueryInputDto, @Req() req: CustomRequest): Promise<ExpenseOutputDto[]> {
     return this.expenseService.getOwn(req.user.userId, queryInputDto);
+  }
+
+  @GetExpenseAnalyticsSwDec()
+  @Get('analytics')
+  async getAnalytics(
+    @Query() query: ExpenseAnalyticsQueryDto,
+    @Req() req: CustomRequest,
+  ): Promise<ExpenseAnalyticsResponseDto> {
+    return this.expenseAnalyticsService.getAnalytics(req.user.userId, query);
   }
 
   @GetExpenseByIdSwDec()

@@ -16,6 +16,7 @@ import { ExpenseService } from './expense.service';
 import { ReceiptAiService } from './receipt-ai.service';
 import { ExpansesSchema, Expense } from './models/expense.model';
 import { CronExpenseModule } from '../cron-expenses/cron-expense.module';
+import { ExpenseAnalyticsService } from './expense-analytics.service';
 
 @Module({
   imports: [
@@ -32,7 +33,7 @@ import { CronExpenseModule } from '../cron-expenses/cron-expense.module';
     forwardRef(() => CronExpenseModule),
   ],
   controllers: [ExpenseController],
-  providers: [ExpenseService, ReceiptAiService, AccessControlService, AccessJwtStrategy],
+  providers: [ExpenseService, ReceiptAiService, ExpenseAnalyticsService, AccessControlService, AccessJwtStrategy],
   exports: [ExpenseService],
 })
 export class ExpenseModule {}
