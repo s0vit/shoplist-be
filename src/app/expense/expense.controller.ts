@@ -1,7 +1,21 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ExpenseInputDto } from './dto/expense-input.dto';
 import { ExpenseQueryInputDto } from './dto/expense-query-input.dto';
 import { ExpenseService } from './expense.service';
+import { ReceiptAiService } from './receipt-ai.service';
 import { SharedExpenseDto } from './dto/get-shared-input.dto';
 import { AccessJwtGuard } from '../../guards/access-jwt.guard';
 import { ApiTags } from '@nestjs/swagger';
@@ -18,12 +32,18 @@ import { GetExpenseByIdsSwDec } from './decorators/get-expense-by-ids-sw.decorat
 import { GetByCategorySwDec } from './decorators/get-expense-by-category-sw.decorator';
 import { GetByPaymentSourceSwDec } from './decorators/get-expense-by-ps-sw.decorator';
 import { GetExpenseByFamilyBudgetSwDec } from './decorators/get-expense-by-family-budget-id-se.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ReceiptParseResponseDto } from './dto/receipt-expense-response.dto';
+import { ParseReceiptSwDec } from './decorators/parse-receipt-sw.decorator';
 
 @UseGuards(AccessJwtGuard)
 @ApiTags('Expense')
 @Controller('expense')
 export class ExpenseController {
-  constructor(private readonly expenseService: ExpenseService) {}
+  constructor(
+    private readonly expenseService: ExpenseService,
+    private readonly receiptAiService: ReceiptAiService,
+  ) {}
 
   @GetExpenseSwDec()
   @Get()
@@ -99,5 +119,25 @@ export class ExpenseController {
     @Req() req: CustomRequest,
   ): Promise<ExpenseOutputDto[]> {
     return this.expenseService.getExpensesByFamilyBudgetId(familyBudgetId, req.user.userId);
+  }
+
+  @Post('receipt/parse')
+  @ParseReceiptSwDec()
+  @UseInterceptors(FileInterceptor('receipt'))
+  async parseReceipt(
+    @UploadedFile() receipt: Express.Multer.File,
+    @Req() req: CustomRequest,
+  ): Promise<ReceiptParseResponseDto> {
+    const { expenseInput, reason } = await this.receiptAiService.parseReceipt({
+      image: receipt,
+      userId: req.user.userId,
+    });
+
+    const expense = await this.expenseService.create(expenseInput, req.user.userId);
+
+    return {
+      expense,
+      reason: reason ?? null,
+    };
   }
 }
