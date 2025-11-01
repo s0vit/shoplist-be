@@ -682,6 +682,7 @@ export class ExpenseAnalyticsService {
     const supportedCurrencies = new Set(Object.values(CURRENCIES));
     const preferredCurrency = config?.currency as CURRENCIES | undefined;
     let targetCurrency: CURRENCIES;
+
     if (overrideCurrency && supportedCurrencies.has(overrideCurrency)) {
       targetCurrency = overrideCurrency;
     } else if (preferredCurrency && supportedCurrencies.has(preferredCurrency)) {
@@ -691,9 +692,7 @@ export class ExpenseAnalyticsService {
     }
 
     const storedLanguage = (config?.language as string | undefined)?.toLowerCase() as LANGUAGES | undefined;
-    const language = Object.values(LANGUAGES).includes(storedLanguage)
-      ? storedLanguage
-      : LANGUAGES.RU;
+    const language = Object.values(LANGUAGES).includes(storedLanguage) ? storedLanguage : LANGUAGES.RU;
 
     return { targetCurrency, language };
   }
