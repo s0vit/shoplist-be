@@ -18,6 +18,167 @@ import {
   ExpenseAnalyticsTrendPointDto,
 } from './dto/expense-analytics-response.dto';
 import { CURRENCIES } from '../../common/interfaces/currencies.enum';
+import { LANGUAGES } from '../../common/interfaces/languages.enum';
+
+type PromptLocale = {
+  intro: string;
+  task: string;
+  format: string;
+  currencyHeadline: (currency: CURRENCIES) => string;
+  metrics: {
+    totalAmount: string;
+    totalCount: string;
+    average: string;
+    min: string;
+    max: string;
+  };
+  categoriesTitle: string;
+  categoriesFallback: string;
+  sourcesTitle: string;
+  sourcesFallback: string;
+  trendTitle: string;
+  trendFallback: string;
+  breakdownLine: (
+    index: number,
+    name: string,
+    amount: string,
+    percentage: string,
+    count: number,
+    currency: CURRENCIES,
+    type: 'category' | 'source',
+  ) => string;
+  trendLine: (period: string, total: string, average: string, count: number, currency: CURRENCIES) => string;
+  unnamed: string;
+  finalInstruction: string;
+};
+
+const PROMPT_LOCALES: Record<LANGUAGES, PromptLocale> = {
+  [LANGUAGES.RU]: {
+    intro: 'Ты — дружелюбный персональный финансовый аналитик.',
+    task: 'По аггрегированным данным ниже сделай 3-4 практичных наблюдения и сформулируй 1 рекомендацию.',
+    format: 'Пиши по-русски, лаконично, маркированными пунктами (каждый пункт начинай с "- ").',
+    currencyHeadline: (currency) => `Данные в валюте ${currency}:`,
+    metrics: {
+      totalAmount: '• Общая сумма',
+      totalCount: '• Количество операций',
+      average: '• Средний чек',
+      min: '• Минимальный чек',
+      max: '• Максимальный чек',
+    },
+    categoriesTitle: 'Категории (топ 5):',
+    categoriesFallback: 'Категории: нет данных.',
+    sourcesTitle: 'Источники оплаты (топ 5):',
+    sourcesFallback: 'Источники оплаты: нет данных.',
+    trendTitle: 'Динамика:',
+    trendFallback: 'Динамика: нет данных.',
+    breakdownLine: (index, name, amount, percentage, count, currency) =>
+      `${index + 1}. ${name} — ${amount} ${currency} (${percentage}%), операций: ${count}`,
+    trendLine: (period, total, average, count, currency) =>
+      `${period}: сумма ${total} ${currency}, средний чек ${average}, операций ${count}`,
+    unnamed: 'Без названия',
+    finalInstruction: 'Избегай общих фраз, делай конкретные выводы и предложи понятный следующий шаг.',
+  },
+  [LANGUAGES.EN]: {
+    intro: 'You are a friendly personal finance analyst.',
+    task: 'Using the aggregated data below, share 3-4 practical observations and provide 1 actionable recommendation.',
+    format: 'Respond in English with concise bullet points (each line starts with "- ").',
+    currencyHeadline: (currency) => `Figures in ${currency}:`,
+    metrics: {
+      totalAmount: '• Total amount',
+      totalCount: '• Number of transactions',
+      average: '• Average ticket',
+      min: '• Minimum ticket',
+      max: '• Maximum ticket',
+    },
+    categoriesTitle: 'Categories (top 5):',
+    categoriesFallback: 'Categories: no data.',
+    sourcesTitle: 'Payment sources (top 5):',
+    sourcesFallback: 'Payment sources: no data.',
+    trendTitle: 'Trend:',
+    trendFallback: 'Trend: no data.',
+    breakdownLine: (index, name, amount, percentage, count, currency) =>
+      `${index + 1}. ${name} — ${amount} ${currency} (${percentage}%), transactions: ${count}`,
+    trendLine: (period, total, average, count, currency) =>
+      `${period}: total ${total} ${currency}, average ${average}, transactions ${count}`,
+    unnamed: 'Unnamed',
+    finalInstruction: 'Stay specific, avoid generic statements, and close with a clear next step.',
+  },
+  [LANGUAGES.DE]: {
+    intro: 'Du bist ein freundlicher Finanzanalyst.',
+    task: 'Analysiere die Daten und formuliere 3-4 praxisnahe Beobachtungen sowie eine konkrete Empfehlung.',
+    format: 'Antworte auf Deutsch in knappen Stichpunkten (jede Zeile beginnt mit "- ").',
+    currencyHeadline: (currency) => `Kennzahlen in ${currency}:`,
+    metrics: {
+      totalAmount: '• Gesamtsumme',
+      totalCount: '• Anzahl Buchungen',
+      average: '• Durchschnittlicher Betrag',
+      min: '• Minimaler Betrag',
+      max: '• Maximaler Betrag',
+    },
+    categoriesTitle: 'Kategorien (Top 5):',
+    categoriesFallback: 'Kategorien: keine Daten.',
+    sourcesTitle: 'Zahlungsquellen (Top 5):',
+    sourcesFallback: 'Zahlungsquellen: keine Daten.',
+    trendTitle: 'Verlauf:',
+    trendFallback: 'Verlauf: keine Daten.',
+    breakdownLine: (index, name, amount, percentage, count, currency) =>
+      `${index + 1}. ${name} — ${amount} ${currency} (${percentage}%), Buchungen: ${count}`,
+    trendLine: (period, total, average, count, currency) =>
+      `${period}: Gesamt ${total} ${currency}, Durchschnitt ${average}, Buchungen ${count}`,
+    unnamed: 'Ohne Titel',
+    finalInstruction: 'Vermeide Allgemeinplätze, liefere konkrete Einsichten und einen klaren nächsten Schritt.',
+  },
+  [LANGUAGES.ES]: {
+    intro: 'Eres un analista financiero cercano y útil.',
+    task: 'Con los datos agregados, ofrece 3-4 observaciones prácticas y una recomendación accionable.',
+    format: 'Responde en español con puntos breves (cada línea empieza con "- ").',
+    currencyHeadline: (currency) => `Cifras en ${currency}:`,
+    metrics: {
+      totalAmount: '• Importe total',
+      totalCount: '• Número de operaciones',
+      average: '• Ticket medio',
+      min: '• Ticket mínimo',
+      max: '• Ticket máximo',
+    },
+    categoriesTitle: 'Categorías (top 5):',
+    categoriesFallback: 'Categorías: sin datos.',
+    sourcesTitle: 'Fuentes de pago (top 5):',
+    sourcesFallback: 'Fuentes de pago: sin datos.',
+    trendTitle: 'Tendencia:',
+    trendFallback: 'Tendencia: sin datos.',
+    breakdownLine: (index, name, amount, percentage, count, currency) =>
+      `${index + 1}. ${name} — ${amount} ${currency} (${percentage}%), operaciones: ${count}`,
+    trendLine: (period, total, average, count, currency) =>
+      `${period}: total ${total} ${currency}, ticket medio ${average}, operaciones ${count}`,
+    unnamed: 'Sin nombre',
+    finalInstruction: 'Evita generalidades, aporta conclusiones claras y termina con el siguiente paso recomendado.',
+  },
+  [LANGUAGES.FR]: {
+    intro: 'Tu es un analyste financier attentif et bienveillant.',
+    task: 'À partir des données agrégées, fournis 3-4 observations concrètes et une recommandation actionnable.',
+    format: 'Réponds en français avec des puces concises (chaque ligne commence par "- ").',
+    currencyHeadline: (currency) => `Données en ${currency} :`,
+    metrics: {
+      totalAmount: '• Montant total',
+      totalCount: '• Nombre d’opérations',
+      average: '• Montant moyen',
+      min: '• Montant minimum',
+      max: '• Montant maximum',
+    },
+    categoriesTitle: 'Catégories (top 5) :',
+    categoriesFallback: 'Catégories : aucune donnée.',
+    sourcesTitle: 'Sources de paiement (top 5) :',
+    sourcesFallback: 'Sources de paiement : aucune donnée.',
+    trendTitle: 'Tendance :',
+    trendFallback: 'Tendance : aucune donnée.',
+    breakdownLine: (index, name, amount, percentage, count, currency) =>
+      `${index + 1}. ${name} — ${amount} ${currency} (${percentage}%), opérations : ${count}`,
+    trendLine: (period, total, average, count, currency) =>
+      `${period} : total ${total} ${currency}, montant moyen ${average}, opérations ${count}`,
+    unnamed: 'Sans nom',
+    finalInstruction: 'Évite les généralités, livre des enseignements concrets et propose une étape suivante claire.',
+  },
+};
 
 type RawAggregationSummary = {
   totalAmount?: number;
@@ -56,7 +217,7 @@ export class ExpenseAnalyticsService {
   ) {}
 
   async getAnalytics(userId: string, query: ExpenseAnalyticsQueryDto): Promise<ExpenseAnalyticsResponseDto> {
-    const targetCurrency = await this.resolveTargetCurrency(userId, query.targetCurrency);
+    const { targetCurrency, language } = await this.resolveUserPreferences(userId, query.targetCurrency);
     const granularity = query.trendGranularity ?? AnalyticsTrendGranularity.MONTH;
 
     const matchStage = this.buildMatchStage(userId, query);
@@ -91,7 +252,7 @@ export class ExpenseAnalyticsService {
     let aiInsights: ExpenseAnalyticsAiInsightDto | undefined;
 
     if (query.includeAiAnalysis && summary.totalCount > 0) {
-      aiInsights = await this.generateAiInsights(summary, byCategory, byPaymentSource, trend, targetCurrency);
+      aiInsights = await this.generateAiInsights(summary, byCategory, byPaymentSource, trend, targetCurrency, language);
     }
 
     return {
@@ -520,19 +681,26 @@ export class ExpenseAnalyticsService {
     }, {});
   }
 
-  private async resolveTargetCurrency(userId: string, override?: CURRENCIES): Promise<CURRENCIES> {
-    if (override && Object.values(CURRENCIES).includes(override)) {
-      return override;
-    }
+  private async resolveUserPreferences(
+    userId: string,
+    overrideCurrency?: CURRENCIES,
+  ): Promise<{ targetCurrency: CURRENCIES; language: LANGUAGES }> {
+    const config = await this.userConfigModel.findOne({ userId }).select(['currency', 'language']).lean();
 
-    const config = await this.userConfigModel.findOne({ userId }).select(['currency']).lean();
-    const preferred = config?.currency as CURRENCIES | undefined;
+    const supportedCurrencies = new Set(Object.values(CURRENCIES));
+    const preferredCurrency = config?.currency as CURRENCIES | undefined;
+    const targetCurrency =
+      (overrideCurrency && supportedCurrencies.has(overrideCurrency)) ||
+      (preferredCurrency && supportedCurrencies.has(preferredCurrency))
+        ? (overrideCurrency ?? preferredCurrency)!
+        : CURRENCIES.USD;
 
-    if (preferred && Object.values(CURRENCIES).includes(preferred)) {
-      return preferred;
-    }
+    const storedLanguage = (config?.language as string | undefined)?.toLowerCase() as LANGUAGES | undefined;
+    const language = Object.values(LANGUAGES).includes(storedLanguage ?? LANGUAGES.RU)
+      ? (storedLanguage ?? LANGUAGES.RU)
+      : LANGUAGES.RU;
 
-    return CURRENCIES.USD;
+    return { targetCurrency, language };
   }
 
   private async generateAiInsights(
@@ -541,6 +709,7 @@ export class ExpenseAnalyticsService {
     paymentSources: ExpenseAnalyticsBreakdownItemDto[],
     trend: ExpenseAnalyticsTrendPointDto[],
     targetCurrency: CURRENCIES,
+    language: LANGUAGES,
   ): Promise<ExpenseAnalyticsAiInsightDto | undefined> {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
 
@@ -550,7 +719,7 @@ export class ExpenseAnalyticsService {
       return undefined;
     }
 
-    const prompt = this.buildAiPrompt(summary, categories, paymentSources, trend, targetCurrency);
+    const prompt = this.buildAiPrompt(summary, categories, paymentSources, trend, targetCurrency, language);
 
     try {
       const response = await firstValueFrom(
@@ -609,46 +778,62 @@ export class ExpenseAnalyticsService {
     paymentSources: ExpenseAnalyticsBreakdownItemDto[],
     trend: ExpenseAnalyticsTrendPointDto[],
     targetCurrency: CURRENCIES,
+    language: LANGUAGES,
   ): string {
+    const locale = PROMPT_LOCALES[language] ?? PROMPT_LOCALES[LANGUAGES.RU];
+
     const topCategories = categories
       .slice(0, 5)
-      .map(
-        (item, index) =>
-          `${index + 1}. ${item.name ?? 'Без названия'} — ${item.totalAmount.toFixed(
-            2,
-          )} ${targetCurrency} (${item.percentage.toFixed(2)}%), транзакций: ${item.count}`,
+      .map((item, index) =>
+        locale.breakdownLine(
+          index,
+          item.name ?? locale.unnamed,
+          item.totalAmount.toFixed(2),
+          item.percentage.toFixed(2),
+          item.count,
+          targetCurrency,
+          'category',
+        ),
       );
 
     const topSources = paymentSources
       .slice(0, 5)
-      .map(
-        (item, index) =>
-          `${index + 1}. ${item.name ?? 'Без названия'} — ${item.totalAmount.toFixed(
-            2,
-          )} ${targetCurrency} (${item.percentage.toFixed(2)}%), транзакций: ${item.count}`,
+      .map((item, index) =>
+        locale.breakdownLine(
+          index,
+          item.name ?? locale.unnamed,
+          item.totalAmount.toFixed(2),
+          item.percentage.toFixed(2),
+          item.count,
+          targetCurrency,
+          'source',
+        ),
       );
 
-    const trendLines = trend.map(
-      (point) =>
-        `${point.period}: сумма ${point.totalAmount.toFixed(
-          2,
-        )} ${targetCurrency}, средний чек ${point.averageAmount.toFixed(2)}, операций ${point.count}`,
+    const trendLines = trend.map((point) =>
+      locale.trendLine(
+        point.period,
+        point.totalAmount.toFixed(2),
+        point.averageAmount.toFixed(2),
+        point.count,
+        targetCurrency,
+      ),
     );
 
     return [
-      'Ты — дружелюбный персональный финансовый аналитик.',
-      'По аггрегированным данным ниже сделай 3-4 практичных наблюдения и сформулируй 1 рекомендацию.',
-      'Излагай по-русски, компактно, маркированными пунктами (каждый пункт на новой строке, начинай с "- ").',
-      `Данные в валюте ${targetCurrency}:`,
-      `• Общая сумма: ${summary.totalAmount.toFixed(2)}`,
-      `• Количество операций: ${summary.totalCount}`,
-      `• Средний чек: ${summary.averageAmount.toFixed(2)}`,
-      `• Минимальный чек: ${summary.minAmount.toFixed(2)}`,
-      `• Максимальный чек: ${summary.maxAmount.toFixed(2)}`,
-      topCategories.length ? `Категории (топ 5):\n${topCategories.join('\n')}` : 'Категории: нет данных.',
-      topSources.length ? `Источники оплаты (топ 5):\n${topSources.join('\n')}` : 'Источники оплаты: нет данных.',
-      trendLines.length ? `Динамика:\n${trendLines.join('\n')}` : 'Динамика: нет данных.',
-      'Не повторяйся, избегай общих фраз, фокусируйся на выводах и конкретных шагах.',
+      locale.intro,
+      locale.task,
+      locale.format,
+      locale.currencyHeadline(targetCurrency),
+      `${locale.metrics.totalAmount}: ${summary.totalAmount.toFixed(2)}`,
+      `${locale.metrics.totalCount}: ${summary.totalCount}`,
+      `${locale.metrics.average}: ${summary.averageAmount.toFixed(2)}`,
+      `${locale.metrics.min}: ${summary.minAmount.toFixed(2)}`,
+      `${locale.metrics.max}: ${summary.maxAmount.toFixed(2)}`,
+      topCategories.length ? `${locale.categoriesTitle}\n${topCategories.join('\n')}` : locale.categoriesFallback,
+      topSources.length ? `${locale.sourcesTitle}\n${topSources.join('\n')}` : locale.sourcesFallback,
+      trendLines.length ? `${locale.trendTitle}\n${trendLines.join('\n')}` : locale.trendFallback,
+      locale.finalInstruction,
     ].join('\n');
   }
 
