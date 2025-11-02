@@ -292,7 +292,16 @@ export class ExpenseAnalyticsService {
     const defaultEnd = now;
 
     const resolvedStart = query.createdStartDate ? new Date(query.createdStartDate) : defaultStart;
-    const resolvedEnd = query.createdEndDate ? new Date(query.createdEndDate) : defaultEnd;
+    let resolvedEnd = query.createdEndDate ? new Date(query.createdEndDate) : defaultEnd;
+
+    if (
+      query.createdEndDate &&
+      !Number.isNaN(resolvedEnd.getTime()) &&
+      this.isDateWithoutTimeComponent(query.createdEndDate)
+    ) {
+      resolvedEnd = new Date(resolvedEnd.getTime());
+      resolvedEnd.setUTCHours(23, 59, 59, 999);
+    }
 
     const createdAt: { $gte?: Date; $lte?: Date } = {};
 
@@ -382,6 +391,10 @@ export class ExpenseAnalyticsService {
     }
 
     return match;
+  }
+
+  private isDateWithoutTimeComponent(value: string): boolean {
+    return !value.includes('T');
   }
 
   private buildAggregationPipeline(

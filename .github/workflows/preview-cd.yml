@@ -9,12 +9,6 @@ env:
   SECRET_KEY: ${{ secrets.SECRET_KEY }}
   DB_NAME: ${{ secrets.DB_NAME }}
   TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
-  EMAIL_LOGIN: ${{ secrets.EMAIL_LOGIN }}
-  EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
-  SMTP_HOST: ${{ secrets.SMTP_HOST }}
-  SMTP_PORT: ${{ secrets.SMTP_PORT }}
-  SMTP_USER: ${{ secrets.SMTP_USER }}
-  SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
   MAIL_FROM: ${{ secrets.MAIL_FROM }}
   REGISTER_TOKEN_KEY: ${{ secrets.REGISTER_TOKEN_KEY }}
   ACCESS_TOKEN_KEY: ${{ secrets.ACCESS_TOKEN_KEY }}
@@ -26,6 +20,7 @@ env:
   GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
 
 on:
   pull_request:
@@ -91,12 +86,6 @@ jobs:
           DB_ADMIN_PASSWORD: testpass
           TEST_DB_NAME: testdb
           SECRET_KEY: test-secret-key-for-ci
-          EMAIL_LOGIN: test@example.com
-          EMAIL_PASS: test-password
-          SMTP_HOST: localhost
-          SMTP_PORT: 587
-          SMTP_USER: test@example.com
-          SMTP_PASSWORD: test-password
           MAIL_FROM: test@example.com
           REGISTER_TOKEN_KEY: test-register-token-key
           ACCESS_TOKEN_KEY: test-access-token-key
@@ -107,6 +96,7 @@ jobs:
           GOOGLE_CLIENT_SECRET: test-google-client-secret
           GOOGLE_CALLBACK_URL: http://localhost:3000/auth/google/callback
           GEMINI_API_KEY: test-gemini-api-key
+          RESEND_API_KEY: test-resend-api-key
         run: pnpm test
 
       - name: Build project

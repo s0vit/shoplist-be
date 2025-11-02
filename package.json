@@ -22,7 +22,6 @@
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org sovit-14 --project node-nestjs ./dist && sentry-cli sourcemaps upload --org sovit-14 --project node-nestjs ./dist"
   },
   "dependencies": {
-    "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^3.0.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.2",
@@ -47,6 +46,7 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.0",
+    "resend": "^3.3.0",
     "rxjs": "^7.8.1",
     "sharp": "^0.33.4"
   },

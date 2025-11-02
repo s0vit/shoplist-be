@@ -35,6 +35,8 @@ import { RefreshInputDto } from './dto/refresh-input.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SetNewPasswordDto } from './dto/set-new-password.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { TestEmailDto } from './dto/test-email.dto';
+import { TestEmailSwDec } from './decorators/test-email-sw.decorator';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -71,6 +73,13 @@ export class AuthController {
     const email = dto.email;
 
     return await this.authService.forgotPassword(email, origin);
+  }
+
+  @TestEmailSwDec()
+  @UseGuards(AccessJwtGuard)
+  @Post('test-email')
+  async sendTestEmail(@Body() dto: TestEmailDto): Promise<void> {
+    await this.authService.sendTestEmail(dto);
   }
 
   @ResetPasswordSwDec()

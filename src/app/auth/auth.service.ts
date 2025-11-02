@@ -1,4 +1,3 @@
-import { MailerService } from '@nestjs-modules/mailer';
 import {
   BadRequestException,
   ConflictException,
@@ -17,11 +16,13 @@ import { confirmEmailTemplate } from '../../utils/templates/confirm-email.templa
 import { CategoryService } from '../category/category.service';
 import { PaymentSourceService } from '../payment-source/payment-source.service';
 import { User, UserDocument } from '../user/models/user.model';
+import { EmailService } from '../../common/email/email.service';
 import { ERROR_AUTH } from './constants/auth-error.enum';
 import { AuthInputDto } from './dto/auth-input.dto';
 import { ConfirmOutputDto } from './dto/confirm-output.dto';
 import { LoginOutputDto } from './dto/login-output.dto';
 import { UtilsService } from '../../common/utils/utils.service';
+import { TestEmailDto } from './dto/test-email.dto';
 
 @Injectable()
 export class AuthService {
@@ -32,7 +33,7 @@ export class AuthService {
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
     private readonly jwtService: JwtService,
-    private readonly mailerService: MailerService,
+    private readonly emailService: EmailService,
     private readonly configService: ConfigService,
     private readonly categoryService: CategoryService,
     private readonly paymentSourceService: PaymentSourceService,
@@ -88,7 +89,7 @@ export class AuthService {
       await this.paymentSourceService.createDefaultPaymentSources(newUser._id);
 
       const confirmationUrl = `${origin}/confirm?token=${confirmToken}`;
-      await this.mailerService.sendMail({
+      await this.emailService.sendMail({
         to: dto.email,
         subject: 'Confirm your registration',
         html: confirmEmailTemplate(confirmToken, confirmationUrl),
@@ -231,7 +232,7 @@ export class AuthService {
 
       const confirmToken = await this.jwtService.signAsync({ email: user.email });
       const resetLink = `${origin}/confirm?token=${confirmToken}`;
-      await this.mailerService.sendMail({
+      await this.emailService.sendMail({
         to: user.email,
         subject: 'Confirm your registration',
         html: confirmEmailTemplate(confirmToken, resetLink),
@@ -249,10 +250,37 @@ export class AuthService {
       await this.userModel
         .findOneAndUpdate({ email: { $regex: emailRegex } }, { $set: { resetPasswordToken: resetToken } })
         .exec();
-      await this.mailerService.sendMail({
+      await this.emailService.sendMail({
         to: email,
         subject: 'Reset your password',
         text: resetPasswordLink,
+      });
+    } catch (error) {
+      throw new HttpException(ERROR_AUTH.SEND_EMAIL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async sendTestEmail({ email, text, html }: TestEmailDto): Promise<void> {
+    const defaultText = 'ShopList Resend integration is working.';
+    const trimmedText = text?.trim() ?? '';
+    const cleanedHtml = html?.trim() ?? '';
+
+    let finalText = trimmedText.length > 0 ? trimmedText : undefined;
+    let finalHtml = cleanedHtml.length > 0 ? cleanedHtml : undefined;
+
+    if (!finalText && !finalHtml) {
+      finalText = defaultText;
+      finalHtml = `<p>${defaultText}</p>`;
+    } else if (!finalHtml && finalText) {
+      finalHtml = `<p>${finalText}</p>`;
+    }
+
+    try {
+      await this.emailService.sendMail({
+        to: email,
+        subject: 'ShopList email test',
+        ...(finalText ? { text: finalText } : {}),
+        ...(finalHtml ? { html: finalHtml } : {}),
       });
     } catch (error) {
       throw new HttpException(ERROR_AUTH.SEND_EMAIL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
