@@ -200,4 +200,104 @@ describe('Expense Analytics (e2e)', () => {
       expenses[0].createdAt.getTime(),
     );
   });
+
+  it('includes expenses created on end date when date is provided without time component', async () => {
+    const collections = ['Expenses', 'Category', 'PaymentSource', 'User', 'UserConfig'];
+
+    for (const name of collections) {
+      await connection.collection(name).deleteMany({});
+    }
+
+    const userObjectId = new Types.ObjectId();
+    const userId = userObjectId.toHexString();
+    const userEmail = 'analytics-end-date@example.com';
+
+    await connection.collection('User').insertOne({
+      _id: userObjectId,
+      email: userEmail,
+      login: 'analytics-end-date',
+      passwordHash: 'hashed-password',
+      isVerified: true,
+    });
+
+    await connection.collection('UserConfig').insertOne({
+      _id: new Types.ObjectId(),
+      userId,
+      theme: 'light',
+      currency: CURRENCIES.USD,
+      language: 'en',
+      showCategoryNames: true,
+      showSourceNames: true,
+      showSharedExpenses: true,
+      showSharedCategories: true,
+      showSharedSources: true,
+      showCategoryColours: true,
+      showSourceColours: true,
+    });
+
+    const categoryId = new Types.ObjectId();
+    await connection.collection('Category').insertOne({
+      _id: categoryId,
+      title: 'Текущие расходы',
+      userId,
+      order: 1,
+    });
+
+    const paymentSourceId = new Types.ObjectId();
+    await connection.collection('PaymentSource').insertOne({
+      _id: paymentSourceId,
+      title: 'Карта',
+      userId,
+      order: 1,
+    });
+
+    const now = new Date();
+    const amount = 42;
+
+    await connection.collection('Expenses').insertOne({
+      _id: new Types.ObjectId(),
+      userId,
+      amount,
+      categoryId: categoryId.toHexString(),
+      paymentSourceId: paymentSourceId.toHexString(),
+      currency: CURRENCIES.USD,
+      exchangeRates: { USD: 1 },
+      comments: 'Траты сегодня',
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    const accessToken = await jwtService.signAsync(
+      {
+        userId,
+        email: userEmail,
+        isVerified: true,
+      },
+      {
+        secret: configService.get<string>('ACCESS_TOKEN_KEY'),
+      },
+    );
+
+    const todayDateOnly = now.toISOString().slice(0, 10);
+
+    const response = await request(app.getHttpServer())
+      .get('/api/expense/analytics')
+      .query({
+        createdStartDate: todayDateOnly,
+        createdEndDate: todayDateOnly,
+      })
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    expect(response.body.summary).toMatchObject({
+      totalAmount: amount,
+      totalCount: 1,
+      averageAmount: amount,
+      minAmount: amount,
+      maxAmount: amount,
+      currency: CURRENCIES.USD,
+    });
+
+    expect(new Date(response.body.appliedFilters.createdEndDate).getTime()).toBeGreaterThanOrEqual(now.getTime());
+  });
 });

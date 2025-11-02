@@ -7,7 +7,7 @@
 - **Framework**: NestJS
 - **База данных**: MongoDB
 - **Аутентификация**: JWT
-- **Email**: NestJS Mailer
+- **Email**: Resend
 - **Документация API**: Swagger
 - **File Storage**: Cloudinary
 - **Мониторинг**: Sentry
@@ -47,10 +47,8 @@ CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 
-# Email
-MAIL_HOST=
-MAIL_USER=
-MAIL_PASSWORD=
+# Email (Resend)
+RESEND_API_KEY=
 MAIL_FROM=
 
 # Sentry
@@ -82,8 +80,10 @@ $ pnpm run test:cov
 
 ## API Документация
 
-После запуска приложения, Swagger документация доступна по адресу:
-`http://localhost:3000/api/docs`
+После запуска приложения Swagger доступен по адресу:
+`http://localhost:5555/api/docs`
+
+В разделе `Auth` доступна защищённая ручка `POST /auth/test-email`, позволяющая отправить пробное письмо через Resend (принимает адрес и необязательные `text`/`html` поля).
 
 ## Резервное копирование
 

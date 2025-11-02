@@ -6,6 +6,7 @@ import { AppModule } from '../src/app.module';
 import { setupApp } from '../src/configs/setupApp';
 import { CategoryService } from '../src/app/category/category.service';
 import { PaymentSourceService } from '../src/app/payment-source/payment-source.service';
+import { EmailService } from '../src/common/email/email.service';
 
 async function waitForConnection(connection: Connection, timeoutMs: number = 15000): Promise<void> {
   if (connection.readyState === 1) return;
@@ -51,7 +52,7 @@ export async function setupTestApp(): Promise<{
     moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider('MailerService')
+      .overrideProvider(EmailService)
       .useValue({
         sendMail: jest.fn().mockResolvedValue(true),
       })
@@ -89,10 +90,7 @@ export async function setupTestApp(): Promise<{
     process.env.REGISTER_TOKEN_KEY =
       process.env.REGISTER_TOKEN_KEY || 'test-register-secret-key-for-testing-purposes-only';
     process.env.CLIENT_URLS = process.env.CLIENT_URLS || JSON.stringify(['http://localhost:3000']);
-    process.env.SMTP_HOST = process.env.SMTP_HOST || 'localhost';
-    process.env.SMTP_PORT = process.env.SMTP_PORT || '587';
-    process.env.SMTP_USER = process.env.SMTP_USER || 'test@example.com';
-    process.env.SMTP_PASSWORD = process.env.SMTP_PASSWORD || 'test-password';
+    process.env.RESEND_API_KEY = process.env.RESEND_API_KEY || 'test-resend-api-key';
     process.env.MAIL_FROM = process.env.MAIL_FROM || 'test@example.com';
 
     app = moduleFixture.createNestApplication();
