@@ -19,6 +19,7 @@ import {
 } from './dto/expense-analytics-response.dto';
 import { CURRENCIES } from '../../common/interfaces/currencies.enum';
 import { LANGUAGES } from '../../common/interfaces/languages.enum';
+import { BudgetPlanningService } from '../budget-planning/budget-planning.service';
 
 type PromptLocale = {
   intro: string;
@@ -214,6 +215,7 @@ export class ExpenseAnalyticsService {
     @InjectModel(UserConfig.name) private readonly userConfigModel: Model<UserConfigDocument>,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly budgetPlanningService: BudgetPlanningService,
   ) {}
 
   async getAnalytics(userId: string, query: ExpenseAnalyticsQueryDto): Promise<ExpenseAnalyticsResponseDto> {
@@ -255,6 +257,8 @@ export class ExpenseAnalyticsService {
       aiInsights = await this.generateAiInsights(summary, byCategory, byPaymentSource, trend, targetCurrency, language);
     }
 
+    const budgetPlan = await this.budgetPlanningService.getPlanProgressForAnalytics(userId, query, targetCurrency);
+
     return {
       summary,
       byCategory,
@@ -262,6 +266,7 @@ export class ExpenseAnalyticsService {
       trend,
       appliedFilters,
       aiInsights,
+      budgetPlan,
     };
   }
 

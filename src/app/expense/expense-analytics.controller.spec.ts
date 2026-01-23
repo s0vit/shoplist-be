@@ -199,6 +199,8 @@ describe('Expense Analytics (e2e)', () => {
     expect(new Date(response.body.appliedFilters.createdEndDate).getTime()).toBeGreaterThanOrEqual(
       expenses[0].createdAt.getTime(),
     );
+
+    expect(response.body.budgetPlan).toBeNull();
   });
 
   it('includes expenses created on end date when date is provided without time component', async () => {
@@ -299,5 +301,6 @@ describe('Expense Analytics (e2e)', () => {
     });
 
     expect(new Date(response.body.appliedFilters.createdEndDate).getTime()).toBeGreaterThanOrEqual(now.getTime());
+    expect(response.body.budgetPlan).toBeNull();
   });
 });

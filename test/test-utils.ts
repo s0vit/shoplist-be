@@ -7,6 +7,7 @@ import { setupApp } from '../src/configs/setupApp';
 import { CategoryService } from '../src/app/category/category.service';
 import { PaymentSourceService } from '../src/app/payment-source/payment-source.service';
 import { EmailService } from '../src/common/email/email.service';
+import { SchedulerRegistry } from '@nestjs/schedule';
 
 async function waitForConnection(connection: Connection, timeoutMs: number = 15000): Promise<void> {
   if (connection.readyState === 1) return;
@@ -103,6 +104,7 @@ export async function setupTestApp(): Promise<{
 
     await setupApp(app);
     await app.init();
+    disableScheduledTasks(app);
 
     return { app, connection };
   } catch (error) {
@@ -114,6 +116,10 @@ export async function setupTestApp(): Promise<{
 
 export async function cleanupTestApp(app?: INestApplication, connection?: Connection): Promise<void> {
   try {
+    if (app) {
+      disableScheduledTasks(app);
+    }
+
     if (connection && connection.readyState !== 0) {
       try {
         // Only try to drop database if connection is active
@@ -154,5 +160,43 @@ export async function cleanupTestApp(app?: INestApplication, connection?: Connec
   } catch (error) {
     console.error('Error during cleanup:', error);
     // Don't throw error in cleanup to avoid masking original test failures
+  }
+}
+
+function disableScheduledTasks(app: INestApplication): void {
+  if (process.env.NODE_ENV !== 'test') {
+    return;
+  }
+
+  try {
+    const scheduler = app.get(SchedulerRegistry);
+
+    scheduler.getCronJobs().forEach((job, name) => {
+      try {
+        job.stop();
+      } finally {
+        scheduler.deleteCronJob(name);
+      }
+    });
+
+    scheduler.getIntervals().forEach((name) => {
+      try {
+        const interval = scheduler.getInterval(name);
+        clearInterval(interval);
+      } finally {
+        scheduler.deleteInterval(name);
+      }
+    });
+
+    scheduler.getTimeouts().forEach((name) => {
+      try {
+        const timeout = scheduler.getTimeout(name);
+        clearTimeout(timeout);
+      } finally {
+        scheduler.deleteTimeout(name);
+      }
+    });
+  } catch (error) {
+    // Scheduler registry might not be available in some modules during tests
   }
 }
