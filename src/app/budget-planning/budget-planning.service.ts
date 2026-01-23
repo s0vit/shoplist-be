@@ -148,11 +148,11 @@ export class BudgetPlanningService {
     }
 
     if (dto.title !== undefined) {
-      plan.title = dto.title.trim();
+      plan.title = dto.title?.trim();
     }
 
     if (dto.description !== undefined) {
-      plan.description = dto.description.trim();
+      plan.description = dto.description?.trim();
     }
 
     if (dto.metadata) {
@@ -237,7 +237,11 @@ export class BudgetPlanningService {
     return Promise.all(plans.map((plan) => this.buildPlanResponse(plan)));
   }
 
-  async activateFromHistory(planId: string, dto: ActivateBudgetPlanDto, userId: string): Promise<BudgetPlanResponseDto> {
+  async activateFromHistory(
+    planId: string,
+    dto: ActivateBudgetPlanDto,
+    userId: string,
+  ): Promise<BudgetPlanResponseDto> {
     const sourcePlan = await this.budgetPlanModel.findOne({ _id: planId, userId });
 
     if (!sourcePlan) {
@@ -249,7 +253,9 @@ export class BudgetPlanningService {
     }
 
     const periodStart = this.normalizeDateStart(dto.periodStart ?? this.calculateDefaultPeriodStart(sourcePlan));
-    const periodEnd = this.normalizeDateEnd(dto.periodEnd ?? this.calculateDefaultPeriodEnd(periodStart, sourcePlan.granularity));
+    const periodEnd = this.normalizeDateEnd(
+      dto.periodEnd ?? this.calculateDefaultPeriodEnd(periodStart, sourcePlan.granularity),
+    );
 
     this.ensureGranularityAlignment(periodStart, periodEnd, sourcePlan.granularity);
 
@@ -265,7 +271,9 @@ export class BudgetPlanningService {
       periodEnd,
       granularity: sourcePlan.granularity,
       categoryAllocations: sourcePlan.categoryAllocations?.map((allocation) => this.cloneAllocation(allocation)),
-      paymentSourceAllocations: sourcePlan.paymentSourceAllocations?.map((allocation) => this.cloneAllocation(allocation)),
+      paymentSourceAllocations: sourcePlan.paymentSourceAllocations?.map((allocation) =>
+        this.cloneAllocation(allocation),
+      ),
       metadata: sourcePlan.metadata,
       exchangeRatesSnapshot: await this.refreshExchangeRatesSnapshot(sourcePlan.currency),
       originPlanId: sourcePlan._id.toString(),
@@ -340,7 +348,9 @@ export class BudgetPlanningService {
       shouldPersist = true;
     }
 
-    const categoryAllocation = plan.categoryAllocations.find((allocation) => allocation.categoryId === expense.categoryId);
+    const categoryAllocation = plan.categoryAllocations.find(
+      (allocation) => allocation.categoryId === expense.categoryId,
+    );
 
     if (categoryAllocation) {
       const categoryProgress = progress.byCategory.find((item) => item.id === categoryAllocation.categoryId);
@@ -368,7 +378,9 @@ export class BudgetPlanningService {
     );
 
     if (paymentSourceAllocation) {
-      const sourceProgress = progress.byPaymentSource.find((item) => item.id === paymentSourceAllocation.paymentSourceId);
+      const sourceProgress = progress.byPaymentSource.find(
+        (item) => item.id === paymentSourceAllocation.paymentSourceId,
+      );
       if (sourceProgress) {
         const updatedAlert = this.evaluateAlert(
           plan,
@@ -723,7 +735,9 @@ export class BudgetPlanningService {
 
     return {
       nearLimitNotifiedAt: state.nearLimitNotifiedAt ? new Date(state.nearLimitNotifiedAt).toISOString() : null,
-      limitExceededNotifiedAt: state.limitExceededNotifiedAt ? new Date(state.limitExceededNotifiedAt).toISOString() : null,
+      limitExceededNotifiedAt: state.limitExceededNotifiedAt
+        ? new Date(state.limitExceededNotifiedAt).toISOString()
+        : null,
     };
   }
 
@@ -783,7 +797,11 @@ export class BudgetPlanningService {
   }
 
   private isSameDay(a: Date, b: Date): boolean {
-    return a.getUTCFullYear() === b.getUTCFullYear() && a.getUTCMonth() === b.getUTCMonth() && a.getUTCDate() === b.getUTCDate();
+    return (
+      a.getUTCFullYear() === b.getUTCFullYear() &&
+      a.getUTCMonth() === b.getUTCMonth() &&
+      a.getUTCDate() === b.getUTCDate()
+    );
   }
 
   private async archiveActivePlan(userId: string): Promise<void> {
