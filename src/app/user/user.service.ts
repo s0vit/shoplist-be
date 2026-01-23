@@ -50,7 +50,7 @@ export class UserService {
       .lean();
   }
 
-  async findById(id: string): Promise<UserDocument> {
+  async findById(id: string): Promise<User | null> {
     return this.userModel.findById(id).select(['email', '_id', 'login', 'isVerified', 'loginDate', 'avatar']).lean();
   }
 

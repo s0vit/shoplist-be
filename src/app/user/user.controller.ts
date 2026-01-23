@@ -20,7 +20,7 @@ import { GetUserByEmailSwDec } from './decorators/get-user-by-email-sw.decorator
 import { GetUserByIdSwDeC } from './decorators/get-user-by-id-sw.decorator';
 import { UploadAvatarSwDec } from './decorators/upload-avatar-sw.decorator';
 import { FindByOutputDto } from './dto/find-by-output.dto';
-import { UserDocument } from './models/user.model';
+import { User, UserDocument } from './models/user.model';
 import { UserService } from './user.service';
 
 @ApiTags('User')
@@ -36,7 +36,7 @@ export class UserController {
 
   @GetUserByIdSwDeC()
   @Get('id/:id')
-  async getById(@Param('id') id: string): Promise<UserDocument> {
+  async getById(@Param('id') id: string): Promise<User | null> {
     return this.userService.findById(id);
   }
 

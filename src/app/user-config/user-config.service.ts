@@ -50,7 +50,7 @@ export class UserConfigService {
 
     const result = userConfig.toObject({
       versionKey: false,
-      transform: (_doc, ret) => {
+      transform: (_doc, ret: Record<string, any>) => {
         delete ret.userId;
 
         return ret;
