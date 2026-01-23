@@ -1,11 +1,5 @@
 import { applyDecorators, HttpCode } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiNoContentResponse,
-  ApiOperation,
-  ApiParam,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiOperation, ApiParam, ApiUnauthorizedResponse } from '@nestjs/swagger';
 
 export const DeleteBudgetPlanSwDec = () =>
   applyDecorators(

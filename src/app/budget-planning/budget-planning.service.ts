@@ -120,6 +120,7 @@ export class BudgetPlanningService {
       if (dto.totalLimit <= 0) {
         throw new BadRequestException('totalLimit must be greater than 0');
       }
+
       plan.totalLimit = dto.totalLimit;
       requiresAlertReset = true;
     }
@@ -354,6 +355,7 @@ export class BudgetPlanningService {
 
     if (categoryAllocation) {
       const categoryProgress = progress.byCategory.find((item) => item.id === categoryAllocation.categoryId);
+
       if (categoryProgress) {
         const updatedAlert = this.evaluateAlert(
           plan,
@@ -381,6 +383,7 @@ export class BudgetPlanningService {
       const sourceProgress = progress.byPaymentSource.find(
         (item) => item.id === paymentSourceAllocation.paymentSourceId,
       );
+
       if (sourceProgress) {
         const updatedAlert = this.evaluateAlert(
           plan,
@@ -743,6 +746,7 @@ export class BudgetPlanningService {
 
   private normalizeDateStart(date: string | Date): Date {
     const instance = new Date(date);
+
     if (Number.isNaN(instance.getTime())) {
       throw new BadRequestException('Invalid periodStart');
     }
@@ -754,6 +758,7 @@ export class BudgetPlanningService {
 
   private normalizeDateEnd(date: string | Date): Date {
     const instance = new Date(date);
+
     if (Number.isNaN(instance.getTime())) {
       throw new BadRequestException('Invalid periodEnd');
     }
@@ -769,21 +774,25 @@ export class BudgetPlanningService {
         if (!this.isSameDay(start, end)) {
           throw new BadRequestException('Day granularity requires periodStart and periodEnd to be on the same day');
         }
+
         break;
       case AnalyticsTrendGranularity.WEEK:
         if (this.daysBetween(start, end) > 6) {
           throw new BadRequestException('Week granularity supports periods up to 7 days');
         }
+
         break;
       case AnalyticsTrendGranularity.MONTH:
         if (start.getUTCFullYear() !== end.getUTCFullYear() || start.getUTCMonth() !== end.getUTCMonth()) {
           throw new BadRequestException('Month granularity requires period to stay within the same month');
         }
+
         break;
       case AnalyticsTrendGranularity.YEAR:
         if (start.getUTCFullYear() !== end.getUTCFullYear()) {
           throw new BadRequestException('Year granularity requires period to stay within the same year');
         }
+
         break;
       default:
         throw new BadRequestException('Unsupported granularity');
@@ -838,13 +847,16 @@ export class BudgetPlanningService {
     switch (plan.granularity) {
       case AnalyticsTrendGranularity.DAY:
         return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString();
+
       case AnalyticsTrendGranularity.WEEK: {
         const dayOfWeek = now.getUTCDay() || 7;
         const monday = new Date(now);
         monday.setUTCDate(now.getUTCDate() - (dayOfWeek - 1));
         monday.setUTCHours(0, 0, 0, 0);
+
         return monday.toISOString();
       }
+
       case AnalyticsTrendGranularity.MONTH:
         return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
       case AnalyticsTrendGranularity.YEAR:
@@ -919,6 +931,7 @@ export class BudgetPlanningService {
 
     return categories.reduce<Record<string, string>>((acc, category) => {
       acc[category._id.toString()] = category.title;
+
       return acc;
     }, {});
   }
@@ -936,6 +949,7 @@ export class BudgetPlanningService {
 
     return paymentSources.reduce<Record<string, string>>((acc, source) => {
       acc[source._id.toString()] = source.title;
+
       return acc;
     }, {});
   }

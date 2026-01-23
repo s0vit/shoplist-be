@@ -260,6 +260,7 @@ describe('Budget Planning (e2e)', () => {
     const planId: string = planResponse.body.summary.id;
 
     const expenseAmounts = [600, 200, 250];
+
     for (const [index, amount] of expenseAmounts.entries()) {
       const createdAt = new Date(
         Date.UTC(ctx.startOfMonth.getUTCFullYear(), ctx.startOfMonth.getUTCMonth(), 5 + index),
@@ -369,6 +370,7 @@ describe('Budget Planning (e2e)', () => {
     const planId = planResponse.body.summary.id;
 
     const expenseAmounts = [600, 200, 250];
+
     for (const [index, amount] of expenseAmounts.entries()) {
       const createdAt = new Date(
         Date.UTC(ctx.startOfMonth.getUTCFullYear(), ctx.startOfMonth.getUTCMonth(), 5 + index),

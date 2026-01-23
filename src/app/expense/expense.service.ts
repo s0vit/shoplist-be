@@ -372,9 +372,7 @@ export class ExpenseService {
     return this.expensesModel.find({ familyBudgetId }).select('-__v').lean();
   }
 
-  private async notifyBudgetPlanning(
-    expense?: Partial<ExpenseOutputDto> | null,
-  ): Promise<void> {
+  private async notifyBudgetPlanning(expense?: Partial<ExpenseOutputDto> | null): Promise<void> {
     if (!expense) {
       return;
     }
