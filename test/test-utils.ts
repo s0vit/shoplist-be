@@ -8,6 +8,7 @@ import { CategoryService } from '../src/app/category/category.service';
 import { PaymentSourceService } from '../src/app/payment-source/payment-source.service';
 import { EmailService } from '../src/common/email/email.service';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import { CurrencyService } from '../src/app/currency/currency.service';
 
 async function waitForConnection(connection: Connection, timeoutMs: number = 15000): Promise<void> {
   if (connection.readyState === 1) return;
@@ -74,6 +75,16 @@ export async function setupTestApp(): Promise<{
         create: jest.fn().mockResolvedValue({}),
         update: jest.fn().mockResolvedValue({}),
         remove: jest.fn().mockResolvedValue({}),
+      })
+      .overrideProvider(CurrencyService)
+      .useValue({
+        getRatesByDate: jest.fn().mockResolvedValue({
+          date: new Date(),
+          base: 'USD',
+          rates: { USD: 1, EUR: 0.9, GBP: 0.8, KZT: 450 },
+        }),
+        updateCurrencyRates: jest.fn().mockResolvedValue({ USD: 1, EUR: 0.9, GBP: 0.8, KZT: 450 }),
+        recalculateCurrencyRate: jest.fn((_currency, rates) => rates),
       })
       .overrideProvider('UtilsService')
       .useValue({
