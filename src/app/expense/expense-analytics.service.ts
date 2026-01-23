@@ -205,7 +205,7 @@ type RawAggregationTimeline = {
 @Injectable()
 export class ExpenseAnalyticsService {
   private readonly logger = new Logger(ExpenseAnalyticsService.name);
-  private readonly modelId = 'gemini-2.0-flash-001';
+  private readonly modelId = 'gemini-3-flash-preview';
   private readonly endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelId}:generateContent`;
 
   constructor(

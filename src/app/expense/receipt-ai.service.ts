@@ -50,7 +50,7 @@ const MAX_ATTEMPTS = 3;
 @Injectable()
 export class ReceiptAiService {
   private readonly logger = new Logger(ReceiptAiService.name);
-  private readonly modelId = 'gemini-3.0-flash-preview';
+  private readonly modelId = 'gemini-3-flash-preview';
   private readonly endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelId}:generateContent`;
   private readonly supportedMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
