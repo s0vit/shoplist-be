@@ -50,7 +50,7 @@ const MAX_ATTEMPTS = 3;
 @Injectable()
 export class ReceiptAiService {
   private readonly logger = new Logger(ReceiptAiService.name);
-  private readonly modelId = 'gemini-2.0-flash-001';
+  private readonly modelId = 'gemini-3.0-flash-preview';
   private readonly endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelId}:generateContent`;
   private readonly supportedMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
@@ -355,9 +355,7 @@ export class ReceiptAiService {
   ): string {
     if (!value) {
       throw new UnprocessableEntityException(
-        field === 'categoryId'
-          ? RECEIPT_AI_ERROR.CATEGORY_NOT_SELECTED
-          : RECEIPT_AI_ERROR.PAYMENT_SOURCE_NOT_SELECTED,
+        field === 'categoryId' ? RECEIPT_AI_ERROR.CATEGORY_NOT_SELECTED : RECEIPT_AI_ERROR.PAYMENT_SOURCE_NOT_SELECTED,
       );
     }
 
@@ -365,9 +363,7 @@ export class ReceiptAiService {
 
     if (!matched) {
       throw new UnprocessableEntityException(
-        field === 'categoryId'
-          ? RECEIPT_AI_ERROR.UNKNOWN_CATEGORY_ID
-          : RECEIPT_AI_ERROR.UNKNOWN_PAYMENT_SOURCE_ID,
+        field === 'categoryId' ? RECEIPT_AI_ERROR.UNKNOWN_CATEGORY_ID : RECEIPT_AI_ERROR.UNKNOWN_PAYMENT_SOURCE_ID,
       );
     }
 

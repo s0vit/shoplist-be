@@ -1,9 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ExpenseOutputDto } from './expense-output.dto';
+import { ExpenseInputDto } from './expense-input.dto';
 
 export class ReceiptParseResponseDto {
-  @ApiProperty({ type: ExpenseOutputDto })
-  expense: ExpenseOutputDto;
+  @ApiProperty({ type: ExpenseInputDto })
+  expenseInput: ExpenseInputDto;
 
   @ApiPropertyOptional({
     description: 'Пояснение от модели, почему были выбраны такие значения.',
