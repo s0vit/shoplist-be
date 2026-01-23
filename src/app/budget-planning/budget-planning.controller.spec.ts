@@ -180,7 +180,7 @@ const createExpense = (
 };
 
 // TODO: re-enable when budget planning endpoints are stable in tests
-describe.skip('Budget Planning (e2e)', () => {
+describe('Budget Planning (e2e)', () => {
   let app: INestApplication;
   let connection: Connection;
   let jwtService: JwtService;
@@ -220,10 +220,15 @@ describe.skip('Budget Planning (e2e)', () => {
   it('validates period boundaries on create', async () => {
     const ctx = await seedBaseContext(connection, jwtService, configService);
 
-    await createPlan(app, ctx, {
-      periodStart: ctx.endOfMonth.toISOString(),
-      periodEnd: ctx.startOfMonth.toISOString(),
-    }, 400);
+    await createPlan(
+      app,
+      ctx,
+      {
+        periodStart: ctx.endOfMonth.toISOString(),
+        periodEnd: ctx.startOfMonth.toISOString(),
+      },
+      400,
+    );
   });
 
   it('creates plan and returns progress snapshot', async () => {
@@ -256,7 +261,9 @@ describe.skip('Budget Planning (e2e)', () => {
 
     const expenseAmounts = [600, 200, 250];
     for (const [index, amount] of expenseAmounts.entries()) {
-      const createdAt = new Date(Date.UTC(ctx.startOfMonth.getUTCFullYear(), ctx.startOfMonth.getUTCMonth(), 5 + index));
+      const createdAt = new Date(
+        Date.UTC(ctx.startOfMonth.getUTCFullYear(), ctx.startOfMonth.getUTCMonth(), 5 + index),
+      );
       await createExpense(app, ctx, amount, createdAt);
     }
 
@@ -284,8 +291,14 @@ describe.skip('Budget Planning (e2e)', () => {
 
     expect(updateResponse.body.summary.totalLimit).toBe(1500);
     expect(updateResponse.body.summary.metadata).toEqual({ exportKey: 'august-2024' });
-    expect(updateResponse.body.summary.alertState).toEqual({ nearLimitNotifiedAt: null, limitExceededNotifiedAt: null });
-    expect(updateResponse.body.byCategory[0].alertState).toEqual({ nearLimitNotifiedAt: null, limitExceededNotifiedAt: null });
+    expect(updateResponse.body.summary.alertState).toEqual({
+      nearLimitNotifiedAt: null,
+      limitExceededNotifiedAt: null,
+    });
+    expect(updateResponse.body.byCategory[0].alertState).toEqual({
+      nearLimitNotifiedAt: null,
+      limitExceededNotifiedAt: null,
+    });
   });
 
   it('returns history after deletion and removes current plan', async () => {
@@ -325,7 +338,9 @@ describe.skip('Budget Planning (e2e)', () => {
       .expect(204);
 
     const nextMonthStart = new Date(Date.UTC(ctx.startOfMonth.getUTCFullYear(), ctx.startOfMonth.getUTCMonth() + 1, 1));
-    const nextMonthEnd = new Date(Date.UTC(ctx.startOfMonth.getUTCFullYear(), ctx.startOfMonth.getUTCMonth() + 2, 0, 23, 59, 59, 999));
+    const nextMonthEnd = new Date(
+      Date.UTC(ctx.startOfMonth.getUTCFullYear(), ctx.startOfMonth.getUTCMonth() + 2, 0, 23, 59, 59, 999),
+    );
 
     const reactivatedResponse = await request(app.getHttpServer())
       .post(`/api/budget-planning/${planId}/activate`)
@@ -355,7 +370,9 @@ describe.skip('Budget Planning (e2e)', () => {
 
     const expenseAmounts = [600, 200, 250];
     for (const [index, amount] of expenseAmounts.entries()) {
-      const createdAt = new Date(Date.UTC(ctx.startOfMonth.getUTCFullYear(), ctx.startOfMonth.getUTCMonth(), 5 + index));
+      const createdAt = new Date(
+        Date.UTC(ctx.startOfMonth.getUTCFullYear(), ctx.startOfMonth.getUTCMonth(), 5 + index),
+      );
       await createExpense(app, ctx, amount, createdAt);
     }
 
@@ -380,7 +397,9 @@ describe.skip('Budget Planning (e2e)', () => {
       .expect(204);
 
     const nextMonthStart = new Date(Date.UTC(ctx.startOfMonth.getUTCFullYear(), ctx.startOfMonth.getUTCMonth() + 1, 1));
-    const nextMonthEnd = new Date(Date.UTC(ctx.startOfMonth.getUTCFullYear(), ctx.startOfMonth.getUTCMonth() + 2, 0, 23, 59, 59, 999));
+    const nextMonthEnd = new Date(
+      Date.UTC(ctx.startOfMonth.getUTCFullYear(), ctx.startOfMonth.getUTCMonth() + 2, 0, 23, 59, 59, 999),
+    );
 
     const reactivated = await request(app.getHttpServer())
       .post(`/api/budget-planning/${planId}/activate`)
