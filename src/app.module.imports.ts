@@ -18,6 +18,7 @@ import { getMongoConfigs } from './configs/get-mongo.configs';
 import { CronExpenseModule } from './app/cron-expenses/cron-expense.module';
 import { PostponedExpenseModule } from './app/postponed-expense/postponed-expense.module';
 import { SentryModule } from '@sentry/nestjs/setup';
+import { BudgetPlanningModule } from './app/budget-planning/budget-planning.module';
 
 export const appModuleImports: ModuleMetadata['imports'] = [
   SentryModule.forRoot(),
@@ -45,4 +46,5 @@ export const appModuleImports: ModuleMetadata['imports'] = [
   FamilyBudgetModule,
   PostponedExpenseModule,
   DatabaseBackupModule,
+  BudgetPlanningModule,
 ];

@@ -147,10 +147,8 @@ export class ExpenseController {
       userId: req.user.userId,
     });
 
-    const expense = await this.expenseService.create(expenseInput, req.user.userId);
-
     return {
-      expense,
+      expenseInput,
       reason: reason ?? null,
     };
   }

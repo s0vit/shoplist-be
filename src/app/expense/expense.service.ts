@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -22,15 +23,19 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { CronExpenseService } from '../cron-expenses/cron-expense.service';
 import { RECURRENCE_TYPES } from '../cron-expenses/constants/RECURRENCE_TYPES';
 import { CURRENCIES } from '../../common/interfaces/currencies.enum';
+import { BudgetPlanningService } from '../budget-planning/budget-planning.service';
 
 @Injectable()
 export class ExpenseService {
+  private readonly logger = new Logger(ExpenseService.name);
+
   constructor(
     @InjectModel(Expense.name)
     private readonly expensesModel: Model<Expense>,
     private readonly accessControlService: AccessControlService,
     private readonly currencyService: CurrencyService,
     private readonly familyBudgetService: FamilyBudgetService,
+    private readonly budgetPlanningService: BudgetPlanningService,
     @Inject(forwardRef(() => CronExpenseService))
     private readonly cronExpenseService: CronExpenseService,
   ) {}
@@ -107,7 +112,10 @@ export class ExpenseService {
       });
       const createdExpanse = await newExpansesInstance.save();
 
-      return createdExpanse.toObject({ versionKey: false });
+      const expenseObject = createdExpanse.toObject({ versionKey: false });
+      await this.notifyBudgetPlanning(expenseObject);
+
+      return expenseObject;
     } catch (error) {
       throw new HttpException(EXPENSE_ERROR.CREATE_EXPENSE_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -318,7 +326,13 @@ export class ExpenseService {
         updatedAt: new Date(),
       };
 
-      return this.expensesModel.findByIdAndUpdate(expenseId, updateData, { new: true }).lean();
+      const updatedExpense = await this.expensesModel.findByIdAndUpdate(expenseId, updateData, { new: true }).lean();
+
+      if (updatedExpense) {
+        await this.notifyBudgetPlanning(updatedExpense as ExpenseOutputDto);
+      }
+
+      return updatedExpense;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -356,5 +370,33 @@ export class ExpenseService {
     }
 
     return this.expensesModel.find({ familyBudgetId }).select('-__v').lean();
+  }
+
+  private async notifyBudgetPlanning(expense?: Partial<ExpenseOutputDto> | null): Promise<void> {
+    if (!expense) {
+      return;
+    }
+
+    const createdAt = expense.createdAt ? new Date(expense.createdAt) : null;
+
+    if (!createdAt || Number.isNaN(createdAt.getTime())) {
+      return;
+    }
+
+    try {
+      await this.budgetPlanningService.handleExpenseCreated({
+        _id: expense._id,
+        userId: expense.userId,
+        categoryId: expense.categoryId,
+        paymentSourceId: expense.paymentSourceId,
+        createdAt,
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Failed to evaluate budget planning for expense ${expense._id}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
   }
 }

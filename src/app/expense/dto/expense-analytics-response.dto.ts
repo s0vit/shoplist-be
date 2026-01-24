@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CURRENCIES } from '../../../common/interfaces/currencies.enum';
 import { AnalyticsTrendGranularity } from './expense-analytics-query.dto';
+import { BudgetPlanProgressDto } from '../../budget-planning/dto/budget-plan-response.dto';
 
 export class ExpenseAnalyticsSummaryDto {
   @ApiProperty({
@@ -217,4 +218,11 @@ export class ExpenseAnalyticsResponseDto {
 
   @ApiPropertyOptional({ type: ExpenseAnalyticsAiInsightDto })
   aiInsights?: ExpenseAnalyticsAiInsightDto;
+
+  @ApiPropertyOptional({
+    description: 'Active budget plan progress aligned with the analytics filters',
+    type: () => BudgetPlanProgressDto,
+    nullable: true,
+  })
+  budgetPlan?: BudgetPlanProgressDto | null;
 }

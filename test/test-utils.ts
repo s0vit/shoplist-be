@@ -7,6 +7,8 @@ import { setupApp } from '../src/configs/setupApp';
 import { CategoryService } from '../src/app/category/category.service';
 import { PaymentSourceService } from '../src/app/payment-source/payment-source.service';
 import { EmailService } from '../src/common/email/email.service';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { CurrencyService } from '../src/app/currency/currency.service';
 
 async function waitForConnection(connection: Connection, timeoutMs: number = 15000): Promise<void> {
   if (connection.readyState === 1) return;
@@ -74,6 +76,16 @@ export async function setupTestApp(): Promise<{
         update: jest.fn().mockResolvedValue({}),
         remove: jest.fn().mockResolvedValue({}),
       })
+      .overrideProvider(CurrencyService)
+      .useValue({
+        getRatesByDate: jest.fn().mockResolvedValue({
+          date: new Date(),
+          base: 'USD',
+          rates: { USD: 1, EUR: 0.9, GBP: 0.8, KZT: 450 },
+        }),
+        updateCurrencyRates: jest.fn().mockResolvedValue({ USD: 1, EUR: 0.9, GBP: 0.8, KZT: 450 }),
+        recalculateCurrencyRate: jest.fn((_currency, rates) => rates),
+      })
       .overrideProvider('UtilsService')
       .useValue({
         createCaseInsensitiveRegexFromString: jest.fn((str: string) => new RegExp(`^${str}$`, 'i')),
@@ -103,6 +115,7 @@ export async function setupTestApp(): Promise<{
 
     await setupApp(app);
     await app.init();
+    disableScheduledTasks(app);
 
     return { app, connection };
   } catch (error) {
@@ -114,6 +127,10 @@ export async function setupTestApp(): Promise<{
 
 export async function cleanupTestApp(app?: INestApplication, connection?: Connection): Promise<void> {
   try {
+    if (app) {
+      disableScheduledTasks(app);
+    }
+
     if (connection && connection.readyState !== 0) {
       try {
         // Only try to drop database if connection is active
@@ -154,5 +171,43 @@ export async function cleanupTestApp(app?: INestApplication, connection?: Connec
   } catch (error) {
     console.error('Error during cleanup:', error);
     // Don't throw error in cleanup to avoid masking original test failures
+  }
+}
+
+function disableScheduledTasks(app: INestApplication): void {
+  if (process.env.NODE_ENV !== 'test') {
+    return;
+  }
+
+  try {
+    const scheduler = app.get(SchedulerRegistry);
+
+    scheduler.getCronJobs().forEach((job, name) => {
+      try {
+        job.stop();
+      } finally {
+        scheduler.deleteCronJob(name);
+      }
+    });
+
+    scheduler.getIntervals().forEach((name) => {
+      try {
+        const interval = scheduler.getInterval(name);
+        clearInterval(interval);
+      } finally {
+        scheduler.deleteInterval(name);
+      }
+    });
+
+    scheduler.getTimeouts().forEach((name) => {
+      try {
+        const timeout = scheduler.getTimeout(name);
+        clearTimeout(timeout);
+      } finally {
+        scheduler.deleteTimeout(name);
+      }
+    });
+  } catch (error) {
+    // Scheduler registry might not be available in some modules during tests
   }
 }
