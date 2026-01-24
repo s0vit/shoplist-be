@@ -47,7 +47,6 @@ export class BudgetCategoryAllocationInputDto {
     example: 300,
   })
   @IsPositive()
-  @IsPositive()
   limit: number;
 }
 
