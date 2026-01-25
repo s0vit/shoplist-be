@@ -89,7 +89,7 @@ export class BudgetPlanningService {
         this.logger.log(`Archived ${result.modifiedCount} outdated budget plans.`);
       }
     } catch (error: any) {
-      this.logger.error('Failed to archive outdated plans', error.stack);
+      this.logger.error(`Failed to archive outdated plans: ${error?.message ?? 'Unknown error'}`, error.stack);
     }
   }
 
@@ -244,12 +244,16 @@ export class BudgetPlanningService {
         throw new NotFoundException('Budget plan not found');
       }
 
-      await this.budgetNotificationService.removeAlertsForPlan(planId);
-    } catch (error: any) {
-      if (!(error instanceof NotFoundException)) {
-        this.logger.error(`Failed to delete plan ${planId} for user ${userId}`, error.stack);
+      try {
+        await this.budgetNotificationService.removeAlertsForPlan(planId);
+      } catch (cleanupError: any) {
+        this.logger.error(
+          `Failed to cleanup alerts for plan ${planId} user ${userId}: ${cleanupError?.message}`,
+          cleanupError.stack,
+        );
       }
-
+    } catch (error: any) {
+      this.logger.error(`Failed to delete plan ${planId} for user ${userId}`, error.stack);
       throw error;
     }
   }
