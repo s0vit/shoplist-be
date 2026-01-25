@@ -243,10 +243,13 @@ export class BudgetPlanningService {
       if (result.deletedCount === 0) {
         throw new NotFoundException('Budget plan not found');
       }
+
+      await this.budgetNotificationService.removeAlertsForPlan(planId);
     } catch (error: any) {
       if (!(error instanceof NotFoundException)) {
         this.logger.error(`Failed to delete plan ${planId} for user ${userId}`, error.stack);
       }
+
       throw error;
     }
   }
