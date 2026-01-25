@@ -244,7 +244,9 @@ export class BudgetPlanningService {
         throw new NotFoundException('Budget plan not found');
       }
     } catch (error: any) {
-      this.logger.error(`Failed to delete plan ${planId} for user ${userId}`, error.stack);
+      if (!(error instanceof NotFoundException)) {
+        this.logger.error(`Failed to delete plan ${planId} for user ${userId}`, error.stack);
+      }
       throw error;
     }
   }
@@ -270,7 +272,7 @@ export class BudgetPlanningService {
   async listHistory(userId: string): Promise<BudgetPlanResponseDto[]> {
     try {
       const plans = await this.budgetPlanModel
-        .find({ userId, status: { $in: [BudgetPlanStatus.ARCHIVED, BudgetPlanStatus.DELETED] } })
+        .find({ userId, status: { $in: [BudgetPlanStatus.ARCHIVED] } })
         .sort({ periodStart: -1 });
 
       return Promise.all(plans.map((plan) => this.buildPlanResponse(plan)));
