@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { PipelineStage, Model } from 'mongoose';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { Expense } from '../expense/models/expense.model';
 import { BudgetNotificationService } from './budget-notification.service';
 import {
@@ -67,175 +68,225 @@ export class BudgetPlanningService {
     private readonly budgetNotificationService: BudgetNotificationService,
   ) {}
 
-  async createPlan(dto: CreateBudgetPlanDto, userId: string): Promise<BudgetPlanResponseDto> {
-    const periodStart = this.normalizeDateStart(dto.periodStart);
-    const periodEnd = this.normalizeDateEnd(dto.periodEnd);
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async archiveOutdatedPlans(): Promise<void> {
+    try {
+      const now = new Date();
+      const result = await this.budgetPlanModel.updateMany(
+        {
+          status: BudgetPlanStatus.ACTIVE,
+          periodEnd: { $lt: now },
+        },
+        {
+          $set: {
+            status: BudgetPlanStatus.ARCHIVED,
+            archivedAt: now,
+          },
+        },
+      );
 
-    if (periodEnd.getTime() < periodStart.getTime()) {
-      throw new BadRequestException('periodEnd must be after periodStart');
+      if (result.modifiedCount > 0) {
+        this.logger.log(`Archived ${result.modifiedCount} outdated budget plans.`);
+      }
+    } catch (error: any) {
+      this.logger.error(`Failed to archive outdated plans: ${error?.message ?? 'Unknown error'}`, error.stack);
     }
-
-    this.ensureGranularityAlignment(periodStart, periodEnd, dto.granularity);
-
-    const metadata = this.mapMetadataEntries(dto.metadata);
-    const categoryAllocations = this.normalizeCategoryAllocations(dto.categoryAllocations);
-    const paymentSourceAllocations = this.normalizePaymentSourceAllocations(dto.paymentSourceAllocations);
-
-    const exchangeRatesSnapshot = await this.buildExchangeRatesSnapshot(dto.currency);
-
-    await this.archiveActivePlan(userId);
-
-    const createdPlan = await this.budgetPlanModel.create({
-      userId,
-      title: dto.title?.trim(),
-      description: dto.description?.trim(),
-      totalLimit: dto.totalLimit,
-      currency: dto.currency,
-      periodStart,
-      periodEnd,
-      granularity: dto.granularity,
-      categoryAllocations,
-      paymentSourceAllocations,
-      metadata,
-      exchangeRatesSnapshot,
-    });
-
-    return this.buildPlanResponse(await createdPlan.populate([]));
   }
 
-  async updatePlan(planId: string, dto: UpdateBudgetPlanDto, userId: string): Promise<BudgetPlanResponseDto> {
-    const plan = await this.budgetPlanModel.findOne({ _id: planId, userId });
-
-    if (!plan) {
-      throw new NotFoundException('Budget plan not found');
-    }
-
-    if (plan.status !== BudgetPlanStatus.ACTIVE) {
-      throw new BadRequestException('Only active plans can be updated');
-    }
-
-    let requiresAlertReset = false;
-
-    if (dto.totalLimit !== undefined) {
-      if (dto.totalLimit <= 0) {
-        throw new BadRequestException('totalLimit must be greater than 0');
-      }
-
-      plan.totalLimit = dto.totalLimit;
-      requiresAlertReset = true;
-    }
-
-    if (dto.currency && dto.currency !== plan.currency) {
-      plan.currency = dto.currency;
-      plan.exchangeRatesSnapshot = await this.buildExchangeRatesSnapshot(dto.currency);
-      requiresAlertReset = true;
-    }
-
-    if (dto.periodStart || dto.periodEnd || dto.granularity) {
-      const periodStart = this.normalizeDateStart(dto.periodStart ?? plan.periodStart.toISOString());
-      const periodEnd = this.normalizeDateEnd(dto.periodEnd ?? plan.periodEnd.toISOString());
-      const granularity = dto.granularity ?? plan.granularity;
+  async createPlan(dto: CreateBudgetPlanDto, userId: string): Promise<BudgetPlanResponseDto> {
+    try {
+      const periodStart = this.normalizeDateStart(dto.periodStart);
+      const periodEnd = this.normalizeDateEnd(dto.periodEnd);
 
       if (periodEnd.getTime() < periodStart.getTime()) {
         throw new BadRequestException('periodEnd must be after periodStart');
       }
 
-      this.ensureGranularityAlignment(periodStart, periodEnd, granularity);
+      this.ensureGranularityAlignment(periodStart, periodEnd, dto.granularity);
 
-      plan.periodStart = periodStart;
-      plan.periodEnd = periodEnd;
-      plan.granularity = granularity;
-      requiresAlertReset = true;
+      const metadata = this.mapMetadataEntries(dto.metadata);
+      const categoryAllocations = this.normalizeCategoryAllocations(dto.categoryAllocations);
+      const paymentSourceAllocations = this.normalizePaymentSourceAllocations(dto.paymentSourceAllocations);
+
+      const exchangeRatesSnapshot = await this.buildExchangeRatesSnapshot(dto.currency);
+
+      await this.archiveActivePlan(userId);
+
+      const createdPlan = await this.budgetPlanModel.create({
+        userId,
+        title: dto.title?.trim(),
+        description: dto.description?.trim(),
+        totalLimit: dto.totalLimit,
+        currency: dto.currency,
+        periodStart,
+        periodEnd,
+        granularity: dto.granularity,
+        categoryAllocations,
+        paymentSourceAllocations,
+        metadata,
+        exchangeRatesSnapshot,
+      });
+
+      return this.buildPlanResponse(await createdPlan.populate([]));
+    } catch (error: any) {
+      this.logger.error(`Failed to create plan for user ${userId}`, error.stack);
+      throw error;
     }
+  }
 
-    if (dto.title !== undefined) {
-      plan.title = dto.title?.trim();
-    }
+  async updatePlan(planId: string, dto: UpdateBudgetPlanDto, userId: string): Promise<BudgetPlanResponseDto> {
+    try {
+      const plan = await this.budgetPlanModel.findOne({ _id: planId, userId });
 
-    if (dto.description !== undefined) {
-      plan.description = dto.description?.trim();
-    }
+      if (!plan) {
+        throw new NotFoundException('Budget plan not found');
+      }
 
-    if (dto.metadata) {
-      plan.metadata = this.mapMetadataEntries(dto.metadata);
-    }
+      if (plan.status !== BudgetPlanStatus.ACTIVE) {
+        throw new BadRequestException('Only active plans can be updated');
+      }
 
-    if (dto.categoryAllocations) {
-      plan.categoryAllocations = this.normalizeCategoryAllocations(dto.categoryAllocations);
-      requiresAlertReset = true;
-    }
+      let requiresAlertReset = false;
 
-    if (dto.paymentSourceAllocations) {
-      plan.paymentSourceAllocations = this.normalizePaymentSourceAllocations(dto.paymentSourceAllocations);
-      requiresAlertReset = true;
-    }
+      if (dto.totalLimit !== undefined) {
+        if (dto.totalLimit <= 0) {
+          throw new BadRequestException('totalLimit must be greater than 0');
+        }
 
-    if (requiresAlertReset) {
-      plan.overallAlertState = {
-        nearLimitNotifiedAt: null,
-        limitExceededNotifiedAt: null,
-      };
-      plan.categoryAllocations = plan.categoryAllocations.map((allocation) => ({
-        ...allocation,
-        alertState: {
+        plan.totalLimit = dto.totalLimit;
+        requiresAlertReset = true;
+      }
+
+      if (dto.currency && dto.currency !== plan.currency) {
+        plan.currency = dto.currency;
+        plan.exchangeRatesSnapshot = await this.buildExchangeRatesSnapshot(dto.currency);
+        requiresAlertReset = true;
+      }
+
+      if (dto.periodStart || dto.periodEnd || dto.granularity) {
+        const periodStart = this.normalizeDateStart(dto.periodStart ?? plan.periodStart.toISOString());
+        const periodEnd = this.normalizeDateEnd(dto.periodEnd ?? plan.periodEnd.toISOString());
+        const granularity = dto.granularity ?? plan.granularity;
+
+        if (periodEnd.getTime() < periodStart.getTime()) {
+          throw new BadRequestException('periodEnd must be after periodStart');
+        }
+
+        this.ensureGranularityAlignment(periodStart, periodEnd, granularity);
+
+        plan.periodStart = periodStart;
+        plan.periodEnd = periodEnd;
+        plan.granularity = granularity;
+        requiresAlertReset = true;
+      }
+
+      if (dto.title !== undefined) {
+        plan.title = dto.title?.trim();
+      }
+
+      if (dto.description !== undefined) {
+        plan.description = dto.description?.trim();
+      }
+
+      if (dto.metadata) {
+        plan.metadata = this.mapMetadataEntries(dto.metadata);
+      }
+
+      if (dto.categoryAllocations) {
+        plan.categoryAllocations = this.normalizeCategoryAllocations(dto.categoryAllocations);
+        requiresAlertReset = true;
+      }
+
+      if (dto.paymentSourceAllocations) {
+        plan.paymentSourceAllocations = this.normalizePaymentSourceAllocations(dto.paymentSourceAllocations);
+        requiresAlertReset = true;
+      }
+
+      if (requiresAlertReset) {
+        plan.overallAlertState = {
           nearLimitNotifiedAt: null,
           limitExceededNotifiedAt: null,
-        },
-      }));
-      plan.paymentSourceAllocations = plan.paymentSourceAllocations.map((allocation) => ({
-        ...allocation,
-        alertState: {
-          nearLimitNotifiedAt: null,
-          limitExceededNotifiedAt: null,
-        },
-      }));
+        };
+        plan.categoryAllocations = plan.categoryAllocations.map((allocation) => ({
+          ...allocation,
+          alertState: {
+            nearLimitNotifiedAt: null,
+            limitExceededNotifiedAt: null,
+          },
+        }));
+        plan.paymentSourceAllocations = plan.paymentSourceAllocations.map((allocation) => ({
+          ...allocation,
+          alertState: {
+            nearLimitNotifiedAt: null,
+            limitExceededNotifiedAt: null,
+          },
+        }));
 
-      plan.markModified('overallAlertState');
-      plan.markModified('categoryAllocations');
-      plan.markModified('paymentSourceAllocations');
+        plan.markModified('overallAlertState');
+        plan.markModified('categoryAllocations');
+        plan.markModified('paymentSourceAllocations');
+      }
+
+      await plan.save();
+
+      return this.buildPlanResponse(plan);
+    } catch (error: any) {
+      this.logger.error(`Failed to update plan ${planId} for user ${userId}`, error.stack);
+      throw error;
     }
-
-    await plan.save();
-
-    return this.buildPlanResponse(plan);
   }
 
   async deletePlan(planId: string, userId: string): Promise<void> {
-    const plan = await this.budgetPlanModel.findOne({ _id: planId, userId });
+    try {
+      const result = await this.budgetPlanModel.deleteOne({ _id: planId, userId });
 
-    if (!plan) {
-      throw new NotFoundException('Budget plan not found');
+      if (result.deletedCount === 0) {
+        throw new NotFoundException('Budget plan not found');
+      }
+
+      try {
+        await this.budgetNotificationService.removeAlertsForPlan(planId);
+      } catch (cleanupError: any) {
+        this.logger.error(
+          `Failed to cleanup alerts for plan ${planId} user ${userId}: ${cleanupError?.message}`,
+          cleanupError.stack,
+        );
+      }
+    } catch (error: any) {
+      this.logger.error(`Failed to delete plan ${planId} for user ${userId}`, error.stack);
+      throw error;
     }
-
-    if (plan.status === BudgetPlanStatus.DELETED) {
-      return;
-    }
-
-    plan.status = BudgetPlanStatus.DELETED;
-    plan.deletedAt = new Date();
-
-    await plan.save();
   }
 
   async getCurrentPlan(userId: string): Promise<BudgetPlanResponseDto | null> {
-    const plan = await this.budgetPlanModel.findOne({
-      userId,
-      status: BudgetPlanStatus.ACTIVE,
-    });
+    try {
+      const plan = await this.budgetPlanModel.findOne({
+        userId,
+        status: BudgetPlanStatus.ACTIVE,
+      });
 
-    if (!plan) {
-      return null;
+      if (!plan) {
+        return null;
+      }
+
+      return this.buildPlanResponse(plan);
+    } catch (error: any) {
+      this.logger.error(`Failed to get current plan for user ${userId}`, error.stack);
+      throw error;
     }
-
-    return this.buildPlanResponse(plan);
   }
 
   async listHistory(userId: string): Promise<BudgetPlanResponseDto[]> {
-    const plans = await this.budgetPlanModel
-      .find({ userId, status: { $in: [BudgetPlanStatus.ARCHIVED, BudgetPlanStatus.DELETED] } })
-      .sort({ periodStart: -1 });
+    try {
+      const plans = await this.budgetPlanModel
+        .find({ userId, status: { $in: [BudgetPlanStatus.ARCHIVED] } })
+        .sort({ periodStart: -1 });
 
-    return Promise.all(plans.map((plan) => this.buildPlanResponse(plan)));
+      return Promise.all(plans.map((plan) => this.buildPlanResponse(plan)));
+    } catch (error: any) {
+      this.logger.error(`Failed to list history for user ${userId}`, error.stack);
+      throw error;
+    }
   }
 
   async activateFromHistory(
@@ -243,48 +294,58 @@ export class BudgetPlanningService {
     dto: ActivateBudgetPlanDto,
     userId: string,
   ): Promise<BudgetPlanResponseDto> {
-    const sourcePlan = await this.budgetPlanModel.findOne({ _id: planId, userId });
+    try {
+      const sourcePlan = await this.budgetPlanModel.findOne({ _id: planId, userId });
 
-    if (!sourcePlan) {
-      throw new NotFoundException('Source budget plan not found');
+      if (!sourcePlan) {
+        throw new NotFoundException('Source budget plan not found');
+      }
+
+      if (sourcePlan.status === BudgetPlanStatus.ACTIVE) {
+        throw new BadRequestException('Plan is already active');
+      }
+
+      const periodStart = this.normalizeDateStart(dto.periodStart ?? this.calculateDefaultPeriodStart(sourcePlan));
+      const periodEnd = this.normalizeDateEnd(
+        dto.periodEnd ?? this.calculateDefaultPeriodEnd(periodStart, sourcePlan.granularity),
+      );
+
+      this.ensureGranularityAlignment(periodStart, periodEnd, sourcePlan.granularity);
+
+      await this.archiveActivePlan(userId);
+
+      const recreatedPlan = await this.budgetPlanModel.create({
+        userId,
+        title: sourcePlan.title,
+        description: sourcePlan.description,
+        totalLimit: sourcePlan.totalLimit,
+        currency: sourcePlan.currency,
+        periodStart,
+        periodEnd,
+        granularity: sourcePlan.granularity,
+        categoryAllocations: sourcePlan.categoryAllocations?.map((allocation) => this.cloneAllocation(allocation)),
+        paymentSourceAllocations: sourcePlan.paymentSourceAllocations?.map((allocation) =>
+          this.cloneAllocation(allocation),
+        ),
+        metadata: sourcePlan.metadata,
+        exchangeRatesSnapshot: await this.refreshExchangeRatesSnapshot(sourcePlan.currency),
+        originPlanId: sourcePlan._id.toString(),
+      });
+
+      return this.buildPlanResponse(await recreatedPlan.populate([]));
+    } catch (error: any) {
+      this.logger.error(`Failed to activate plan ${planId} from history for user ${userId}`, error.stack);
+      throw error;
     }
-
-    if (sourcePlan.status === BudgetPlanStatus.ACTIVE) {
-      throw new BadRequestException('Plan is already active');
-    }
-
-    const periodStart = this.normalizeDateStart(dto.periodStart ?? this.calculateDefaultPeriodStart(sourcePlan));
-    const periodEnd = this.normalizeDateEnd(
-      dto.periodEnd ?? this.calculateDefaultPeriodEnd(periodStart, sourcePlan.granularity),
-    );
-
-    this.ensureGranularityAlignment(periodStart, periodEnd, sourcePlan.granularity);
-
-    await this.archiveActivePlan(userId);
-
-    const recreatedPlan = await this.budgetPlanModel.create({
-      userId,
-      title: sourcePlan.title,
-      description: sourcePlan.description,
-      totalLimit: sourcePlan.totalLimit,
-      currency: sourcePlan.currency,
-      periodStart,
-      periodEnd,
-      granularity: sourcePlan.granularity,
-      categoryAllocations: sourcePlan.categoryAllocations?.map((allocation) => this.cloneAllocation(allocation)),
-      paymentSourceAllocations: sourcePlan.paymentSourceAllocations?.map((allocation) =>
-        this.cloneAllocation(allocation),
-      ),
-      metadata: sourcePlan.metadata,
-      exchangeRatesSnapshot: await this.refreshExchangeRatesSnapshot(sourcePlan.currency),
-      originPlanId: sourcePlan._id.toString(),
-    });
-
-    return this.buildPlanResponse(await recreatedPlan.populate([]));
   }
 
   async listAlerts(userId: string, planId?: string): Promise<BudgetAlertResponseDto[]> {
-    return this.budgetNotificationService.listAlerts(userId, planId);
+    try {
+      return this.budgetNotificationService.listAlerts(userId, planId);
+    } catch (error: any) {
+      this.logger.error(`Failed to list alerts for user ${userId}`, error.stack);
+      throw error;
+    }
   }
 
   async handleExpenseCreated(expense: ExpenseEventPayload): Promise<void> {

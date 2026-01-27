@@ -302,7 +302,7 @@ describe('Budget Planning (e2e)', () => {
     });
   });
 
-  it('returns history after deletion and removes current plan', async () => {
+  it('permanently deletes plan and removes it from history', async () => {
     const ctx = await seedBaseContext(connection, jwtService, configService);
     const response = await createPlan(app, ctx);
     const planId: string = response.body.summary.id;
@@ -324,8 +324,7 @@ describe('Budget Planning (e2e)', () => {
       .set('Authorization', `Bearer ${ctx.accessToken}`)
       .expect(200);
 
-    expect(historyResponse.body).toHaveLength(1);
-    expect(historyResponse.body[0].summary.status).toBe('deleted');
+    expect(historyResponse.body).toHaveLength(0);
   });
 
   it('reactivates plan from history', async () => {
@@ -333,10 +332,10 @@ describe('Budget Planning (e2e)', () => {
     const response = await createPlan(app, ctx);
     const planId: string = response.body.summary.id;
 
-    await request(app.getHttpServer())
-      .delete(`/api/budget-planning/${planId}`)
-      .set('Authorization', `Bearer ${ctx.accessToken}`)
-      .expect(204);
+    // Manually archive the plan (as we don't have an endpoint for it, it's done via cron)
+    await connection
+      .collection('BudgetPlan')
+      .updateOne({ _id: new Types.ObjectId(planId) }, { $set: { status: 'archived', archivedAt: new Date() } });
 
     const nextMonthStart = new Date(Date.UTC(ctx.startOfMonth.getUTCFullYear(), ctx.startOfMonth.getUTCMonth() + 1, 1));
     const nextMonthEnd = new Date(
@@ -393,10 +392,10 @@ describe('Budget Planning (e2e)', () => {
 
     expect(filteredResponse.body).toHaveLength(6);
 
-    await request(app.getHttpServer())
-      .delete(`/api/budget-planning/${planId}`)
-      .set('Authorization', `Bearer ${ctx.accessToken}`)
-      .expect(204);
+    // Manually archive to test reactivation logic
+    await connection
+      .collection('BudgetPlan')
+      .updateOne({ _id: new Types.ObjectId(planId) }, { $set: { status: 'archived', archivedAt: new Date() } });
 
     const nextMonthStart = new Date(Date.UTC(ctx.startOfMonth.getUTCFullYear(), ctx.startOfMonth.getUTCMonth() + 1, 1));
     const nextMonthEnd = new Date(
